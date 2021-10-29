@@ -13,3 +13,36 @@
 - Dataset
 
 - Implementation
+
+    - GUI
+
+        - Covid Cases and School Closures
+
+            - Interactive
+            - Sort
+            - **Table Visualization**
+
+            - Filter
+                - Regex
+            - **Scatterplot**
+                - Zoom in and out
+                - Interactive
+            - 
+
+- Machine Learning to predict covid cases and school reopening and closure
+
+# Program Draft
+
+1. CSV -> classes
+2. Have a window
+3. Buttons
+    1. Visualization 现有的data plot一下
+        - Graph
+            - Filter
+            - Interactive
+        - Table
+            - Filter
+            - Search
+    2. Predict WIP: Machine Learning
+        - Graph
+
