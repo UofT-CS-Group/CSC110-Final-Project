@@ -2,6 +2,7 @@
 \usepackage{amsmath}
 \usepackage[utf8]{inputenc}
 \usepackage[margin=0.75in]{geometry}
+\setlength\parindent{0pt}
 
 \title{CSC110 Project Proposal\\ Educational Crisis - A Closer Examination on the Correlations Between Covid-19 and School Closures Around the Globe}
 \author{Shouyi (Ray) Hung, Yuhan (Charlotte) Chen, Mengyuan (Alyssa) Li, and Fuyang (Scott) Cui}
@@ -12,23 +13,91 @@
 
 \section*{Problem Description and Research Question}
 
-Test
+As we move into the 21st century, educational qualities all around the world had experienced drastic changes as time passed. Under such circumstances, countless goals proposed by officials of different regions and countries were launched. An example of these goals would be Sustainable Development Goal Target 4, which is, Quality Education. \\
+
+
+However, as we mark the end of a decade with the Year 2020, an unforeseen pandemic disrupted the lives of millions of people around the world. This pandemic is also known as the COVID-19, or the Coronavirus disease. COVID-19 had influenced our lives in a plethora of ways. It not only posed severe health threats for human in general, political and socio-economic impacts were also observed consistently in the months after the original discovery of the mentioned disease. One of the main socio-economic impacts that the COVID-19 pandemic posed towards our society is the educational crisis that arose altogether with the introduction of COVID-19. \\
+
+
+This investigation aims to identify and examine the impacts that COVID-19 had brought towards the educational sector of countries. To be specific, this project will focus on the relationships between the COVID-19 pandemic and school closures all around the world using data visualization tools with Python.\\
+
+
+As a matter of fact, this project is proposed by a group of students at the University of Toronto. The education that they have received during the COVID-19 pandemic is undoubtedly affected to a very large extent. Therefore, we had decided to investigate on the impacts that are brought by the COVID-19 Pandemic on all parts of the world. The result of this project should be able to alert people on the significant damage that the COVID-19 Pandemic had brought to educational sectors. \\
+
+
+We are hoping that this project could provide insights towards the impacts on the educational scheme brought by this catastrophic event. Thereby, we would be able to predict future events and mitigate the impacts of them on our educational scheme. 
+\newpage
 
 \section*{Dataset Description}
 
-TODO
+We have identified two main datasets that will be relevant for our project’s implementation.\\
+
+These are: 
+
+\begin{enumerate}
+    \item [1. ]
+        Global School Closures for COVID-19 – Obtained from Kaggle, compiled by Saleh Ahmed Rony, sourced from UNESCO
+        
+    \item [2. ]
+        COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University – Obtained from GitHub, compiled by JHU, sourced from WHO, ECDC, DXY, US CDC, etc. 
+\end{enumerate}
+
+Both datasets will be stored in a Comma Separated Value file, which will allow us to read from them easily through Python’s csv library. \\
+
+
+Furthermore, both datasets are very credible as they are sourced from multiple sites, including but not limited to: WHO, ECDC, and US CDC. Furthermore, these datasets are also licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0), which allows us to utilize these data for our own needs. \\
+
+
+The datasets that we have downloaded and utilized in this project were chosen because they were compiled in a way that allows easy access and manipulation on them. By using datasets that are already organized could improve the efficiency and robustness of our program. 
+
+\newpage
+
 
 \section*{Computational Plan}
 
-TODO
+Our project will be separated into 3 parts: Loading data, Graphical User Interface (GUI) Implementation, Machine Learning Implementation.  
+\subsection*{Loading Data}
+    To take care of the datasets that we have downloaded and utilize them in our program, we will first utilize the CSV Python Library to create a CSV Reader object that can be used to extract information from the files. \\
+    
+    Then, we will convert relevant data that were included in the datasets into Classes that we will implement in Python. By doing so, we would be able to retrieve and append information quickly to our existing data frames in Python. 
+
+\subsection*{GUI Implementation}
+    Then, we have planned to utilize pygame, python qt, or tkinter to generate an interactive user interface for our application to run on. \\
+    
+    This interface will consist of the following functions: \\
+    
+    -	Select Mode (Table data, graphical display, forecasting graph)\\
+    -	Filtering Data (Being able to select only data that we are interested in)\\
+    -	Search (Being able to quickly navigate to a specific data entry)\\
+    
+    By the implementation of this GUI, the user of our application would be able to quickly scan the data that we have provided and create their own plots by filtering the data by their will. 
+
+\subsection*{Machine Learning Implementation}
+    Finally, we would want to utilize the scikit-learn library in Python to generate regression learning mechanisms that could be used to predict future trends of the number of cases of COVID-19 with respect to time. \\
+    
+    This will also be built upon the GUI interface, which is one of the options when generating the graph. \\
+
+\hspace{4pt}
+
+If all the implementations mentioned above were completed, we would be able to view, compare, and predict data on the COVID-19 pandemic. Furthermore, we can also answer our research question by quickly filtering countries around the world and attempt to notice a relationship between the number of COVID-19 cases and school closures. \\
+
+With these, technical implementations, we believe that the impacts brought by the COVID-19 Pandemic would be conspicuous and people could formulate solutions towards the impacts illustrated. 
+\newpage
 
 \section*{References}
 
-TODO
+“Coronavirus.” World Health Organization, WHO, 10 Jan. 2020, www.who.int/health-topics/coronavirus\#tab=tab\_1.\\
 
-% NOTE: LaTeX does have a built-in way of generating references automatically,
-% but it's a bit tricky to use so we STRONGLY recommend writing your references
-% manually, using a standard academic format like APA or MLA.
-% (E.g., https://owl.purdue.edu/owl/research_and_citation/apa_style/apa_formatting_and_style_guide/general_format.html)
+“CSV File Reading and Writing — Python 3.10.0 Documentation.” Python Documentation, docs.python.org/3/library/csv.html. Accessed 30 Oct. 2021.\\
+
+Johns Hopkins University. “GitHub - CSSEGISandData/COVID-19: Novel Coronavirus (COVID-19) Cases, Provided by JHU CSSE.” GitHub, CSSEGISandData, github.com/CSSEGISandData/COVID-19. Accessed 30 Oct. 2021.\\
+
+Kaggle | Global School Closures for COVID-19. Saleh Ahmed Rony, www.kaggle.com/salehahmedrony/global-school-closures-covid19. Accessed 30 Oct. 2021.\\
+
+“Pygame v2.0.1.Dev1 Documentation.” Pygame, www.pygame.org/docs. Accessed 30 Oct. 2021.\\
+
+“Scikit-Learn 1.0.1 Documentation.” Scikit-Learn, scikit-learn.org/stable/index.html. Accessed 30 Oct. 2021.\\
+
+“Sustainable Development Goal 4 (SDG 4) | Education within the 2030 Agenda for Sustainable Development.” SDG 4 Education 2030, sdg4education2030.org/the-goal. Accessed 30 Oct. 2021.
 
 \end{document}
