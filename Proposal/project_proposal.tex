@@ -18,9 +18,7 @@ As we move into the 21st century, educational qualities all around the world had
 
 However, as we mark the end of a decade with the Year 2020, an unforeseen pandemic named COVID-19 disrupted the lives of millions of people all around the world. COVID-19 had influenced our lives in a plethora of ways. It not only posed severe health threats for humans in general, political and socio-economic impacts were also observed consistently in the months after the original discovery of COVID-19. One of the main socio-economic impacts that the COVID-19 pandemic posed on our society is the educational crisis.
 
-\textbf{
-    Our investigation aims to identify and examine the impacts that COVID-19 had brought to the educational sector of countries. To be more specific, we will focus on the relationships between the COVID-19 pandemic and school closures all around the world.
-}
+\textbf{Our project aims to identify and examine the impacts that COVID-19 had brought to the educational sector of countries. To be more specific, we will focus on the relationships between the COVID-19 pandemic and school closures all around the world.}
 
 Our main motivation for investigating this topic is that as a group of international students, COVID-19 thoroughly changed many aspects of our life, and one of the most significant changes to us is school closures. We mostly studied in a remote environment, where physical contact is minimized. But later that year, some of these schools returned to the traditional face-to-face lectures. Therefore, we are curious about the correlation between COVID-19 and school closures, and the impacts of these changes on our mental health and education quality.
 
@@ -47,6 +45,43 @@ Both datasets will be stored in a Comma Separated Value file, which will allow u
 Furthermore, both datasets are very credible as they are sourced from multiple sites, including but not limited to WHO, ECDC, and US CDC. Furthermore, these datasets are also licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0), which allows us to utilize these data for our own needs.
 
 The datasets that we have downloaded and utilized in this project were chosen because they were compiled in a way that allows easy access and manipulation. By using datasets that are already organized could improve the efficiency and robustness of our program.
+
+The Global COVID-19 Dataset (Time series) has the following structure:
+
+\begin{center}
+    \begin{tabular}{ |c|c|c|c|c|c|c|c| }
+        \hline
+        Province/State & Country/Region & Lat & Long & 1/22/20 & 1/23/20 & 1/24/20 & ...\\
+        \hline
+         & Afghanistan & 33.93911 & 67.70995 & 0 & 0 & 0 & ... \\
+        \hline
+         & Albania & 41.1533 & 20.1683 & 0 & 0 & 0 & ...\\
+        \hline
+        ... & ... & ... & ... & ... & ... & ... & ...\\
+        \hline
+    \end{tabular}
+\end{center}
+
+The headers extend up until today.
+
+The US Data set for COVID-19 (Time series) will have a little bit of variation, but it is generally the same.\\
+
+The School Closure Dataset has the following structure:
+\begin{center}
+    \begin{tabular}{ |c|c|c|c| }
+        \hline
+        Date & ISO & Country & Status \\
+        \hline
+        17/02/2020 & CHN & China & Partially open \\
+        \hline
+        17/02/2020 & MNG & Mongolia & Closed due to COVID-19 \\
+        \hline
+        ... & ... & ... & ...\\
+        \hline
+    \end{tabular}
+\end{center}
+
+The data is organized by entries of different country each day.
 
 \newpage
 
