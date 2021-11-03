@@ -18,7 +18,9 @@ As we move into the 21st century, educational qualities all around the world had
 
 However, as we mark the end of a decade with the Year 2020, an unforeseen pandemic named COVID-19 disrupted the lives of millions of people all around the world. COVID-19 had influenced our lives in a plethora of ways. It not only posed severe health threats for humans in general, political and socio-economic impacts were also observed consistently in the months after the original discovery of COVID-19. One of the main socio-economic impacts that the COVID-19 pandemic posed on our society is the educational crisis.
 
-Our investigation aims to identify and examine the impacts that COVID-19 had brought to the educational sector of countries. To be more specific, we will focus on the relationships between the COVID-19 pandemic and school closures all around the world.
+\textbf{
+    Our investigation aims to identify and examine the impacts that COVID-19 had brought to the educational sector of countries. To be more specific, we will focus on the relationships between the COVID-19 pandemic and school closures all around the world.
+}
 
 Our main motivation for investigating this topic is that as a group of international students, COVID-19 thoroughly changed many aspects of our life, and one of the most significant changes to us is school closures. We mostly studied in a remote environment, where physical contact is minimized. But later that year, some of these schools returned to the traditional face-to-face lectures. Therefore, we are curious about the correlation between COVID-19 and school closures, and the impacts of these changes on our mental health and education quality.
 
@@ -33,11 +35,11 @@ We have identified two main datasets that will be relevant for our project’s i
 These are:
 
 \begin{enumerate}
-    \item [1. ]
-          Global School Closures for COVID-19 – Obtained from Kaggle, compiled by Saleh Ahmed Rony, sourced from UNESCO
+    \item
+        Global School Closures for COVID-19 – Obtained from Kaggle, compiled by Saleh Ahmed Rony, sourced from UNESCO
 
-    \item [2. ]
-          COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University – Obtained from GitHub, compiled by JHU, sourced from WHO, ECDC, DXY, US CDC, etc.
+    \item
+        COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University – Obtained from GitHub, compiled by JHU, sourced from WHO, ECDC, DXY, US CDC, etc.
 \end{enumerate}
 
 Both datasets will be stored in a Comma Separated Value file, which will allow us to read from them easily through Python’s csv library.
@@ -51,23 +53,26 @@ The datasets that we have downloaded and utilized in this project were chosen be
 
 \section*{Computational Plan}
 
-Our project will be separated into 3 parts: Processing data, Graphical User Interface (GUI) Implementation, and Machine Learning Implementation.
+Our project will be separated into 2 parts: data processing and Graphical User Interface (GUI) implementation.
 
 \subsection*{Processing Data}
 
 To make those datasets that we have downloaded tidy and utilize them in our program, we will firstly read the data into Python with help of the Python csv library.
 
-Then, we will convert raw data into many classes so we could easily manipulate those data in practice.
+Then, we will convert raw data into many data classes so we could easily manipulate those data in practice.
 
 \subsection*{GUI Implementation}
 
-We plan to use some graphic library to generate an interactive user interface.
+Currently, we plan to use \emph{PyQt5} to generate an interactive user interface, \emph{Matplotlib} to plot graphs, and some other helper tools like Qt Designer and other libraries.
 
 We will implement the following functionalities, or parts:
 
 \begin{itemize}
-    \item Interactive COVID-19 cases and deaths and school closures visualizations supporting filtering, grouping, sorting functionalities, etc.
-    \item Interactive table view of the visualizations above.
+    \item
+        Interactive COVID-19 cases and deaths and school closures visualizations supporting filtering, grouping, sorting functionalities, etc.
+
+    \item
+        Interactive table view of the visualizations above.
 \end{itemize}
 
 With a GUI, users of our application could quickly scan the data that we have provided and create their own plots by filtering the data by their will. Also, they could check which point on the graph may correspond to which observation.
