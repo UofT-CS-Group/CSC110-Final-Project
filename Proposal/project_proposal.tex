@@ -83,6 +83,14 @@ The School Closure Dataset has the following structure:
 
 The data is organized by entries of different country each day.
 
+Some of the country names in our data sets contains characters that are not part of the standard ASCII table. An example would be "Cura\c{c}ao". Here, the "\c{c}" is a French (Latin script) letter that is not part of the standard ASCII Table.
+
+Since these letters from a language other than English are hard to process in Python, we will simply filter out all the data entries that contains any characters not in the standard ASCII Table.
+
+For the purpose of this project, we will simplify the standard ASCII Table to only contain characters from "a-z", "A-Z", "0-9", "!-\~{}".
+
+These letters also correspond to "string.ascii\_lowercase", "string.ascii\_uppercase", "string.digits", and "string.punctutation" respectively, from the Python string library.
+
 \newpage
 
 
