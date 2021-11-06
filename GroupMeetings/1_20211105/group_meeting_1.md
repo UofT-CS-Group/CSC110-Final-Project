@@ -1,5 +1,9 @@
 - This is a scratch work for discussion, not a grammar strict thing.
 
+# First Thing First
+
+- Let us do a final review of our dear Mrs. Proposal.
+
 # About Git and GitHub
 
 - We need to be very familiar with git and GitHub.
@@ -19,10 +23,9 @@
 - So that if everyone agree with one convention, argument will be minimized.
 - It's ok to forget, I will handle them.
 
-## Files
+## Files Name
 
 - Try our best to *avoid space character* in naming files / directories.
-
 - The outermost directories are separated modules, name in `UpperCamelCase`.
 - Under each module, we will mostly use `lower_underscore_case` to name our main files and directories.
     - For each *.py* and *resource / asset* file, we use `lower_underscore_case`.
@@ -75,7 +78,7 @@
 - When merging pull requests,<img src="group_meeting_1.assets/image-20211104163439717.png" alt="image-20211104163439717" style="zoom: 67%;" />
     - if the pull request is about *one* functionality but there are many many commits about this single functionality, try `Squash and merge`.
     - if the pull request is very good, a functionality with *few* commits (1 - 3), try `Rebase and merge`.
-    - Try *not* use `Create a merge commit`.
+    - try *not* use `Create a merge commit`.
 
 - Delete your branch after someone merged your pr.
 
