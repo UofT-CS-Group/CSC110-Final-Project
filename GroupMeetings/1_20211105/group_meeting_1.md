@@ -68,7 +68,7 @@
 
 - Please use full variable name if possible!
     - No lat, we need to say latitude.
-- Use the aliases in `typing `module.
+- Use the aliases in `typing ` module.
     - Like instead of `list`, we could use `List` from typing module.
 
 ## Commit and Pull Request
@@ -116,7 +116,7 @@
     - **No** long text.
     - **No** too much space.
     - **No** big and lubber font.
-    - **No** absolute spacing. 
+    - **No** absolute spacing.
         - We need our GUI widgets to be flexible with different resolutions and window sizes.
     - **No** excessive big icons.
 
@@ -153,12 +153,12 @@
 - BaseData(object)
     - TimeBasedData(BaseData)
         - date: datetime
-        - CovidCaseData(ProjectData)
+        - CovidCaseData(TimeBasedData)
             - city: City
             - province: Province
             - country: Country
             - cases: int
-        - SchoolClosureData(ProjectData)
+        - SchoolClosureData(TimeBasedData)
             - country: Country
             - status: ClosureStatus
 - ClosureStatus([Enum](https://docs.python.org/zh-cn/3/library/enum.html))
@@ -235,3 +235,4 @@
 - yyyy/mm/dd Next Group Meeting
 
 - 2021/12/14 Due
+
