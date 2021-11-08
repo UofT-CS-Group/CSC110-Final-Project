@@ -1,6 +1,13 @@
+"""
+CSC110 Final Project - Data Classes File
+
+Contains functions to read Raw CSV File that has the specified format
+"""
+
 from typing import List
 from datetime import datetime
 from enum import Enum
+import csv
 
 
 # =================================================================================================
@@ -25,6 +32,10 @@ class Location(object):
 
     Instance Attributes:
         - name: A string that represents the name of this location.
+
+    Representation Invariants:
+        - len(self.name) > 0
+        - self.name.isalnum()
     """
     
     name: str
@@ -42,6 +53,10 @@ class Country(Location):
     Instance Attributes:
         - name: A string that represents the name of this country.
         - iso_code: A length-3 string that represents the ISO code of this country.
+
+    Representation Invariants:
+        - len(self.iso) > 0
+        - self.name.isalnum()
     """
     
     iso_code: str
@@ -99,7 +114,7 @@ class BaseData(object):
 
 
 class TimeBasedData(BaseData):
-    """ A class that represents the data that based on date and time.
+    """ A class that represents the data that is based on date and time.
 
     Instance Attributes:
         - date: A datetime object that represent the time of this data.
@@ -123,6 +138,9 @@ class CovidCaseData(TimeBasedData):
         - province: The province. None if not applicable.
         - country: The country. Should not be None for our project.
         - cases: The number of confirmed COVID-19 cases at this date and location.
+
+    Representation Invariants:
+        - self.cases >= 0
     """
     
     city: City
@@ -176,7 +194,20 @@ ALL_COVID_CASES: List[CovidCaseData]
 
 ALL_SCHOOL_CLOSURES: List[SchoolClosureData]
 
+
 # =================================================================================================
 # Functions
 # Read raw data into ALL_COVID_CASES and ALL_SCHOOL_CLOSURES.
 # =================================================================================================
+
+def read_covid_data(filename: str) -> None:
+    """Reads a CSV file at location filename, then add the results into the ALL_COVID_CASES
+    variable
+
+    Preconditions:
+        - The CSV File must contain the specified headers
+    """
+
+    with open(filename) as file:
+
+
