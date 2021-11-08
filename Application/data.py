@@ -32,10 +32,6 @@ class Location(object):
 
     Instance Attributes:
         - name: A string that represents the name of this location.
-
-    Representation Invariants:
-        - len(self.name) > 0
-        - self.name.isalnum()
     """
     
     name: str
@@ -55,7 +51,6 @@ class Country(Location):
         - iso_code: A length-3 string that represents the ISO code of this country.
 
     Representation Invariants:
-        - len(self.iso) > 0
         - self.name.isalnum()
     """
     
@@ -93,7 +88,7 @@ class City(Location):
     """ A class that represents a city in a province.
     
     Instance Attributes:
-        - name: A string that represents the name of this province.
+        - name: A string that represents the name of this city.
         - province: A Province object that represents the province of this city.
     """
     
@@ -195,8 +190,10 @@ class SchoolClosureData(TimeBasedData):
 # =================================================================================================
 
 ALL_COVID_CASES: List[CovidCaseData]
+ALL_COVID_CASES = []
 
 ALL_SCHOOL_CLOSURES: List[SchoolClosureData]
+ALL_SCHOOL_CLOSURES = []
 
 
 # =================================================================================================
@@ -205,13 +202,62 @@ ALL_SCHOOL_CLOSURES: List[SchoolClosureData]
 # =================================================================================================
 
 def read_covid_data(filename: str) -> None:
-    """Reads a CSV file at location filename, then add the results into the ALL_COVID_CASES
-    variable
+    """Reads a CSV file at location filename, then append the results into the ALL_COVID_CASES
+    variable as a Class Object of CovidCaseData
 
     Preconditions:
-        - The CSV File must contain the specified headers
+        - The CSV File must contain the specified headers ('Province', 'Country', '1/22/20')
     """
 
     with open(filename) as file:
+        reader = csv.reader(file)
+
+        # Reads the first line header of the given file
+        header = next(reader)
+
+        # Special treatment for US Covid Dataset
+        if header[3] == 'Admin2':
+            header[3] = 'City'
+
+        # Extend the result list to our ALL_COVID_CASES global variable
+        for row in reader:
+            ALL_COVID_CASES.extend(process_row_covid(header, row))
 
 
+def process_row_covid(header: List[str], row: List[str]) -> List[CovidCaseData]:
+    """Process a row of COVID Data into a list of CovidCaseData, as a row contains multiple
+    CovidCaseDatas
+
+    Preconditions:
+        - The CSV File must contain the specified headers ('Province', 'Country', '1/22/20')
+    """
+    province_index = ['Province' in s for s in header].index(True)
+    country_index = ['Country' in s for s in header].index(True)
+
+    # Attempts to obtain the city and iso code
+    try:
+        city_index = ['City' in s for s in header].index(True)
+        iso_index = ['iso' in s for s in header].index(True)
+
+        country = Country(name=row[country_index], iso_code=row[iso_index])
+        province = Province(name=row[province_index], country=country)
+        city = City(name=row[city_index], province=province)
+
+    # If an error is raised, no such value exists, so we will default them to an empty string
+    except ValueError:
+        country = Country(name=row[country_index], iso_code='')
+        province = Province(name=row[province_index], country=country)
+        city = City(name='', province=province)
+
+    # Assumes that the data's first entry is at January 22, 2020
+    start_date_index = header.index('1/22/20')
+    end_date_index = len(header)
+
+    return [CovidCaseData(country=country,
+                          province=province,
+                          city=city,
+                          date=datetime(year=int(header[date].split('/')[2]),
+                                        month=int(header[date].split('/')[0]),
+                                        day=int(header[date].split('/')[1])),
+                          cases=int(row[date]))
+            for date in range(start_date_index, end_date_index)]
