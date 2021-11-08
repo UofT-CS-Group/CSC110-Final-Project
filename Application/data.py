@@ -8,6 +8,7 @@ from typing import List
 from datetime import datetime
 from enum import Enum
 import csv
+import string
 
 
 # =================================================================================================
@@ -195,6 +196,8 @@ ALL_COVID_CASES = []
 ALL_SCHOOL_CLOSURES: List[SchoolClosureData]
 ALL_SCHOOL_CLOSURES = []
 
+ASCII_TABLE = string.ascii_lowercase + string.ascii_uppercase + string.punctuation + string.digits
+
 
 # =================================================================================================
 # Functions
@@ -203,10 +206,11 @@ ALL_SCHOOL_CLOSURES = []
 
 def read_covid_data(filename: str) -> None:
     """Reads a CSV file at location filename, then append the results into the ALL_COVID_CASES
-    variable as a Class Object of CovidCaseData
+    variable as a CovidCaseData object
 
     Preconditions:
-        - The CSV File must contain the specified headers ('Province', 'Country', '1/22/20')
+        - The CSV File must contain the specified headers ('province', 'country', '1/22/20')
+        - No duplicated header column of the same identifier
     """
 
     with open(filename) as file:
@@ -219,9 +223,40 @@ def read_covid_data(filename: str) -> None:
         if header[3] == 'Admin2':
             header[3] = 'City'
 
+        # Converts anything in our header row to lower case, so we don't need the headers to be
+        # exactly the same as what we expect
+        header = [item.lower() for item in header]
+
         # Extend the result list to our ALL_COVID_CASES global variable
         for row in reader:
-            ALL_COVID_CASES.extend(process_row_covid(header, row))
+            covid_obs = process_row_covid(header, row)
+
+            # Used covid_obs[0] because the whole list contains data with the same country
+            if is_in_ascii(covid_obs[0].country.name):
+                ALL_COVID_CASES.extend(process_row_covid(header, row))
+
+
+def read_closure_data(filename: str) -> None:
+    """Reads a CSV file at location filename, then append the results to the ALL_SCHOOL_CLOSURES
+    variable as a SchoolClosureData object
+
+    Preconditions:
+        - The CSV File must contain the specified headers ('date', 'iso', 'country', 'status')
+        - No duplicated header column of the same identifier
+    """
+
+    with open(filename) as file:
+        reader = csv.reader(file)
+
+        header = next(reader)
+
+        header = [item.lower() for item in header]
+
+        for row in reader:
+            closure_obs = process_row_closure(header, row)
+
+            if is_in_ascii(closure_obs.country.name):
+                ALL_SCHOOL_CLOSURES.append(process_row_closure(header, row))
 
 
 def process_row_covid(header: List[str], row: List[str]) -> List[CovidCaseData]:
@@ -229,14 +264,15 @@ def process_row_covid(header: List[str], row: List[str]) -> List[CovidCaseData]:
     CovidCaseDatas
 
     Preconditions:
-        - The CSV File must contain the specified headers ('Province', 'Country', '1/22/20')
+        - The CSV File must contain the specified headers ('province', 'country', '1/22/20')
+        - Date must be given in the format 'mm/dd/yy'
     """
-    province_index = ['Province' in s for s in header].index(True)
-    country_index = ['Country' in s for s in header].index(True)
+    province_index = ['province' in s for s in header].index(True)
+    country_index = ['country' in s for s in header].index(True)
 
     # Attempts to obtain the city and iso code
     try:
-        city_index = ['City' in s for s in header].index(True)
+        city_index = ['city' in s for s in header].index(True)
         iso_index = ['iso' in s for s in header].index(True)
 
         country = Country(name=row[country_index], iso_code=row[iso_index])
@@ -256,8 +292,55 @@ def process_row_covid(header: List[str], row: List[str]) -> List[CovidCaseData]:
     return [CovidCaseData(country=country,
                           province=province,
                           city=city,
-                          date=datetime(year=int(header[date].split('/')[2]),
+                          date=datetime(year=int('20' + header[date].split('/')[2]),
                                         month=int(header[date].split('/')[0]),
                                         day=int(header[date].split('/')[1])),
                           cases=int(row[date]))
             for date in range(start_date_index, end_date_index)]
+
+
+def process_row_closure(header: List[str], row: List[str]) -> SchoolClosureData:
+    """Process a row of Closure Data into a single SchoolClosureData, as a row contains
+    one entry
+
+    Preconditions:
+        - The CSV File must contain the specified headers ('date', 'iso', 'country', 'status')
+        - Date must be given in the format 'dd/mm/yyyy'
+    """
+
+    date_index = ['date' in s for s in header].index(True)
+    iso_index = ['iso' in s for s in header].index(True)
+    country_index = ['country' in s for s in header].index(True)
+    status_index = ['status' in s for s in header].index(True)
+
+    country = Country(name=row[country_index],
+                      iso_code=row[iso_index])
+
+    day, month, year = row[date_index].split('/')
+
+    # Parse the status so that it is all lower case
+    row[status_index] = row[status_index].lower()
+
+    status_dict = {'fully open': ClosureStatus.FULLY_OPEN,
+                   'partially open': ClosureStatus.PARTIALLY_OPEN,
+                   'closed due to covid-19': ClosureStatus.CLOSED,
+                   'academic break': ClosureStatus.ACADEMIC_BREAK}
+
+    return SchoolClosureData(date=datetime(year=int(year),
+                                           month=int(month),
+                                           day=int(day)),
+                             country=country,
+                             status=status_dict[row[status_index]])
+
+
+def is_in_ascii(s: str) -> bool:
+    """Returns whether all the characters in string s is in the ASCII Table or not
+
+    >>> is_in_ascii('Curaçao')
+    False
+
+    >>> is_in_ascii('Scott')
+    True
+    """
+
+    return all(char in ASCII_TABLE for char in s)
