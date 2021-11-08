@@ -69,9 +69,7 @@ class Province(Location):
         self.country = country
     
     def __eq__(self, other):
-        return super().__eq__(other) and \
-               isinstance(other, self.__class__) and \
-               self.country == other.country
+        return super().__eq__(other) and self.country == other.country
 
 
 class City(Location):
@@ -89,7 +87,7 @@ class City(Location):
         self.province = province
     
     def __eq__(self, other):
-        return super().__eq__(other)
+        return super().__eq__(other) and self.province == other.province
 
 
 class BaseData(object):
@@ -142,7 +140,6 @@ class CovidCaseData(TimeBasedData):
     
     def __eq__(self, other):
         return super().__eq__(other) and \
-               isinstance(other, self.__class__) and \
                self.city == other.city and \
                self.province == other.province and \
                self.country == other.country and \
@@ -167,7 +164,6 @@ class SchoolClosureData(TimeBasedData):
     
     def __eq__(self, other):
         return super().__eq__(other) and \
-               isinstance(other, self.__class__) and \
                self.country == other.country and \
                self.status == other.status
 
