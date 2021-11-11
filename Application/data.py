@@ -3,8 +3,8 @@ CSC110 Final Project - Data Classes File
 
 Contains functions to read Raw CSV File that has the specified format
 """
-
-from typing import List, Set
+import string
+from typing import Callable, List, Set
 from enum import Enum
 import datetime
 import csv
@@ -218,6 +218,12 @@ PROVINCES: Set[Province] = set()
 # Should contain only US cities.
 CITIES: Set[City] = set()
 
+STATUS_DICT = {'Fully open'            : ClosureStatus.FULLY_OPEN,
+               'Partially open'        : ClosureStatus.PARTIALLY_OPEN,
+               'Closed due to COVID-19': ClosureStatus.CLOSED,
+               'Academic break'        : ClosureStatus.ACADEMIC_BREAK
+               }
+
 
 # =================================================================================================
 # Functions
@@ -233,11 +239,8 @@ def init_data() -> None:
     read_covid_data('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
     read_closure_data('resources/school_closures_datasets/full_dataset_31_oct.csv')
     
-    ALL_COVID_CASES.sort(key=lambda c: c.date)
-    ALL_SCHOOL_CLOSURES.sort(key=lambda c: c.date, reverse=True)
-    
     timestamp2 = time.time()
-    print(f'Successfully initialize all data in {timestamp2 - timestamp1} seconds!')
+    print(f'Successfully initialize all data in {round(timestamp2 - timestamp1, 2)} seconds!')
 
 
 def read_covid_data(filename: str) -> None:
@@ -325,7 +328,8 @@ def process_row_covid(header: List[str], row: List[str]) -> List[CovidCaseData]:
         city.province = province
         CITIES.add(city)
     
-    COUNTRIES.add(country)
+    if is_in_ascii(country.name):
+        COUNTRIES.add(country)
     
     result = []
     
@@ -345,13 +349,6 @@ def process_row_covid(header: List[str], row: List[str]) -> List[CovidCaseData]:
     return result
 
 
-STATUS_DICT = {'Fully open'            : ClosureStatus.FULLY_OPEN,
-               'Partially open'        : ClosureStatus.PARTIALLY_OPEN,
-               'Closed due to COVID-19': ClosureStatus.CLOSED,
-               'Academic break'        : ClosureStatus.ACADEMIC_BREAK
-               }
-
-
 def process_row_closure(row: List[str]) -> SchoolClosureData:
     """Process a row of Closure Data into a single SchoolClosureData, as a row contains
     one entry
@@ -362,7 +359,8 @@ def process_row_closure(row: List[str]) -> SchoolClosureData:
     """
     
     country = Country(name=row[2])
-    COUNTRIES.add(country)
+    if is_in_ascii(country.name):
+        COUNTRIES.add(country)
     
     day, month, year = row[0].split('/')
     
