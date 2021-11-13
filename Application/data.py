@@ -4,7 +4,7 @@ CSC110 Final Project - Data Classes File
 Contains functions to read Raw CSV File that has the specified format
 """
 import string
-from typing import Callable, List, Set
+from typing import List, Set, Dict
 from enum import Enum
 import datetime
 import csv
@@ -210,13 +210,16 @@ ALL_SCHOOL_CLOSURES: List[SchoolClosureData] = []
 
 # All countries from our datasets.
 COUNTRIES: Set[Country] = set()
+SORTED_COUNTRIES: List[Country] = []
 
 # All provinces from our datasets.
 PROVINCES: Set[Province] = set()
+SORTED_PROVINCES: List[Province] = []
 
 # All cities from our datasets.
 # Should contain only US cities.
 CITIES: Set[City] = set()
+SORTED_CITIES: List[City] = []
 
 STATUS_DICT = {'Fully open'            : ClosureStatus.FULLY_OPEN,
                'Partially open'        : ClosureStatus.PARTIALLY_OPEN,
@@ -235,140 +238,111 @@ def init_data() -> None:
     import time
     timestamp1 = time.time()
     
-    read_covid_data('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
-    read_covid_data('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
+    read_covid_data_global('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
+    read_covid_data_US('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
     read_closure_data('resources/school_closures_datasets/full_dataset_31_oct.csv')
+    
+    SORTED_COUNTRIES.extend(sorted([c for c in COUNTRIES], key=lambda c: c.name))
+    SORTED_PROVINCES.extend(sorted([p for p in PROVINCES], key=lambda p: p.name))
+    SORTED_CITIES.extend(sorted([c for c in CITIES], key=lambda c: c.name))
     
     timestamp2 = time.time()
     print(f'Successfully initialize all data in {round(timestamp2 - timestamp1, 2)} seconds!')
 
 
-def read_covid_data(filename: str) -> None:
-    """Reads a CSV file at location filename, then append the results into the ALL_COVID_CASES
-    variable as a CovidCaseData object
-
-    Preconditions:
-        - The CSV File must contain the specified headers ('province', 'country', '1/22/20')
-        - No duplicated header column of the same identifier
-    """
-    
+def read_covid_data_global(filename: str) -> None:
     with open(filename) as file:
         reader = csv.reader(file)
         
         # Reads the first line header of the given file
         header = next(reader)
         
-        # Special treatment for US Covid Dataset
-        if header[5] == 'Admin2':
-            header[5] = 'city'
-        
-        # Converts anything in our header row to lower case, so we don't need the headers to be
-        # exactly the same as what we expect
-        header = [item.lower() for item in header]
-        
-        # Extend the result list to our ALL_COVID_CASES global variable
         for row in reader:
-            covid_obs = process_row_covid(header, row)
+            country = Country(row[1])
+            province = Province(row[0], country)
             
-            # Used covid_obs[0] because the whole list contains data with the same country
-            if is_in_ascii(covid_obs[0].country.name):
-                ALL_COVID_CASES.extend(process_row_covid(header, row))
+            if country.name == '' or not is_in_ascii(country.name):
+                continue
+            
+            COUNTRIES.add(country)
+            
+            if province.name != '':
+                PROVINCES.add(province)
+            else:
+                province = None
+            
+            for i in range(4, len(header)):
+                raw_date = header[i].split('/')
+                d = datetime.date(year=int(f'20{raw_date[2]}'),
+                                  month=int(raw_date[0]),
+                                  day=int(raw_date[1])
+                                  )
+                
+                ALL_COVID_CASES.append(CovidCaseData(date=d,
+                                                     country=country,
+                                                     cases=int(row[i]),
+                                                     city=None,
+                                                     province=province))
+
+
+def read_covid_data_US(filename: str) -> None:
+    with open(filename) as file:
+        reader = csv.reader(file)
+        
+        # Reads the first line header of the given file
+        header = next(reader)
+        
+        for row in reader:
+            country = Country(row[7])
+            province = Province(row[6], country)
+            city = City(row[5], province)
+            
+            if country.name == '' or not is_in_ascii(country.name):
+                continue
+            
+            COUNTRIES.add(country)
+            
+            if province.name != '':
+                PROVINCES.add(province)
+            else:
+                province = None
+            
+            if city.name != '':
+                CITIES.add(city)
+            else:
+                city = None
+            
+            for i in range(11, len(header)):
+                raw_date = header[i].split('/')
+                d = datetime.date(year=int(f'20{raw_date[2]}'),
+                                  month=int(raw_date[0]),
+                                  day=int(raw_date[1])
+                                  )
+                
+                ALL_COVID_CASES.append(CovidCaseData(date=d,
+                                                     country=country,
+                                                     cases=int(row[i]),
+                                                     city=city,
+                                                     province=province))
 
 
 def read_closure_data(filename: str) -> None:
-    """Reads a CSV file at location filename, then append the results to the ALL_SCHOOL_CLOSURES
-    variable as a SchoolClosureData object
-
-    Preconditions:
-        - The CSV File must contain the specified headers ('date', 'iso', 'country', 'status')
-        - No duplicated header column of the same identifier
-    """
-    
     with open(filename) as file:
         reader = csv.reader(file)
         
         next(reader)
         
         for row in reader:
-            closure_obs = process_row_closure(row)
-            
-            if is_in_ascii(closure_obs.country.name):
-                ALL_SCHOOL_CLOSURES.append(process_row_closure(row))
-
-
-def process_row_covid(header: List[str], row: List[str]) -> List[CovidCaseData]:
-    """Process a row of COVID Data into a list of CovidCaseData, as a row contains multiple
-    CovidCaseDatas
-
-    Preconditions:
-        - The CSV File must contain the specified headers ('province', 'country', '1/22/20')
-        - Date must be given in the format 'mm/dd/yy'
-    """
-    
-    start_date_index = header.index('1/22/20')
-    
-    country = None
-    province = None
-    city = None
-    
-    for i in range(start_date_index):
-        
-        if 'country' in header[i]:
-            country = Country(row[i])
-        elif 'province' in header[i]:
-            province = Province(row[i], country)
-        elif 'city' in header[i]:
-            city = City(row[i], province)
-    
-    if province is not None and province.name != '':
-        province.country = country
-        PROVINCES.add(province)
-    
-    if city is not None and city.name != '':
-        city.province = province
-        CITIES.add(city)
-    
-    if is_in_ascii(country.name):
-        COUNTRIES.add(country)
-    
-    result = []
-    
-    for i in range(start_date_index, len(header)):
-        raw_date = header[i].split('/')
-        d = datetime.date(year=int(f'20{raw_date[2]}'),
-                          month=int(raw_date[0]),
-                          day=int(raw_date[1])
-                          )
-        
-        result.append(CovidCaseData(date=d,
-                                    country=country,
-                                    cases=int(row[i]),
-                                    city=city,
-                                    province=province))
-    
-    return result
-
-
-def process_row_closure(row: List[str]) -> SchoolClosureData:
-    """Process a row of Closure Data into a single SchoolClosureData, as a row contains
-    one entry
-
-    Preconditions:
-        - The CSV File must contain the specified headers ('date', 'iso', 'country', 'status')
-        - Date must be given in the format 'dd/mm/yyyy'
-    """
-    
-    country = Country(name=row[2])
-    if is_in_ascii(country.name):
-        COUNTRIES.add(country)
-    
-    day, month, year = row[0].split('/')
-    
-    return SchoolClosureData(date=datetime.date(year=int(year),
-                                                month=int(month),
-                                                day=int(day)),
-                             country=country,
-                             status=STATUS_DICT[row[3]])
+            country = Country(name=row[2])
+            if not is_in_ascii(country.name):
+                continue
+            COUNTRIES.add(country)
+            day, month, year = row[0].split('/')
+            ALL_SCHOOL_CLOSURES.append(SchoolClosureData(date=datetime.date(year=int(year),
+                                                                            month=int(month),
+                                                                            day=int(day)),
+                                                         country=country,
+                                                         status=STATUS_DICT[row[3]]))
 
 
 def is_in_ascii(s: str) -> bool:
