@@ -1,0 +1,2 @@
+FONT_FAMILY = 'Calibri'
+FONT_SIZE = 14
