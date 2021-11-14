@@ -29,6 +29,10 @@ def set_font(widget: QWidget,
              font_size: int = settings.FONT_SIZE) -> None:
     """
     Set the font of given widget to given font and size.
+    
+    Note:
+        - By default, it will set the font of the given widget to the font settings specified in
+        settings.py
     """
     font: QFont = widget.font()
     font.setFamily(font_family)
@@ -37,6 +41,11 @@ def set_font(widget: QWidget,
 
 
 class StandardLabel(QLabel):
+    """
+    A standard label for our project.
+    
+    When needed, we could add more attributes and functions.
+    """
     
     def __init__(self, text: str = ''):
         super(StandardLabel, self).__init__()
@@ -47,6 +56,11 @@ class StandardLabel(QLabel):
 
 
 class StandardPushButton(QPushButton):
+    """
+    A standard push button for our project.
+    
+    When needed, we could add more attributes and functions.
+    """
     
     def __init__(self, text: str = '', *__args):
         super().__init__(*__args)
@@ -55,6 +69,11 @@ class StandardPushButton(QPushButton):
 
 
 class StandardComboBox(QComboBox):
+    """
+    A standard combo box for our project.
+    
+    When needed, we could add more attributes and functions.
+    """
     
     def __init__(self, parent=None, items: Iterable = None):
         super().__init__(parent)
@@ -63,6 +82,11 @@ class StandardComboBox(QComboBox):
 
 
 class StandardDateEdit(QDateEdit):
+    """
+    A standard date edit for our project.
+    
+    When needed, we could add more attributes and functions.
+    """
     
     def __init__(self, *__args):
         super().__init__(*__args)
@@ -70,6 +94,10 @@ class StandardDateEdit(QDateEdit):
 
 
 class PlotCanvas(FigureCanvas):
+    """
+    Figure widget from matplotlib with a cross-hair.
+    """
+    
     figure: pyplot.Figure
     axes: pyplot.Axes
     
@@ -121,7 +149,9 @@ class PlotCanvas(FigureCanvas):
 
 
 class MainWindow(QMainWindow):
-    init_button: StandardPushButton
+    """
+    The main window of our program.
+    """
     
     plot_navigation_tool_bar: NavigationToolbar
     plot_canvas: PlotCanvas
@@ -171,6 +201,9 @@ class MainWindow(QMainWindow):
         self.init_signals()
     
     def init_widgets(self) -> None:
+        """
+        Init all widgets attributes.
+        """
         # Country selections
         self.country_selection_label = StandardLabel('Country: ')
         self.country_selection_combo_box = StandardComboBox(self, [c.name for c in data.SORTED_COUNTRIES])
@@ -207,6 +240,9 @@ class MainWindow(QMainWindow):
         self.confirm_button = StandardPushButton('Confirm')
     
     def init_layout(self) -> None:
+        """
+        Init the layout for all widgets.
+        """
         # The main layout of the main window
         main_layout = QHBoxLayout()
         
@@ -242,6 +278,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(widget)
     
     def init_signals(self) -> None:
+        """
+        Init the signals.
+        """
         self.confirm_button.clicked.connect(self.confirm_button_handler)
         self.confirm_button_handler()
         
@@ -249,6 +288,11 @@ class MainWindow(QMainWindow):
         self.province_selection_combo_box.currentIndexChanged.connect(self.on_province_selection_changed)
     
     def confirm_button_handler(self) -> None:
+        """
+        Things to do when the confirm button is clicked.
+        
+        TODO: Optimization
+        """
         # Current country, province, and city
         country = data.Country(self.country_selection_combo_box.currentText())
         province = data.Province(self.province_selection_combo_box.currentText(), country)
@@ -284,6 +328,9 @@ class MainWindow(QMainWindow):
         self.plot_canvas.is_cross_hair_init = False
     
     def on_country_selection_changed(self, index: int) -> None:
+        """
+        Things to do when user select a country.
+        """
         # TODO Scott: Optimization
         country = data.SORTED_COUNTRIES[index]
         provinces = algorithms.linear_predicate(data.SORTED_PROVINCES, lambda p: p.country == country)
@@ -300,6 +347,9 @@ class MainWindow(QMainWindow):
             self.city_selection_combo_box.addItems([c.name for c in cities])
     
     def on_province_selection_changed(self, index: int):
+        """
+        Things to do when user select a province.
+        """
         # TODO Scott: Optimization
         country = data.SORTED_COUNTRIES[self.country_selection_combo_box.currentIndex()]
         provinces = algorithms.linear_predicate(data.SORTED_PROVINCES, lambda p: p.country == country)
