@@ -316,7 +316,7 @@ class MainWindow(QMainWindow):
         # This is because some of the country names in school closures
         # are not the same as the covid datasets
         # TODO Fix it
-        if country not in data.COUNTRIES_TO_PROVINCES:
+        if country not in data.COUNTRIES_TO_ALL_COVID_CASES:
             message_box = QMessageBox(QMessageBox.Critical, 'Error', 'This country does not have any data!',
                                       QMessageBox.Ok)
             message_box.exec_()
