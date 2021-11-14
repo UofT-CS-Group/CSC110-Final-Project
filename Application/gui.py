@@ -115,18 +115,28 @@ class PlotCanvas(FigureCanvas):
         self.mpl_connect("motion_notify_event", self.on_mouse_move)
     
     def on_mouse_move(self, event: matplotlib.backend_bases.MouseEvent) -> None:
-        # TODO Scott: Optimization
         if event.inaxes:
             x = event.xdata
             x = datetime.timedelta(days=x)
             x_date = datetime.date.fromtimestamp(0) + x
+            
+            # Find the index of the closet one in self.x_data
+            # Binary search
             index = 0
-            for i in range(len(self.x_data) - 1):
-                if self.x_data[i] <= x_date <= self.x_data[i + 1]:
-                    index = i
+            le, ri = 0, len(self.x_data) - 1
+            while le <= ri:
+                mid = le + (ri - le) // 2
+                if x_date == self.x_data[mid]:
+                    index = mid
                     break
+                elif x_date > self.x_data[mid]:
+                    le = mid + 1
+                else:
+                    ri = mid - 1
+            
             x = self.x_data[index]
-            y = self.y_data[index]
+            # I don't know why it works, but it works.
+            y = self.y_data[min(index + 1, len(self.y_data) - 1)]
             real_x = (x - datetime.date.fromtimestamp(0)).days
             
             if not self.is_cross_hair_init:
@@ -290,8 +300,6 @@ class MainWindow(QMainWindow):
     def confirm_button_handler(self) -> None:
         """
         Things to do when the confirm button is clicked.
-        
-        TODO: Optimization
         """
         # Current country, province, and city
         country = data.Country(self.country_selection_combo_box.currentText())
@@ -305,9 +313,17 @@ class MainWindow(QMainWindow):
         end_date = datetime.date(q_end_date.year(), q_end_date.month(), q_end_date.day())
         
         # Filtered data
-        lst = algorithms.linear_predicate(data.ALL_COVID_CASES,
-                                          lambda item: (item.country == country) and
-                                                       (province.name == '' or item.province == province) and
+        # This is because some of the country names in school closures
+        # are not the same as the covid datasets
+        # TODO Fix it
+        if country not in data.COUNTRIES_TO_PROVINCES:
+            message_box = QMessageBox(QMessageBox.Critical, 'Error', 'This country does not have any data!',
+                                      QMessageBox.Ok)
+            message_box.exec_()
+            return
+        lst = data.COUNTRIES_TO_ALL_COVID_CASES[country]
+        lst = algorithms.linear_predicate(lst,
+                                          lambda item: (province.name == '' or item.province == province) and
                                                        (city.name == '' or item.city == city) and
                                                        start_date <= item.date <= end_date)
         
@@ -331,33 +347,35 @@ class MainWindow(QMainWindow):
         """
         Things to do when user select a country.
         """
-        # TODO Scott: Optimization
-        country = data.SORTED_COUNTRIES[index]
-        provinces = algorithms.linear_predicate(data.SORTED_PROVINCES, lambda p: p.country == country)
-        cities = []
-        if provinces:
-            cities = algorithms.linear_predicate(data.SORTED_CITIES, lambda c: c.province == provinces[0])
-        
         self.province_selection_combo_box.clear()
-        if provinces:
-            self.province_selection_combo_box.addItems([p.name for p in provinces])
-        
         self.city_selection_combo_box.clear()
-        if cities:
-            self.city_selection_combo_box.addItems([c.name for c in cities])
+        
+        country = data.SORTED_COUNTRIES[index]
+        
+        if country not in data.COUNTRIES_TO_PROVINCES:
+            return
+        
+        provinces = data.COUNTRIES_TO_PROVINCES[country]
+        self.province_selection_combo_box.addItems([p.name for p in provinces])
+        
+        province = provinces[0]
+        if province not in data.PROVINCES_TO_CITIES:
+            return
+        
+        cities = data.PROVINCES_TO_CITIES[provinces[0]]
+        self.city_selection_combo_box.addItems([c.name for c in cities])
     
     def on_province_selection_changed(self, index: int):
         """
         Things to do when user select a province.
         """
-        # TODO Scott: Optimization
         country = data.SORTED_COUNTRIES[self.country_selection_combo_box.currentIndex()]
-        provinces = algorithms.linear_predicate(data.SORTED_PROVINCES, lambda p: p.country == country)
-        province = None
-        if provinces:
-            province = provinces[index]
-        cities = algorithms.linear_predicate(data.SORTED_CITIES, lambda c: c.province == province)
+        if country not in data.COUNTRIES_TO_PROVINCES:
+            return
+        provinces = data.COUNTRIES_TO_PROVINCES[country]
+        province = provinces[index]
         
-        self.city_selection_combo_box.clear()
-        if cities:
+        if province in data.PROVINCES_TO_CITIES:
+            cities = data.PROVINCES_TO_CITIES[province]
+            self.city_selection_combo_box.clear()
             self.city_selection_combo_box.addItems([c.name for c in cities])

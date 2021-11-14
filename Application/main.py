@@ -9,11 +9,11 @@ import threading
 from PyQt5.QtWidgets import *
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-
     print('Initializing...')
     # TODO Progress bar
     data.init_data()
+
+    app = QApplication(sys.argv)
     
     main_window = gui.MainWindow()
     main_window.show()

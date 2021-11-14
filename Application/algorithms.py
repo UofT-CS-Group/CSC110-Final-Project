@@ -1,4 +1,4 @@
-from typing import List, Callable, TypeVar, Any, Dict
+from typing import List, Callable, TypeVar, Any, Dict, Hashable
 
 # Generic Type T
 T = TypeVar('T')
@@ -60,12 +60,12 @@ def merge_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool = Fal
     pass
 
 
-def group(lst: List[T], group_func: Callable[[T], str]) -> Dict[str, List[T]]:
+def group(lst: List[T], group_func: Callable[[T], Hashable]) -> Dict[Hashable, List[T]]:
     """
     Groups the lst based on group_func and return a dict whose keys are the group name and
     values are lists of items in lst that belong to the group.
     """
-    result: Dict[str, List[T]] = {}
+    result: Dict[Hashable, List[T]] = {}
     
     for item in lst:
         key = group_func(item)

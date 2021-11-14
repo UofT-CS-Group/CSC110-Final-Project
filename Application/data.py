@@ -3,11 +3,11 @@ CSC110 Final Project - Data Classes File
 
 Contains functions to read Raw CSV File that has the specified format
 """
-import string
 from typing import List, Set, Dict
 from enum import Enum
 import datetime
 import csv
+import algorithms
 
 
 # =================================================================================================
@@ -204,6 +204,7 @@ class SchoolClosureData(TimeBasedData):
 
 # All covid cases from our datasets.
 ALL_COVID_CASES: List[CovidCaseData] = []
+COUNTRIES_TO_ALL_COVID_CASES: Dict[Country, List[CovidCaseData]] = {}
 
 # All school closures from our datasets.
 ALL_SCHOOL_CLOSURES: List[SchoolClosureData] = []
@@ -215,11 +216,13 @@ SORTED_COUNTRIES: List[Country] = []
 # All provinces from our datasets.
 PROVINCES: Set[Province] = set()
 SORTED_PROVINCES: List[Province] = []
+COUNTRIES_TO_PROVINCES: Dict[Country, List[Province]] = {}
 
 # All cities from our datasets.
 # Should contain only US cities.
 CITIES: Set[City] = set()
 SORTED_CITIES: List[City] = []
+PROVINCES_TO_CITIES: Dict[Province, List[City]] = {}
 
 STATUS_DICT = {'Fully open'            : ClosureStatus.FULLY_OPEN,
                'Partially open'        : ClosureStatus.PARTIALLY_OPEN,
@@ -242,9 +245,17 @@ def init_data() -> None:
     read_covid_data_US('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
     read_closure_data('resources/school_closures_datasets/full_dataset_31_oct.csv')
     
+    global COUNTRIES_TO_ALL_COVID_CASES
+    COUNTRIES_TO_ALL_COVID_CASES = algorithms.group(ALL_COVID_CASES, lambda c: c.country)
+    
     SORTED_COUNTRIES.extend(sorted([c for c in COUNTRIES], key=lambda c: c.name))
     SORTED_PROVINCES.extend(sorted([p for p in PROVINCES], key=lambda p: p.name))
     SORTED_CITIES.extend(sorted([c for c in CITIES], key=lambda c: c.name))
+    
+    global COUNTRIES_TO_PROVINCES
+    COUNTRIES_TO_PROVINCES = algorithms.group(SORTED_PROVINCES, lambda p: p.country)
+    global PROVINCES_TO_CITIES
+    PROVINCES_TO_CITIES = algorithms.group(SORTED_CITIES, lambda c: c.province)
     
     timestamp2 = time.time()
     print(f'Successfully initialize all data in {round(timestamp2 - timestamp1, 2)} seconds!')
