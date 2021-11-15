@@ -390,7 +390,19 @@ def read_closure_data(filename: str) -> None:
         next(reader)
         
         for row in reader:
-            country = Country(name=row[2])
+
+            # If we can find a country name that is already in COUNTRIES due to read_covid_data
+            # Then, we will actually add the closure data in there.
+            # If not, we will skip this closure data.
+            if any(c.name in row[2] for c in COUNTRIES):
+                countries_list = list(COUNTRIES)
+
+                country_index = [c.name in row[2] for c in countries_list].index(True)
+                country = countries_list[country_index]
+
+            else:
+                continue
+
             if not is_in_ascii(country.name):
                 continue
             COUNTRIES.add(country)
