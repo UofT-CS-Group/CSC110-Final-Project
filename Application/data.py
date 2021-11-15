@@ -62,7 +62,7 @@ class Country(Location):
     def __init__(self, name: str) -> None:
         super().__init__(name)
     
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return super().__eq__(other)
     
     def __hash__(self) -> int:
@@ -83,7 +83,7 @@ class Province(Location):
         super().__init__(name)
         self.country = country
     
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return super().__eq__(other) and self.country == other.country
     
     def __hash__(self) -> int:
@@ -104,7 +104,7 @@ class City(Location):
         super().__init__(name)
         self.province = province
     
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return super().__eq__(other) and self.province == other.province
     
     def __hash__(self) -> int:
@@ -128,11 +128,11 @@ class TimeBasedData(BaseData):
     
     date: datetime.date
     
-    def __init__(self, date: datetime.date):
+    def __init__(self, date: datetime.date) -> None:
         super().__init__()
         self.date = date
     
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return isinstance(other, self.__class__) and self.date == other.date
 
 
@@ -155,14 +155,14 @@ class CovidCaseData(TimeBasedData):
     cases: int
     
     def __init__(self, date: datetime.date, cases: int,
-                 country: Country = None, city: City = None, province: Province = None):
+                 country: Country = None, city: City = None, province: Province = None) -> None:
         super().__init__(date)
         self.country = country
         self.cases = cases
         self.city = city
         self.province = province
     
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return super().__eq__(other) and \
                self.city == other.city and \
                self.province == other.province and \
@@ -184,12 +184,12 @@ class SchoolClosureData(TimeBasedData):
     country: Country
     status: ClosureStatus
     
-    def __init__(self, date: datetime.date, country: Country, status: ClosureStatus):
+    def __init__(self, date: datetime.date, country: Country, status: ClosureStatus) -> None:
         super().__init__(date)
         self.country = country
         self.status = status
     
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return super().__eq__(other) and \
                self.country == other.country and \
                self.status == other.status
