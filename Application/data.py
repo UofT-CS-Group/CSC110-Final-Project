@@ -394,7 +394,7 @@ def read_closure_data(filename: str) -> None:
             # If we can find a country name that is already in COUNTRIES due to read_covid_data
             # Then, we will actually add the closure data in there.
             # If not, we will skip this closure data.
-            if any(c.name in row[2] for c in COUNTRIES):
+            if any(c.name.title() in row[2].title() for c in COUNTRIES):
                 countries_list = list(COUNTRIES)
 
                 country_index = [c.name in row[2] for c in countries_list].index(True)
