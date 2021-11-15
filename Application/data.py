@@ -142,7 +142,7 @@ class CovidCaseData(TimeBasedData):
     Instance Attributes:
         - city: The city. None if not applicable.
         - province: The province. None if not applicable.
-        - country: The country. Should not be None for our project.
+        - country: The country. None if not applicable (For global data).
         - cases: The number of confirmed COVID-19 cases at this date and location.
 
     Representation Invariants:
@@ -154,8 +154,8 @@ class CovidCaseData(TimeBasedData):
     country: Country
     cases: int
     
-    def __init__(self, date: datetime.date, country: Country, cases: int,
-                 city: City = None, province: Province = None):
+    def __init__(self, date: datetime.date, cases: int,
+                 country: Country = None, city: City = None, province: Province = None):
         super().__init__(date)
         self.country = country
         self.cases = cases
@@ -206,6 +206,12 @@ class SchoolClosureData(TimeBasedData):
 ALL_COVID_CASES: List[CovidCaseData] = []
 COUNTRIES_TO_ALL_COVID_CASES: Dict[Country, List[CovidCaseData]] = {}
 
+# The covid cases of the whole country, excluding provinces and cities.
+COUNTRIES_TO_COVID_CASES: Dict[Country, List[CovidCaseData]] = {}
+
+# Global covid cases (whole earth)
+GLOBAL_COVID_CASES: List[CovidCaseData] = []
+
 # All school closures from our datasets.
 ALL_SCHOOL_CLOSURES: List[SchoolClosureData] = []
 
@@ -244,21 +250,61 @@ def init_data() -> None:
     read_covid_data_global('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
     read_covid_data_US('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
     read_closure_data('resources/school_closures_datasets/full_dataset_31_oct.csv')
-    
-    global COUNTRIES_TO_ALL_COVID_CASES
-    COUNTRIES_TO_ALL_COVID_CASES = algorithms.group(ALL_COVID_CASES, lambda c: c.country)
-    
+
+    # Init locations
     SORTED_COUNTRIES.extend(sorted([c for c in COUNTRIES], key=lambda c: c.name))
     SORTED_PROVINCES.extend(sorted([p for p in PROVINCES], key=lambda p: p.name))
     SORTED_CITIES.extend(sorted([c for c in CITIES], key=lambda c: c.name))
-    
+
     global COUNTRIES_TO_PROVINCES
     COUNTRIES_TO_PROVINCES = algorithms.group(SORTED_PROVINCES, lambda p: p.country)
     global PROVINCES_TO_CITIES
     PROVINCES_TO_CITIES = algorithms.group(SORTED_CITIES, lambda c: c.province)
     
+    # Init covid cases
+    global COUNTRIES_TO_ALL_COVID_CASES
+    COUNTRIES_TO_ALL_COVID_CASES = algorithms.group(ALL_COVID_CASES, lambda c: c.country)
+    global COUNTRIES_TO_COVID_CASES
+    COUNTRIES_TO_COVID_CASES = {k: algorithms.linear_predicate(COUNTRIES_TO_ALL_COVID_CASES[k],
+                                                               lambda c: c.province is None and c.city is None)
+                                for k in COUNTRIES_TO_ALL_COVID_CASES}
+    # Special cases: Canada, China, and Australia
+    specials = ['China', 'Canada', 'Australia']
+    for country_name in specials:
+        country = Country(country_name)
+        COUNTRIES_TO_COVID_CASES[country] = calculate_country_total_covid_cases(country)
+    # Global covid cases (No country, whole earth)
+    calculate_global_total_covid_cases()
+    
     timestamp2 = time.time()
     print(f'Successfully initialize all data in {round(timestamp2 - timestamp1, 2)} seconds!')
+
+
+def calculate_country_total_covid_cases(country: Country) -> List[CovidCaseData]:
+    cases = COUNTRIES_TO_ALL_COVID_CASES[country]
+    result: List[CovidCaseData] = []
+    current_province = cases[0].province
+    index = 0
+    num_provinces = len(COUNTRIES_TO_PROVINCES[country])
+    for i, case in enumerate(cases):
+        if case.province != current_province:
+            index = i
+            break
+        result.append(CovidCaseData(case.date, case.cases, case.country))
+        
+    for i in range(2, num_provinces):
+        for j in range(index):
+            result[j].cases += cases[i * j].cases
+        
+    return result
+
+
+def calculate_global_total_covid_cases() -> None:
+    global GLOBAL_COVID_CASES
+    GLOBAL_COVID_CASES.extend(CovidCaseData(c.date, 0) for c in COUNTRIES_TO_COVID_CASES[Country('China')])
+    for country in COUNTRIES_TO_COVID_CASES:
+        for i, case in enumerate(COUNTRIES_TO_COVID_CASES[country]):
+            GLOBAL_COVID_CASES[i].cases += case.cases
 
 
 def read_covid_data_global(filename: str) -> None:
