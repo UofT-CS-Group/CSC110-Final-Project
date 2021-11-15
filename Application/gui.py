@@ -4,7 +4,9 @@ I know it's in efficient and shitty
 Just for temp use
 """
 import time
+import typing
 
+import QtDesigner
 import numpy as np
 import algorithms
 import datetime
@@ -78,7 +80,8 @@ class StandardComboBox(QComboBox):
     def __init__(self, parent=None, items: Iterable = None):
         super().__init__(parent)
         set_font(self)
-        self.addItems(items)
+        if items is not None:
+            self.addItems(items)
 
 
 class StandardDateEdit(QDateEdit):
@@ -90,6 +93,13 @@ class StandardDateEdit(QDateEdit):
     
     def __init__(self, *__args):
         super().__init__(*__args)
+        set_font(self)
+
+
+class StandardCheckbox(QCheckBox):
+    
+    def __init__(self, text: str, parent: typing.Optional[QWidget] = ...) -> None:
+        super().__init__(text, parent)
         set_font(self)
 
 
@@ -143,14 +153,14 @@ class PlotCanvas(FigureCanvas):
                 self.horizontal_cross_hair = self.axes.axhline(y=y, color='k', linewidth=0.8, linestyle='--')
                 self.vertical_cross_hair = self.axes.axvline(x=real_x, color='k', linewidth=0.8, linestyle='--')
                 self.is_cross_hair_init = True
-
+            
             self.horizontal_cross_hair.set_visible(True)
             self.vertical_cross_hair.set_visible(True)
-
+            
             self.horizontal_cross_hair.set_ydata(y)
             self.vertical_cross_hair.set_xdata(real_x)
             self.draw()
-
+        
         else:
             if self.is_cross_hair_init:
                 self.horizontal_cross_hair.set_visible(False)
@@ -165,6 +175,9 @@ class MainWindow(QMainWindow):
     
     plot_navigation_tool_bar: NavigationToolbar
     plot_canvas: PlotCanvas
+    
+    global_checkbox: StandardCheckbox
+    country_checkbox: StandardCheckbox
     
     country_selection_label: StandardLabel
     country_selection_combo_box: StandardComboBox
@@ -216,19 +229,19 @@ class MainWindow(QMainWindow):
         """
         # Country selections
         self.country_selection_label = StandardLabel('Country: ')
-        self.country_selection_combo_box = StandardComboBox(self, [c.name for c in data.SORTED_COUNTRIES])
-        default_country = data.Country('Canada')
-        self.country_selection_combo_box.setCurrentIndex(data.SORTED_COUNTRIES.index(default_country))
+        self.country_selection_combo_box = StandardComboBox(self)
+        
+        self.global_checkbox = StandardCheckbox('Global', self)
+        self.global_checkbox.setChecked(True)
+        self.country_checkbox = StandardCheckbox('Country Total', self)
         
         # Province selection
-        default_provinces = algorithms.linear_predicate(data.SORTED_PROVINCES, lambda p: p.country == default_country)
         self.province_selection_label = StandardLabel('Province: ')
-        self.province_selection_combo_box = StandardComboBox(self, [p.name for p in default_provinces])
+        self.province_selection_combo_box = StandardComboBox(self)
         
         # City selection
-        default_cities = algorithms.linear_predicate(data.SORTED_CITIES, lambda c: c.province == default_provinces[0])
         self.city_selection_label = StandardLabel('City: ')
-        self.city_selection_combo_box = StandardComboBox(self, [c.name for c in default_cities])
+        self.city_selection_combo_box = StandardComboBox(self)
         
         # Date selections
         self.start_date_label = StandardLabel('Start Date: ')
@@ -262,6 +275,13 @@ class MainWindow(QMainWindow):
         main_layout.addLayout(controller_layout, 382)
         controller_layout.addStretch(1)
         
+        # For temp use
+        # TODO: Better Layout
+        checkbox_layout = QHBoxLayout(self)
+        controller_layout.addLayout(checkbox_layout)
+        checkbox_layout.addWidget(self.global_checkbox)
+        checkbox_layout.addWidget(self.country_checkbox)
+        
         # The layout for country, province, and city selection
         location_selection_layout = QFormLayout()
         controller_layout.addLayout(location_selection_layout)
@@ -291,6 +311,9 @@ class MainWindow(QMainWindow):
         """
         Init the signals.
         """
+        self.global_checkbox.stateChanged.connect(self.on_global_checkbox_changed)
+        self.country_checkbox.stateChanged.connect(self.on_country_checkbox_changed)
+        
         self.confirm_button.clicked.connect(self.confirm_button_handler)
         self.confirm_button_handler()
         
@@ -301,36 +324,42 @@ class MainWindow(QMainWindow):
         """
         Things to do when the confirm button is clicked.
         """
-        # Current country, province, and city
-        country = data.Country(self.country_selection_combo_box.currentText())
-        province = data.Province(self.province_selection_combo_box.currentText(), country)
-        city = data.City(self.city_selection_combo_box.currentText(), province)
-        
+        filtered_cases: List[data.CovidCaseData] = []
         # Current date range
         q_start_date: QDate = self.start_date_edit.date()
         q_end_date: QDate = self.end_date_edit.date()
         start_date = datetime.date(q_start_date.year(), q_start_date.month(), q_start_date.day())
         end_date = datetime.date(q_end_date.year(), q_end_date.month(), q_end_date.day())
         
-        # Filtered data
-        # This is because some of the country names in school closures
-        # are not the same as the covid datasets
-        # TODO Fix it
-        if country not in data.COUNTRIES_TO_ALL_COVID_CASES:
-            message_box = QMessageBox(QMessageBox.Critical, 'Error', 'This country does not have any data!',
-                                      QMessageBox.Ok)
-            message_box.exec_()
-            return
-        lst = data.COUNTRIES_TO_ALL_COVID_CASES[country]
-        lst = algorithms.linear_predicate(lst,
-                                          lambda item: (province.name == '' or item.province == province) and
-                                                       (city.name == '' or item.city == city) and
-                                                       start_date <= item.date <= end_date)
+        if self.global_checkbox.isChecked():
+            filtered_cases = algorithms.linear_predicate(data.GLOBAL_COVID_CASES,
+                                                         lambda item: start_date <= item.date <= end_date)
+        else:
+            country = data.Country(self.country_selection_combo_box.currentText())
+            # This is because some of the country names in school closures
+            # are not the same as the covid datasets
+            # TODO Fix it
+            if country not in data.COUNTRIES_TO_ALL_COVID_CASES:
+                message_box = QMessageBox(QMessageBox.Critical, 'Error', 'This country does not have any data!',
+                                          QMessageBox.Ok)
+                message_box.exec_()
+                return
+
+            if self.country_checkbox.isChecked():
+                filtered_cases = data.COUNTRIES_TO_COVID_CASES[country]
+            else:
+                province = data.Province(self.province_selection_combo_box.currentText(), country)
+                city = data.City(self.city_selection_combo_box.currentText(), province)
+                filtered_cases = algorithms.linear_predicate(data.COUNTRIES_TO_ALL_COVID_CASES[country],
+                                                             lambda item: (
+                                                                                      province.name == '' or item.province == province) and
+                                                                          (city.name == '' or item.city == city) and
+                                                                          start_date <= item.date <= end_date)
         
         # Get y-value
-        y_axis = [case.cases for case in lst]
+        y_axis = [case.cases for case in filtered_cases]
         # Get x-value
-        x_axis = [case.date for case in lst]
+        x_axis = [case.date for case in filtered_cases]
         self.plot_canvas.x_data = x_axis
         self.plot_canvas.y_data = y_axis
         # Clear previous drawing
@@ -354,6 +383,8 @@ class MainWindow(QMainWindow):
         
         if country not in data.COUNTRIES_TO_PROVINCES:
             return
+        if self.country_checkbox.isChecked():
+            return
         
         provinces = data.COUNTRIES_TO_PROVINCES[country]
         self.province_selection_combo_box.addItems([p.name for p in provinces])
@@ -365,7 +396,7 @@ class MainWindow(QMainWindow):
         cities = data.PROVINCES_TO_CITIES[provinces[0]]
         self.city_selection_combo_box.addItems([c.name for c in cities])
     
-    def on_province_selection_changed(self, index: int):
+    def on_province_selection_changed(self, index: int) -> None:
         """
         Things to do when user select a province.
         """
@@ -379,3 +410,32 @@ class MainWindow(QMainWindow):
             cities = data.PROVINCES_TO_CITIES[province]
             self.city_selection_combo_box.clear()
             self.city_selection_combo_box.addItems([c.name for c in cities])
+    
+    def on_global_checkbox_changed(self, state: int) -> None:
+        if state == Qt.Checked:
+            self.country_selection_combo_box.clear()
+            self.province_selection_combo_box.clear()
+            self.city_selection_combo_box.clear()
+            self.country_checkbox.setChecked(False)
+        else:
+            self.set_default_location_selection()
+    
+    def on_country_checkbox_changed(self, state: int) -> None:
+        if state == Qt.Checked:
+            self.global_checkbox.setChecked(False)
+            self.province_selection_combo_box.clear()
+            self.city_selection_combo_box.clear()
+        else:
+            country = data.SORTED_COUNTRIES[self.country_selection_combo_box.currentIndex()]
+            if country in data.COUNTRIES_TO_PROVINCES:
+                self.province_selection_combo_box.addItems([p.name for p in data.COUNTRIES_TO_PROVINCES[country]])
+    
+    def set_default_location_selection(self):
+        self.country_selection_combo_box.clear()
+        self.country_selection_combo_box.addItems(c.name for c in data.SORTED_COUNTRIES)
+        default_country = data.Country('Canada')
+        self.country_selection_combo_box.setCurrentIndex(data.SORTED_COUNTRIES.index(default_country))
+        default_provinces = data.COUNTRIES_TO_PROVINCES[default_country]
+        self.province_selection_combo_box.clear()
+        self.province_selection_combo_box.addItems(p.name for p in default_provinces)
+        self.city_selection_combo_box.clear()

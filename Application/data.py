@@ -294,7 +294,7 @@ def calculate_country_total_covid_cases(country: Country) -> List[CovidCaseData]
         
     for i in range(2, num_provinces):
         for j in range(index):
-            result[j].cases += cases[i * j].cases
+            result[j].cases += cases[i * index + j].cases
         
     return result
 
