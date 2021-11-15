@@ -397,7 +397,7 @@ def read_closure_data(filename: str) -> None:
             if any(c.name.title() in row[2].title() for c in COUNTRIES):
                 countries_list = list(COUNTRIES)
 
-                country_index = [c.name in row[2] for c in countries_list].index(True)
+                country_index = [c.name.title() in row[2].title() for c in countries_list].index(True)
                 country = countries_list[country_index]
 
             else:
