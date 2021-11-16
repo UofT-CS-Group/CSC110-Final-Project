@@ -183,7 +183,7 @@ class SchoolClosureData(TimeBasedData):
     
     country: Country
     status: ClosureStatus
-
+    
     def __init__(self, date: datetime.date, status: ClosureStatus, country: Country = None):
         super().__init__(date)
         self.country = country
@@ -246,6 +246,67 @@ STATUS_DICT = {'Fully open'            : ClosureStatus.FULLY_OPEN,
                'Academic break'        : ClosureStatus.ACADEMIC_BREAK
                }
 
+# Country names in the closure data set will be replaced by the value.
+CLOSURE_COUNTRY_NAMES_FIX: Dict[str, str] = {
+    'Bolivia (Plurinational State of)'                    : 'Bolivia',
+    'Brunei Darussalam'                                   : 'Brunei',
+    'Central African republic'                            : 'Central African Republic',
+    'Congo'                                               : 'Congo (Brazzaville)',
+    'Democratic Republic of the Congo'                    : 'Congo (Kinshasa)',
+    'Iran (Islamic Republic of)'                          : 'Iran',
+    'Republic of Korea'                                   : 'Korea, South',
+    'Lao PDR'                                             : 'Laos',
+    'Micronesia (Federated States of)'                    : 'Micronesia',
+    'Republic of Moldova'                                 : 'Moldova',
+    'Russian Federation'                                  : 'Russia',
+    'Syrian Arab Republic'                                : 'Syria',
+    'United Republic of Tanzania'                         : 'Tanzania',
+    'United States of America'                            : 'US',
+    'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
+    'Viet Nam'                                            : 'Vietnam'
+}
+
+# "Country" names in the covid data set that will be deleted.
+COVID_COUNTRIES_DELETE: Set[str] = {
+    'Diamond Princess',
+    'Holy See',
+    'MS Zaandam',
+    'Summer Olympics 2020',
+    'Taiwan*',
+    'West Bank and Gaza',
+    'Burma',
+    'Kosovo',
+    'Sao Tome and Principe'
+}
+
+# Country names in the closure data set that will be deleted.
+CLOSURE_COUNTRIES_DELETE: Set[str] = {
+    'Anguilla',
+    'Aruba',
+    'Bermuda',
+    'British Virgin Islands',
+    'Cayman Islands',
+    'Cook Islands',
+    "Democratic People's Republic of Korea",
+    'Faroe Islands',
+    'Gibraltar',
+    'Greenland',
+    'Montserrat',
+    'Myanmar',
+    'Nauru',
+    'Niue',
+    'Palestine',
+    'Sint Marteen',
+    'Svalbard',
+    'Tokelau',
+    'Turkmenistan',
+    'Turks and Caicos Island',
+    'Tuvalu'
+}
+
+test_covid_countries = set()
+test_closure_countries = set()
+
 
 # =================================================================================================
 # Functions
@@ -260,12 +321,12 @@ def init_data() -> None:
     read_covid_data_global('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
     read_covid_data_US('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
     read_closure_data('resources/school_closures_datasets/full_dataset_31_oct.csv')
-
+    
     # Init locations
     SORTED_COUNTRIES.extend(sorted([c for c in COUNTRIES], key=lambda c: c.name))
     SORTED_PROVINCES.extend(sorted([p for p in PROVINCES], key=lambda p: p.name))
     SORTED_CITIES.extend(sorted([c for c in CITIES], key=lambda c: c.name))
-
+    
     global COUNTRIES_TO_PROVINCES
     COUNTRIES_TO_PROVINCES = algorithms.group(SORTED_PROVINCES, lambda p: p.country)
     global PROVINCES_TO_CITIES
@@ -305,8 +366,8 @@ def init_global_school_closures() -> None:
     global GLOBAL_SCHOOL_CLOSURES
     current_date = ALL_SCHOOL_CLOSURES[0].date
     num_of_status = {
-        ClosureStatus.CLOSED: 0,
-        ClosureStatus.FULLY_OPEN: 0,
+        ClosureStatus.CLOSED        : 0,
+        ClosureStatus.FULLY_OPEN    : 0,
         ClosureStatus.ACADEMIC_BREAK: 0,
         ClosureStatus.PARTIALLY_OPEN: 0
     }
@@ -326,7 +387,7 @@ def init_global_school_closures() -> None:
 def calculate_country_total_covid_cases(country: Country) -> List[CovidCaseData]:
     """
     Return a List containing the total covid cases of the given country.
-    The covid cases of the given country were previously separated by
+    The covid cases of the given country were previously separated by provinces and (or) cities.
     
     Preconditions:
         - country in COUNTRIES_TO_ALL_COVID_CASES
@@ -342,11 +403,11 @@ def calculate_country_total_covid_cases(country: Country) -> List[CovidCaseData]
             index = i
             break
         result.append(CovidCaseData(case.date, case.cases, case.country))
-
+    
     for i in range(2, num_provinces):
         for j in range(index):
             result[j].cases += cases[i * index + j].cases
-
+    
     return result
 
 
@@ -378,7 +439,7 @@ def read_covid_data_global(filename: str) -> None:
             country = Country(row[1])
             province = Province(row[0], country)
             
-            if country.name == '' or not is_in_ascii(country.name):
+            if country.name == '' or not is_in_ascii(country.name) or country.name in COVID_COUNTRIES_DELETE:
                 continue
             
             COUNTRIES.add(country)
@@ -454,23 +515,22 @@ def read_closure_data(filename: str) -> None:
         reader = csv.reader(file)
         
         next(reader)
-
+        
         for row in reader:
             country_name = row[2]
-
-            if not is_in_ascii(country_name):
+            
+            if not is_in_ascii(country_name) or country_name in CLOSURE_COUNTRIES_DELETE:
                 continue
-
-            for country in COUNTRIES:
-                if country_name.title() in country.name:
-                    # Using country_name.title() to fix the situation of "Central Africa Republic"
-                    day, month, year = row[0].split('/')
-                    ALL_SCHOOL_CLOSURES.append(SchoolClosureData(date=datetime.date(year=int(year),
-                                                                                    month=int(month),
-                                                                                    day=int(day)),
-                                                                 country=country,
-                                                                 status=STATUS_DICT[row[3]]))
-                    break
+            
+            if country_name in CLOSURE_COUNTRY_NAMES_FIX:
+                country_name = CLOSURE_COUNTRY_NAMES_FIX[country_name]
+            
+            day, month, year = row[0].split('/')
+            ALL_SCHOOL_CLOSURES.append(SchoolClosureData(date=datetime.date(year=int(year),
+                                                                            month=int(month),
+                                                                            day=int(day)),
+                                                         country=Country(country_name),
+                                                         status=STATUS_DICT[row[3]]))
 
 
 def is_in_ascii(s: str) -> bool:
