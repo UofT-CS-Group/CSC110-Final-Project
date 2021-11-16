@@ -7,7 +7,7 @@ import threading
 import time
 import typing
 
-import QtDesigner
+# import QtDesigner
 import numpy as np
 import algorithms
 import datetime
