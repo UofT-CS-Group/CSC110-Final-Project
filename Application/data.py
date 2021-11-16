@@ -388,30 +388,22 @@ def read_closure_data(filename: str) -> None:
         reader = csv.reader(file)
         
         next(reader)
-        
+
         for row in reader:
+            country_name = row[2]
 
-            # If we can find a country name that is already in COUNTRIES due to read_covid_data
-            # Then, we will actually add the closure data in there.
-            # If not, we will skip this closure data.
-            if any(c.name.title() in row[2].title() for c in COUNTRIES):
-                countries_list = list(COUNTRIES)
-
-                country_index = [c.name.title() in row[2].title() for c in countries_list].index(True)
-                country = countries_list[country_index]
-
-            else:
+            if not is_in_ascii(country_name):
                 continue
 
-            if not is_in_ascii(country.name):
-                continue
-            COUNTRIES.add(country)
-            day, month, year = row[0].split('/')
-            ALL_SCHOOL_CLOSURES.append(SchoolClosureData(date=datetime.date(year=int(year),
-                                                                            month=int(month),
-                                                                            day=int(day)),
-                                                         country=country,
-                                                         status=STATUS_DICT[row[3]]))
+            for country in COUNTRIES:
+                if country_name.title() in country.name:
+                    # Using country_name.title() to fix the situation of "Central Africa Republic"
+                    day, month, year = row[0].split('/')
+                    ALL_SCHOOL_CLOSURES.append(SchoolClosureData(date=datetime.date(year=int(year),
+                                                                                    month=int(month),
+                                                                                    day=int(day)),
+                                                                 country=country,
+                                                                 status=STATUS_DICT[row[3]]))
 
 
 def is_in_ascii(s: str) -> bool:
