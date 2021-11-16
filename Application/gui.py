@@ -403,7 +403,7 @@ class MainWindow(QMainWindow):
             # are not the same as the covid datasets
             # TODO Fix it
             if country not in data.COUNTRIES_TO_ALL_COVID_CASES or country not in data.COUNTRIES_TO_ALL_SCHOOL_CLOSURES:
-                message_box = QMessageBox(QMessageBox.Critical, 'Error', 'This country does not have any data!',
+                message_box = QMessageBox(QMessageBox.Critical, 'Error', 'This country has incomplete data!',
                                           QMessageBox.Ok)
                 message_box.exec_()
                 return
