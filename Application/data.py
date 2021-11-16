@@ -404,6 +404,7 @@ def read_closure_data(filename: str) -> None:
                                                                                     day=int(day)),
                                                                  country=country,
                                                                  status=STATUS_DICT[row[3]]))
+                    break
 
 
 def is_in_ascii(s: str) -> bool:
