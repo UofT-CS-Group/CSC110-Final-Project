@@ -284,18 +284,24 @@ def init_data() -> None:
         country = Country(country_name)
         COUNTRIES_TO_COVID_CASES[country] = calculate_country_total_covid_cases(country)
     # Global covid cases (No country, whole earth)
-    calculate_global_total_covid_cases()
+    init_global_total_covid_cases()
     
     # Init school closures
     global COUNTRIES_TO_ALL_SCHOOL_CLOSURES
     COUNTRIES_TO_ALL_SCHOOL_CLOSURES = algorithms.group(ALL_SCHOOL_CLOSURES, lambda c: c.country)
-    calculate_global_school_closures()
+    init_global_school_closures()
     
     timestamp2 = time.time()
     print(f'Successfully initialize all data in {round(timestamp2 - timestamp1, 2)} seconds!')
 
 
-def calculate_global_school_closures() -> None:
+def init_global_school_closures() -> None:
+    """
+    Initialize the global variable GLOBAL_SCHOOL_CLOSURES.
+
+    Basically, this function calculates the total school closures for every country on a day and choose the status
+    with the greatest number of schools as the status for that day.
+    """
     global GLOBAL_SCHOOL_CLOSURES
     current_date = ALL_SCHOOL_CLOSURES[0].date
     num_of_status = {
@@ -319,8 +325,12 @@ def calculate_global_school_closures() -> None:
 
 def calculate_country_total_covid_cases(country: Country) -> List[CovidCaseData]:
     """
-    Combine the covid data for the provinces of a country.
-    Therefore, we could have the total covid cases of that country.
+    Return a List containing the total covid cases of the given country.
+    The covid cases of the given country were previously separated by
+    
+    Preconditions:
+        - country in COUNTRIES_TO_ALL_COVID_CASES
+        - country in COUNTRIES_TO_PROVINCES
     """
     cases = COUNTRIES_TO_ALL_COVID_CASES[country]
     result: List[CovidCaseData] = []
@@ -332,17 +342,20 @@ def calculate_country_total_covid_cases(country: Country) -> List[CovidCaseData]
             index = i
             break
         result.append(CovidCaseData(case.date, case.cases, case.country))
-        
+
     for i in range(2, num_provinces):
         for j in range(index):
             result[j].cases += cases[i * index + j].cases
-        
+
     return result
 
 
-def calculate_global_total_covid_cases() -> None:
+def init_global_total_covid_cases() -> None:
     """
-    Calculate the total covid cases on Earth.
+    Initialize the global variable GLOBAL_COVID_CASES.
+
+    Basically, this function calculates the total cases by summing up all cases for all countries on a day,
+    and then append the total covid cases on that day to GLOBAL_COVID_CASES.
     """
     global GLOBAL_COVID_CASES
     GLOBAL_COVID_CASES.extend(CovidCaseData(c.date, 0) for c in COUNTRIES_TO_COVID_CASES[Country('China')])
@@ -456,7 +469,7 @@ def read_closure_data(filename: str) -> None:
 
 
 def is_in_ascii(s: str) -> bool:
-    """Returns whether all the characters in string s is in the ASCII Table or not
+    """Returns whether all the characters in string s is in the ASCII Table or not.
 
     >>> is_in_ascii('Curaçao')
     False

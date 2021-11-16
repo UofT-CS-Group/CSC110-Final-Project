@@ -284,7 +284,7 @@ class MainWindow(QMainWindow):
     
     def init_widgets(self) -> None:
         """
-        Init all widgets attributes.
+        Init all widgets and their attributes.
         """
         # Country selections
         self.country_selection_label = StandardLabel('Country: ')
@@ -429,7 +429,7 @@ class MainWindow(QMainWindow):
     
     def on_country_selection_changed(self, index: int) -> None:
         """
-        Things to do when user select a country.
+        Handle things to do after the user selected a country.
         """
         self.province_selection_combo_box.clear()
         self.city_selection_combo_box.clear()
@@ -453,7 +453,7 @@ class MainWindow(QMainWindow):
     
     def on_province_selection_changed(self, index: int) -> None:
         """
-        Things to do when user select a province.
+        Handle things to do after the user selected a province.
         """
         country = data.SORTED_COUNTRIES[self.country_selection_combo_box.currentIndex()]
         if country not in data.COUNTRIES_TO_PROVINCES:
@@ -467,6 +467,9 @@ class MainWindow(QMainWindow):
             self.city_selection_combo_box.addItems([c.name for c in cities])
     
     def on_global_checkbox_changed(self, state: int) -> None:
+        """
+        Handle things to do after the user checked or unchecked the global checkbox.
+        """
         if state == Qt.Checked:
             self.country_selection_combo_box.clear()
             self.province_selection_combo_box.clear()
@@ -476,6 +479,9 @@ class MainWindow(QMainWindow):
             self.set_default_location_selection()
     
     def on_country_checkbox_changed(self, state: int) -> None:
+        """
+        Handle things to do after the user checked or unchecked the country only checkbox.
+        """
         if state == Qt.Checked:
             self.global_checkbox.setChecked(False)
             self.province_selection_combo_box.clear()
@@ -486,6 +492,14 @@ class MainWindow(QMainWindow):
                 self.province_selection_combo_box.addItems([p.name for p in data.COUNTRIES_TO_PROVINCES[country]])
     
     def set_default_location_selection(self):
+        """
+        Set the location combo box to its default values.
+
+        Default Values:
+            - country = Country('Canada')
+            - province = Province('Alberta', country)
+            - city = None
+        """
         self.country_selection_combo_box.clear()
         self.country_selection_combo_box.addItems(c.name for c in data.SORTED_COUNTRIES)
         default_country = data.Country('Canada')
