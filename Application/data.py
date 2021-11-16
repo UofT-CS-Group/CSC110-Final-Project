@@ -21,10 +21,10 @@ class ClosureStatus(Enum):
         - This class cannot be instantiated.
     """
     
-    CLOSED = 0
-    PARTIALLY_OPEN = 1
-    FULLY_OPEN = 2
-    ACADEMIC_BREAK = 3
+    CLOSED = 3
+    PARTIALLY_OPEN = 2
+    FULLY_OPEN = 1
+    ACADEMIC_BREAK = 0
 
 
 class Location(object):
@@ -183,8 +183,8 @@ class SchoolClosureData(TimeBasedData):
     
     country: Country
     status: ClosureStatus
-    
-    def __init__(self, date: datetime.date, country: Country, status: ClosureStatus) -> None:
+
+    def __init__(self, date: datetime.date, status: ClosureStatus, country: Country = None):
         super().__init__(date)
         self.country = country
         self.status = status
@@ -202,6 +202,8 @@ class SchoolClosureData(TimeBasedData):
 # Constants
 # =================================================================================================
 
+# =================================================================================================
+# Covid
 # All covid cases from our datasets.
 ALL_COVID_CASES: List[CovidCaseData] = []
 COUNTRIES_TO_ALL_COVID_CASES: Dict[Country, List[CovidCaseData]] = {}
@@ -212,9 +214,17 @@ COUNTRIES_TO_COVID_CASES: Dict[Country, List[CovidCaseData]] = {}
 # Global covid cases (whole earth)
 GLOBAL_COVID_CASES: List[CovidCaseData] = []
 
+# =================================================================================================
+# School closures
 # All school closures from our datasets.
 ALL_SCHOOL_CLOSURES: List[SchoolClosureData] = []
 
+COUNTRIES_TO_ALL_SCHOOL_CLOSURES: Dict[Country, List[SchoolClosureData]] = {}
+
+GLOBAL_SCHOOL_CLOSURES: List[SchoolClosureData] = []
+
+# =================================================================================================
+# Locations
 # All countries from our datasets.
 COUNTRIES: Set[Country] = set()
 SORTED_COUNTRIES: List[Country] = []
@@ -274,13 +284,54 @@ def init_data() -> None:
         country = Country(country_name)
         COUNTRIES_TO_COVID_CASES[country] = calculate_country_total_covid_cases(country)
     # Global covid cases (No country, whole earth)
-    calculate_global_total_covid_cases()
+    init_global_total_covid_cases()
+    
+    # Init school closures
+    global COUNTRIES_TO_ALL_SCHOOL_CLOSURES
+    COUNTRIES_TO_ALL_SCHOOL_CLOSURES = algorithms.group(ALL_SCHOOL_CLOSURES, lambda c: c.country)
+    init_global_school_closures()
     
     timestamp2 = time.time()
     print(f'Successfully initialize all data in {round(timestamp2 - timestamp1, 2)} seconds!')
 
 
+def init_global_school_closures() -> None:
+    """
+    Initialize the global variable GLOBAL_SCHOOL_CLOSURES.
+
+    Basically, this function calculates the total school closures for every country on a day and choose the status
+    with the greatest number of schools as the status for that day.
+    """
+    global GLOBAL_SCHOOL_CLOSURES
+    current_date = ALL_SCHOOL_CLOSURES[0].date
+    num_of_status = {
+        ClosureStatus.CLOSED: 0,
+        ClosureStatus.FULLY_OPEN: 0,
+        ClosureStatus.ACADEMIC_BREAK: 0,
+        ClosureStatus.PARTIALLY_OPEN: 0
+    }
+    for closure in ALL_SCHOOL_CLOSURES:
+        if current_date == closure.date:
+            num_of_status[closure.status] += 1
+        else:
+            keys = [k for k in num_of_status]
+            values = [num_of_status[k] for k in keys]
+            index = values.index(max(values))
+            GLOBAL_SCHOOL_CLOSURES.append(SchoolClosureData(current_date, keys[index]))
+            current_date = closure.date
+            for k in num_of_status:
+                num_of_status[k] = 0
+
+
 def calculate_country_total_covid_cases(country: Country) -> List[CovidCaseData]:
+    """
+    Return a List containing the total covid cases of the given country.
+    The covid cases of the given country were previously separated by
+    
+    Preconditions:
+        - country in COUNTRIES_TO_ALL_COVID_CASES
+        - country in COUNTRIES_TO_PROVINCES
+    """
     cases = COUNTRIES_TO_ALL_COVID_CASES[country]
     result: List[CovidCaseData] = []
     current_province = cases[0].province
@@ -291,15 +342,21 @@ def calculate_country_total_covid_cases(country: Country) -> List[CovidCaseData]
             index = i
             break
         result.append(CovidCaseData(case.date, case.cases, case.country))
-        
+
     for i in range(2, num_provinces):
         for j in range(index):
             result[j].cases += cases[i * index + j].cases
-        
+
     return result
 
 
-def calculate_global_total_covid_cases() -> None:
+def init_global_total_covid_cases() -> None:
+    """
+    Initialize the global variable GLOBAL_COVID_CASES.
+
+    Basically, this function calculates the total cases by summing up all cases for all countries on a day,
+    and then append the total covid cases on that day to GLOBAL_COVID_CASES.
+    """
     global GLOBAL_COVID_CASES
     GLOBAL_COVID_CASES.extend(CovidCaseData(c.date, 0) for c in COUNTRIES_TO_COVID_CASES[Country('China')])
     for country in COUNTRIES_TO_COVID_CASES:
@@ -308,6 +365,9 @@ def calculate_global_total_covid_cases() -> None:
 
 
 def read_covid_data_global(filename: str) -> None:
+    """
+    Read the resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv into ALL_COVID_CASES.
+    """
     with open(filename) as file:
         reader = csv.reader(file)
         
@@ -343,6 +403,9 @@ def read_covid_data_global(filename: str) -> None:
 
 
 def read_covid_data_US(filename: str) -> None:
+    """
+    Read the resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv into ALL_COVID_CASES.
+    """
     with open(filename) as file:
         reader = csv.reader(file)
         
@@ -384,6 +447,9 @@ def read_covid_data_US(filename: str) -> None:
 
 
 def read_closure_data(filename: str) -> None:
+    """
+    Read the resources/school_closures_datasets/full_dataset_31_oct.csv into ALL_SCHOOL_CLOSURES
+    """
     with open(filename) as file:
         reader = csv.reader(file)
         
@@ -408,7 +474,7 @@ def read_closure_data(filename: str) -> None:
 
 
 def is_in_ascii(s: str) -> bool:
-    """Returns whether all the characters in string s is in the ASCII Table or not
+    """Returns whether all the characters in string s is in the ASCII Table or not.
 
     >>> is_in_ascii('Curaçao')
     False
