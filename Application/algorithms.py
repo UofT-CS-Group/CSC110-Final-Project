@@ -1,4 +1,4 @@
-from typing import List, Callable, TypeVar, Any, Dict, Hashable
+from typing import List, Callable, TypeVar, Dict, Hashable
 
 # Generic Type T
 T = TypeVar('T')
@@ -84,12 +84,24 @@ def linear_predicate(lst: List[T], predicate: Callable[[T], bool]) -> List[T]:
     return [item for item in lst if predicate(item)]
 
 
-def binary_predicate():
-    pass
-
-
-def binary_search():
-    pass
-
+def binary_search(sorted_lst: List[T], target: T) -> int:
+    """
+    Search target from the sorted_lst using binary search.
+    Time Complexity: O(log(n))
+    
+    Note:
+        - This function does not use the compare function to compare between objects.
+    """
+    n = len(sorted_lst)
+    left, right = 0, n - 1
+    while left <= right:
+        middle = left + (right - left) // 2
+        if target == sorted_lst[middle]:
+            return middle
+        elif target > sorted_lst[middle]:
+            left = middle + 1
+        else:
+            right = middle - 1
+    return -1
 
 # More later...

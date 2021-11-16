@@ -3,6 +3,7 @@ Main GUI + backend here
 I know it's in efficient and shitty
 Just for temp use
 """
+import threading
 import time
 import typing
 
@@ -19,11 +20,14 @@ import matplotlib.lines
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib import pyplot
+import matplotlib.style
 
 import matplotlib.backend_bases
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+
+matplotlib.style.use('fast')
 
 
 def set_font(widget: QWidget,
@@ -97,6 +101,11 @@ class StandardDateEdit(QDateEdit):
 
 
 class StandardCheckbox(QCheckBox):
+    """
+    A standard checkbox for our project.
+
+    When needed, we could add more attributes and functions.
+    """
     
     def __init__(self, text: str, parent: typing.Optional[QWidget] = ...) -> None:
         super().__init__(text, parent)
@@ -109,63 +118,113 @@ class PlotCanvas(FigureCanvas):
     """
     
     figure: pyplot.Figure
-    axes: pyplot.Axes
+    axes_covid: pyplot.Axes
+    axes_closure: pyplot.Axes
     
-    x_data: List[datetime.date]
-    y_data: List[int]
+    covid_x_data: List[datetime.date]
+    covid_y_data: List[int]
     
-    is_cross_hair_init: bool = False
-    horizontal_cross_hair: matplotlib.lines.Line2D
-    vertical_cross_hair: matplotlib.lines.Line2D
+    closure_x_data: List[datetime.date]
+    closure_y_data: List[int]
+    
+    is_covid_cross_hair_init: bool = False
+    covid_horizontal_cross_hair: matplotlib.lines.Line2D
+    covid_vertical_cross_hair: matplotlib.lines.Line2D
+    
+    is_closure_cross_hair_init: bool = False
+    closure_horizontal_cross_hair: matplotlib.lines.Line2D
+    closure_vertical_cross_hair: matplotlib.lines.Line2D
     
     def __init__(self) -> None:
         self.figure = pyplot.Figure(tight_layout=True, linewidth=1)
-        self.axes = self.figure.subplots()
+        self.axes_covid, self.axes_closure = self.figure.subplots(2, 1)
         super(PlotCanvas, self).__init__(self.figure)
         self.mpl_connect("motion_notify_event", self.on_mouse_move)
     
+    def plot_covid_cases(self, covid_cases: List[data.CovidCaseData]) -> None:
+        x_axis = [c.date for c in covid_cases]
+        y_axis = [c.cases for c in covid_cases]
+        self.covid_x_data = x_axis
+        self.covid_y_data = y_axis
+        self.axes_covid.clear()
+        self.axes_covid.plot(x_axis, y_axis, marker='.', color='orange')
+        for text in self.axes_covid.get_xticklabels():
+            text.set_rotation(40.0)
+        self.draw()
+        self.is_covid_cross_hair_init = False
+    
+    def plot_school_closures(self, school_closures: List[data.SchoolClosureData]) -> None:
+        x_axis = [c.date for c in school_closures]
+        y_axis = [c.status.value for c in school_closures]
+        self.closure_x_data = x_axis
+        self.closure_y_data = y_axis
+        self.axes_closure.clear()
+        self.axes_closure.plot(x_axis, y_axis, marker='.', color='green')
+        self.axes_closure.set_yticks(ticks=[0, 1, 2, 3], minor=False)
+        self.axes_closure.set_yticklabels(labels=['Academic Break', 'Fully Open', 'Partially Open', 'Closed'],
+                                          minor=False)
+        for text in self.axes_closure.get_xticklabels():
+            text.set_rotation(40.0)
+        self.draw()
+        self.is_closure_cross_hair_init = False
+    
     def on_mouse_move(self, event: matplotlib.backend_bases.MouseEvent) -> None:
+        # The reason why the cross-hair is laggy is because self.draw() takes a very long time to draw.
+        # This part of code is a little bit shitty, but it is not worthy to fix
         if event.inaxes:
             x = event.xdata
             x = datetime.timedelta(days=x)
             x_date = datetime.date.fromtimestamp(0) + x
-            
-            # Find the index of the closet one in self.x_data
-            # Binary search
-            index = 0
-            le, ri = 0, len(self.x_data) - 1
-            while le <= ri:
-                mid = le + (ri - le) // 2
-                if x_date == self.x_data[mid]:
-                    index = mid
-                    break
-                elif x_date > self.x_data[mid]:
-                    le = mid + 1
-                else:
-                    ri = mid - 1
-            
-            x = self.x_data[index]
-            # I don't know why it works, but it works.
-            y = self.y_data[min(index + 1, len(self.y_data) - 1)]
-            real_x = (x - datetime.date.fromtimestamp(0)).days
-            
-            if not self.is_cross_hair_init:
-                self.horizontal_cross_hair = self.axes.axhline(y=y, color='k', linewidth=0.8, linestyle='--')
-                self.vertical_cross_hair = self.axes.axvline(x=real_x, color='k', linewidth=0.8, linestyle='--')
-                self.is_cross_hair_init = True
-            
-            self.horizontal_cross_hair.set_visible(True)
-            self.vertical_cross_hair.set_visible(True)
-            
-            self.horizontal_cross_hair.set_ydata(y)
-            self.vertical_cross_hair.set_xdata(real_x)
-            self.draw()
-        
-        else:
-            if self.is_cross_hair_init:
-                self.horizontal_cross_hair.set_visible(False)
-                self.vertical_cross_hair.set_visible(False)
+            if event.inaxes == self.axes_covid:
+                index = algorithms.binary_search(self.covid_x_data, x_date)
+                x = self.covid_x_data[index]
+                # I don't know why it works, but it works.
+                y = self.covid_y_data[min(index + 1, len(self.covid_y_data) - 1)]
+                real_x = (x - datetime.date.fromtimestamp(0)).days
+                
+                if not self.is_covid_cross_hair_init:
+                    self.covid_horizontal_cross_hair = self.axes_covid.axhline(y=y, color='black', linewidth=0.8,
+                                                                               linestyle='--')
+                    self.covid_vertical_cross_hair = self.axes_covid.axvline(x=real_x, color='black', linewidth=0.8,
+                                                                             linestyle='--')
+                    self.is_covid_cross_hair_init = True
+                
+                self.covid_horizontal_cross_hair.set_visible(True)
+                self.covid_vertical_cross_hair.set_visible(True)
+                
+                self.covid_horizontal_cross_hair.set_ydata(y)
+                self.covid_vertical_cross_hair.set_xdata(real_x)
                 self.draw()
+            elif event.inaxes == self.axes_closure:
+                index = algorithms.binary_search(self.closure_x_data, x_date)
+                x = self.closure_x_data[index]
+                y = self.closure_y_data[min(index + 1, len(self.closure_y_data) - 1)]
+                real_x = (x - datetime.date.fromtimestamp(0)).days
+                
+                if not self.is_closure_cross_hair_init:
+                    self.closure_horizontal_cross_hair = self.axes_closure.axhline(y=y, color='black', linewidth=0.8,
+                                                                                   linestyle='--')
+                    self.closure_vertical_cross_hair = self.axes_closure.axvline(x=real_x, color='black', linewidth=0.8,
+                                                                                 linestyle='--')
+                    self.is_closure_cross_hair_init = True
+                
+                self.closure_horizontal_cross_hair.set_visible(True)
+                self.closure_vertical_cross_hair.set_visible(True)
+                
+                self.closure_horizontal_cross_hair.set_ydata(y)
+                self.closure_vertical_cross_hair.set_xdata(real_x)
+                self.draw()
+        else:
+            if self.is_covid_cross_hair_init:
+                if self.covid_horizontal_cross_hair.get_visible() and self.covid_vertical_cross_hair.get_visible():
+                    self.covid_horizontal_cross_hair.set_visible(False)
+                    self.covid_vertical_cross_hair.set_visible(False)
+                    self.draw()
+            if self.is_closure_cross_hair_init:
+                if self.closure_horizontal_cross_hair.get_visible() and self.closure_vertical_cross_hair.get_visible():
+                    self.closure_horizontal_cross_hair.set_visible(False)
+                    self.closure_vertical_cross_hair.set_visible(False)
+                    self.draw()
 
 
 class MainWindow(QMainWindow):
@@ -324,53 +383,49 @@ class MainWindow(QMainWindow):
         """
         Things to do when the confirm button is clicked.
         """
-        filtered_cases: List[data.CovidCaseData] = []
+        filtered_covid_cases: List[data.CovidCaseData] = []
+        filtered_school_closures: List[data.SchoolClosureData] = []
+        
         # Current date range
         q_start_date: QDate = self.start_date_edit.date()
         q_end_date: QDate = self.end_date_edit.date()
         start_date = datetime.date(q_start_date.year(), q_start_date.month(), q_start_date.day())
         end_date = datetime.date(q_end_date.year(), q_end_date.month(), q_end_date.day())
-        
+
         if self.global_checkbox.isChecked():
-            filtered_cases = algorithms.linear_predicate(data.GLOBAL_COVID_CASES,
-                                                         lambda item: start_date <= item.date <= end_date)
+            filtered_covid_cases = algorithms.linear_predicate(data.GLOBAL_COVID_CASES,
+                                                               lambda item: start_date <= item.date <= end_date)
+            filtered_school_closures = algorithms.linear_predicate(data.GLOBAL_SCHOOL_CLOSURES,
+                                                                   lambda item: start_date <= item.date <= end_date)
         else:
             country = data.Country(self.country_selection_combo_box.currentText())
             # This is because some of the country names in school closures
             # are not the same as the covid datasets
             # TODO Fix it
-            if country not in data.COUNTRIES_TO_ALL_COVID_CASES:
+            if country not in data.COUNTRIES_TO_ALL_COVID_CASES or country not in data.COUNTRIES_TO_ALL_SCHOOL_CLOSURES:
                 message_box = QMessageBox(QMessageBox.Critical, 'Error', 'This country does not have any data!',
                                           QMessageBox.Ok)
                 message_box.exec_()
                 return
-
+            
             if self.country_checkbox.isChecked():
-                filtered_cases = data.COUNTRIES_TO_COVID_CASES[country]
+                filtered_covid_cases = algorithms.linear_predicate(data.COUNTRIES_TO_COVID_CASES[country],
+                                                                   lambda item: start_date <= item.date <= end_date)
             else:
                 province = data.Province(self.province_selection_combo_box.currentText(), country)
                 city = data.City(self.city_selection_combo_box.currentText(), province)
-                filtered_cases = algorithms.linear_predicate(data.COUNTRIES_TO_ALL_COVID_CASES[country],
-                                                             lambda item: (
-                                                                                      province.name == '' or item.province == province) and
-                                                                          (city.name == '' or item.city == city) and
-                                                                          start_date <= item.date <= end_date)
-        
-        # Get y-value
-        y_axis = [case.cases for case in filtered_cases]
-        # Get x-value
-        x_axis = [case.date for case in filtered_cases]
-        self.plot_canvas.x_data = x_axis
-        self.plot_canvas.y_data = y_axis
-        # Clear previous drawing
-        self.plot_canvas.axes.clear()
-        # Draw the scatter plot
-        self.plot_canvas.axes.plot(x_axis, y_axis, 'o')
-        self.plot_canvas.draw()
-        # For my implementation, everytime we change the data,
-        # we need to re-init the cross-hair
-        # This could be improve, but in the future
-        self.plot_canvas.is_cross_hair_init = False
+                filtered_covid_cases = algorithms.linear_predicate(data.COUNTRIES_TO_ALL_COVID_CASES[country],
+                                                                   lambda item: (province.name == '' or
+                                                                                 item.province == province) and
+                                                                                (city.name == '' or
+                                                                                 item.city == city) and
+                                                                                start_date <= item.date <= end_date)
+
+            filtered_school_closures = algorithms.linear_predicate(data.COUNTRIES_TO_ALL_SCHOOL_CLOSURES[country],
+                                                                   lambda item: start_date <= item.date <= end_date)
+
+        self.plot_canvas.plot_school_closures(filtered_school_closures)
+        self.plot_canvas.plot_covid_cases(filtered_covid_cases)
     
     def on_country_selection_changed(self, index: int) -> None:
         """

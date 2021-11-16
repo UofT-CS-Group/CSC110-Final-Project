@@ -21,10 +21,10 @@ class ClosureStatus(Enum):
         - This class cannot be instantiated.
     """
     
-    CLOSED = 0
-    PARTIALLY_OPEN = 1
-    FULLY_OPEN = 2
-    ACADEMIC_BREAK = 3
+    CLOSED = 3
+    PARTIALLY_OPEN = 2
+    FULLY_OPEN = 1
+    ACADEMIC_BREAK = 0
 
 
 class Location(object):
@@ -184,7 +184,7 @@ class SchoolClosureData(TimeBasedData):
     country: Country
     status: ClosureStatus
     
-    def __init__(self, date: datetime.date, country: Country, status: ClosureStatus):
+    def __init__(self, date: datetime.date, status: ClosureStatus, country: Country = None):
         super().__init__(date)
         self.country = country
         self.status = status
@@ -202,6 +202,8 @@ class SchoolClosureData(TimeBasedData):
 # Constants
 # =================================================================================================
 
+# =================================================================================================
+# Covid
 # All covid cases from our datasets.
 ALL_COVID_CASES: List[CovidCaseData] = []
 COUNTRIES_TO_ALL_COVID_CASES: Dict[Country, List[CovidCaseData]] = {}
@@ -212,9 +214,17 @@ COUNTRIES_TO_COVID_CASES: Dict[Country, List[CovidCaseData]] = {}
 # Global covid cases (whole earth)
 GLOBAL_COVID_CASES: List[CovidCaseData] = []
 
+# =================================================================================================
+# School closures
 # All school closures from our datasets.
 ALL_SCHOOL_CLOSURES: List[SchoolClosureData] = []
 
+COUNTRIES_TO_ALL_SCHOOL_CLOSURES: Dict[Country, List[SchoolClosureData]] = {}
+
+GLOBAL_SCHOOL_CLOSURES: List[SchoolClosureData] = []
+
+# =================================================================================================
+# Locations
 # All countries from our datasets.
 COUNTRIES: Set[Country] = set()
 SORTED_COUNTRIES: List[Country] = []
@@ -276,11 +286,42 @@ def init_data() -> None:
     # Global covid cases (No country, whole earth)
     calculate_global_total_covid_cases()
     
+    # Init school closures
+    global COUNTRIES_TO_ALL_SCHOOL_CLOSURES
+    COUNTRIES_TO_ALL_SCHOOL_CLOSURES = algorithms.group(ALL_SCHOOL_CLOSURES, lambda c: c.country)
+    calculate_global_school_closures()
+    
     timestamp2 = time.time()
     print(f'Successfully initialize all data in {round(timestamp2 - timestamp1, 2)} seconds!')
 
 
+def calculate_global_school_closures() -> None:
+    global GLOBAL_SCHOOL_CLOSURES
+    current_date = ALL_SCHOOL_CLOSURES[0].date
+    num_of_status = {
+        ClosureStatus.CLOSED: 0,
+        ClosureStatus.FULLY_OPEN: 0,
+        ClosureStatus.ACADEMIC_BREAK: 0,
+        ClosureStatus.PARTIALLY_OPEN: 0
+    }
+    for closure in ALL_SCHOOL_CLOSURES:
+        if current_date == closure.date:
+            num_of_status[closure.status] += 1
+        else:
+            keys = [k for k in num_of_status]
+            values = [num_of_status[k] for k in keys]
+            index = values.index(max(values))
+            GLOBAL_SCHOOL_CLOSURES.append(SchoolClosureData(current_date, keys[index]))
+            current_date = closure.date
+            for k in num_of_status:
+                num_of_status[k] = 0
+
+
 def calculate_country_total_covid_cases(country: Country) -> List[CovidCaseData]:
+    """
+    Combine the covid data for the provinces of a country.
+    Therefore, we could have the total covid cases of that country.
+    """
     cases = COUNTRIES_TO_ALL_COVID_CASES[country]
     result: List[CovidCaseData] = []
     current_province = cases[0].province
@@ -300,6 +341,9 @@ def calculate_country_total_covid_cases(country: Country) -> List[CovidCaseData]
 
 
 def calculate_global_total_covid_cases() -> None:
+    """
+    Calculate the total covid cases on Earth.
+    """
     global GLOBAL_COVID_CASES
     GLOBAL_COVID_CASES.extend(CovidCaseData(c.date, 0) for c in COUNTRIES_TO_COVID_CASES[Country('China')])
     for country in COUNTRIES_TO_COVID_CASES:
@@ -308,6 +352,9 @@ def calculate_global_total_covid_cases() -> None:
 
 
 def read_covid_data_global(filename: str) -> None:
+    """
+    Read the resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv into ALL_COVID_CASES.
+    """
     with open(filename) as file:
         reader = csv.reader(file)
         
@@ -343,6 +390,9 @@ def read_covid_data_global(filename: str) -> None:
 
 
 def read_covid_data_US(filename: str) -> None:
+    """
+    Read the resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv into ALL_COVID_CASES.
+    """
     with open(filename) as file:
         reader = csv.reader(file)
         
@@ -384,6 +434,9 @@ def read_covid_data_US(filename: str) -> None:
 
 
 def read_closure_data(filename: str) -> None:
+    """
+    Read the resources/school_closures_datasets/full_dataset_31_oct.csv into ALL_SCHOOL_CLOSURES
+    """
     with open(filename) as file:
         reader = csv.reader(file)
         
