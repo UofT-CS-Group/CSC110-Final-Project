@@ -89,8 +89,33 @@ def insertion_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool =
         - This function mutate the lst object.
         - The compare parameter is a function who takes two objects and return 1 if the first
         object is greater than the second one, -1 otherwise, and 0 if they are equal.
+
+    >>> lst = [1, 3, 6, 2, 4, 5]
+    >>> insertion_sort(lst, lambda x, y: -1 if x < y else 0 if x == y else 1)
+    >>> lst
+    [1, 2, 3, 4, 5, 6]
+
+    >>> lst = [1, 3, 6, 5, 4, 2]
+    >>> insertion_sort(lst, lambda x, y: -1 if x < y else 0 if x == y else 1, True)
+    >>> lst
+    [6, 5, 4, 3, 2, 1]
     """
-    pass
+    lst_len = len(lst)
+
+    for i in range(1, lst_len):
+        key = lst[i]
+        move = i - 1
+
+        if not reverse:
+            while move >= 0 and compare(key, lst[move]) == -1:
+                lst[move + 1] = lst[move]
+                move -= 1
+        else:
+            while move >= 0 and compare(key, lst[move]) == 1:
+                lst[move + 1] = lst[move]
+                move -= 1
+
+        lst[move + 1] = key
 
 
 def merge(left_lst: List[T], right_lst: List[T], compare: Callable[[T, T], int],
