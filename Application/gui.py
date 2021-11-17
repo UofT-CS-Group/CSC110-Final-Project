@@ -344,6 +344,9 @@ class MainWindow(QMainWindow):
         # Set window title
         self.setWindowTitle('Main Window')
 
+        # Set window icon
+        self.setWindowIcon(QIcon('icon.jpg'))
+
         # Initialize status bar
         self.statusBar().showMessage('Ready.')
 
@@ -678,7 +681,7 @@ class InitWindow(QWidget):
                 "We have 2,470,748 observations in our data sets and many manipulations, \n"
                 "so it may take a bit to load."
         )
-
+    
     def init_layout(self):
         main_layout = QVBoxLayout(self)
         main_layout.addWidget(self.progress_bar)
