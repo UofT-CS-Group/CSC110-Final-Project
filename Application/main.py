@@ -1,18 +1,12 @@
 """
 The main entry of our program.
 """
-import math
-import os
 import sys
 import time
-
-import psutil
 
 import gui
 import data
 import threading
-
-from typing import Callable, Any
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -26,6 +20,7 @@ class InitWindowThread(threading.Thread):
     def __init__(self):
         super(InitWindowThread, self).__init__()
         self.setDaemon(True)
+        self.setName('Initialization Window Thread')
     
     def run(self) -> None:
         init_app = QApplication(sys.argv)

@@ -10,7 +10,6 @@ from PyQt5 import QtGui
 
 import algorithms
 import datetime
-
 import settings
 import data
 
@@ -96,7 +95,7 @@ class StandardComboBox(QComboBox):
         self.clear()
         self.setEnabled(False)
         
-    def enable_and_add_itmes(self, texts: Iterable[str]):
+    def enable_and_add_items(self, texts: Iterable[str]):
         self.setEnabled(True)
         self.addItems(texts)
 
@@ -523,13 +522,13 @@ class MainWindow(QMainWindow):
             if country not in data.COUNTRIES_TO_PROVINCES:
                 return
 
-            self.province_selection_combo_box.enable_and_add_itmes([p.name
+            self.province_selection_combo_box.enable_and_add_items([p.name
                                                                     for p in data.COUNTRIES_TO_PROVINCES[country]])
             province = data.COUNTRIES_TO_PROVINCES[country]
             if province[0] not in data.PROVINCES_TO_CITIES:
                 return
 
-            self.city_selection_combo_box.enable_and_add_itmes([c.name
+            self.city_selection_combo_box.enable_and_add_items([c.name
                                                                 for c in data.PROVINCES_TO_CITIES[province[0]]])
     
     def set_default_location_selection(self):
@@ -542,12 +541,12 @@ class MainWindow(QMainWindow):
             - city = None
         """
         self.country_selection_combo_box.clear()
-        self.country_selection_combo_box.enable_and_add_itmes(c.name for c in data.SORTED_COUNTRIES)
+        self.country_selection_combo_box.enable_and_add_items(c.name for c in data.SORTED_COUNTRIES)
         default_country = data.Country('Canada')
         self.country_selection_combo_box.setCurrentIndex(data.SORTED_COUNTRIES.index(default_country))
         default_provinces = data.COUNTRIES_TO_PROVINCES[default_country]
         self.province_selection_combo_box.clear()
-        self.province_selection_combo_box.enable_and_add_itmes(p.name for p in default_provinces)
+        self.province_selection_combo_box.enable_and_add_items(p.name for p in default_provinces)
         self.city_selection_combo_box.clear()
         self.city_selection_combo_box.setEnabled(True)
 
@@ -558,21 +557,18 @@ class MainWindow(QMainWindow):
 
 class ProgressUpdateThread(QThread):
     on_updated: pyqtSignal = pyqtSignal(int)
-    is_complete: bool = False
     
     def __init__(self, parent=None):
         super(ProgressUpdateThread, self).__init__(parent)
     
     def run(self) -> None:
         while True:
-            if self.is_complete:
-                self.exit()
-                return
             progress = data.get_progress()
             self.on_updated.emit(math.floor(progress * 100))
             time.sleep(0.1)
             if progress >= 1:
-                self.is_complete = True
+                self.exit()
+                return
 
 
 class InitWindow(QWidget):
@@ -643,6 +639,7 @@ class InitWindow(QWidget):
             self.progress_bar.setValue(progress)
             time.sleep(3)
             self.close()
+            # QApplication.instance().quit()
         else:
             self.progress_bar.setValue(progress)
     
@@ -657,4 +654,3 @@ class InitWindow(QWidget):
             _thread.interrupt_main()
         else:
             super(InitWindow, self).closeEvent(a0)
-    
