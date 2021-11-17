@@ -455,7 +455,7 @@ def read_covid_data_global(filename: str) -> None:
             country = Country(row[1])
             province = Province(row[0], country)
             
-            if country.name == '' or not is_in_ascii(country.name) or country.name in COVID_COUNTRIES_DELETE:
+            if not is_in_ascii(country.name) or country.name in COVID_COUNTRIES_DELETE:
                 continue
             
             COUNTRIES.add(country)
@@ -496,7 +496,7 @@ def read_covid_data_US(filename: str) -> None:
             province = Province(row[6], country)
             city = City(row[5], province)
             
-            if country.name == '' or not is_in_ascii(country.name):
+            if not is_in_ascii(country.name):
                 continue
             
             COUNTRIES.add(country)
