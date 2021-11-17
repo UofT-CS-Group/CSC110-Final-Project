@@ -19,8 +19,27 @@ def bubble_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool = Fa
         - This function mutate the lst object.
         - The compare parameter is a function who takes two objects and return 1 if the first
         object is greater than the second one, -1 otherwise, and 0 if they are equal.
+
+    >>> lst = [1, 3, 6, 2, 4, 5]
+    >>> bubble_sort(lst, lambda x, y: -1 if x < y else 0 if x == y else 1)
+    >>> lst
+    [1, 2, 3, 4, 5, 6]
+
+    >>> lst = [1, 3, 6, 5, 4, 2]
+    >>> bubble_sort(lst, lambda x, y: -1 if x < y else 0 if x == y else 1, True)
+    >>> lst
+    [6, 5, 4, 3, 2, 1]
     """
-    pass
+    lst_len = len(lst)
+
+    for i in range(lst_len - 1):
+        for j in range(lst_len - i - 1):
+            if not reverse:
+                if compare(lst[j], lst[j + 1]) == 1:
+                    lst[j], lst[j + 1] = lst[j + 1], lst[j]
+            else:
+                if compare(lst[j], lst[j + 1]) == -1:
+                    lst[j], lst[j + 1] = lst[j + 1], lst[j]
 
 
 def selection_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool = False) -> None:
