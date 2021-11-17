@@ -3,18 +3,18 @@ Main GUI + backend here
 I know it's in efficient and shitty
 Just for temp use
 """
-import threading
+import math
 import time
-import typing
 
-# import QtDesigner
-import numpy as np
+from PyQt5 import QtGui
+
 import algorithms
 import datetime
+
 import settings
 import data
 
-from typing import Iterable, List
+from typing import Iterable, List, Optional
 
 import matplotlib.lines
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -28,6 +28,11 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
 matplotlib.style.use('fast')
+
+
+# ================================================================================================
+# Helper functions and classes.
+# ================================================================================================
 
 
 def set_font(widget: QWidget,
@@ -86,6 +91,14 @@ class StandardComboBox(QComboBox):
         set_font(self)
         if items is not None:
             self.addItems(items)
+            
+    def clear_and_disable(self):
+        self.clear()
+        self.setEnabled(False)
+        
+    def enable_and_add_itmes(self, texts: Iterable[str]):
+        self.setEnabled(True)
+        self.addItems(texts)
 
 
 class StandardDateEdit(QDateEdit):
@@ -107,9 +120,26 @@ class StandardCheckbox(QCheckBox):
     When needed, we could add more attributes and functions.
     """
     
-    def __init__(self, text: str, parent: typing.Optional[QWidget] = ...) -> None:
+    def __init__(self, text: str, parent: Optional[QWidget] = None) -> None:
         super().__init__(text, parent)
         set_font(self)
+
+
+class StandardProgressBar(QProgressBar):
+    """
+    A standard progress bar for our project.
+
+    When needed, we could add more attributes and functions.
+    """
+    
+    def __init__(self, parent: Optional[QWidget] = None):
+        super(StandardProgressBar, self).__init__(parent)
+        set_font(self)
+
+
+# ================================================================================================
+# Main window.
+# ================================================================================================
 
 
 class PlotCanvas(FigureCanvas):
@@ -291,6 +321,7 @@ class MainWindow(QMainWindow):
         self.country_selection_combo_box = StandardComboBox(self)
         
         self.global_checkbox = StandardCheckbox('Global', self)
+        # This setChecked does not trigger the slot because we haven't connected it at this point.
         self.global_checkbox.setChecked(True)
         self.country_checkbox = StandardCheckbox('Country Total', self)
         
@@ -371,6 +402,7 @@ class MainWindow(QMainWindow):
         Init the signals.
         """
         self.global_checkbox.stateChanged.connect(self.on_global_checkbox_changed)
+        self.on_global_checkbox_changed(Qt.Checked)
         self.country_checkbox.stateChanged.connect(self.on_country_checkbox_changed)
         
         self.confirm_button.clicked.connect(self.confirm_button_handler)
@@ -379,6 +411,7 @@ class MainWindow(QMainWindow):
         self.country_selection_combo_box.currentIndexChanged.connect(self.on_country_selection_changed)
         self.province_selection_combo_box.currentIndexChanged.connect(self.on_province_selection_changed)
     
+    @pyqtSlot()
     def confirm_button_handler(self) -> None:
         """
         Things to do when the confirm button is clicked.
@@ -391,7 +424,7 @@ class MainWindow(QMainWindow):
         q_end_date: QDate = self.end_date_edit.date()
         start_date = datetime.date(q_start_date.year(), q_start_date.month(), q_start_date.day())
         end_date = datetime.date(q_end_date.year(), q_end_date.month(), q_end_date.day())
-
+        
         if self.global_checkbox.isChecked():
             filtered_covid_cases = algorithms.linear_predicate(data.GLOBAL_COVID_CASES,
                                                                lambda item: start_date <= item.date <= end_date)
@@ -411,13 +444,14 @@ class MainWindow(QMainWindow):
                                                                                 (city.name == '' or
                                                                                  item.city == city) and
                                                                                 start_date <= item.date <= end_date)
-
+            
             filtered_school_closures = algorithms.linear_predicate(data.COUNTRIES_TO_ALL_SCHOOL_CLOSURES[country],
                                                                    lambda item: start_date <= item.date <= end_date)
-
+        
         self.plot_canvas.plot_school_closures(filtered_school_closures)
         self.plot_canvas.plot_covid_cases(filtered_covid_cases)
     
+    @pyqtSlot(int)
     def on_country_selection_changed(self, index: int) -> None:
         """
         Handle things to do after the user selected a country.
@@ -442,6 +476,7 @@ class MainWindow(QMainWindow):
         cities = data.PROVINCES_TO_CITIES[provinces[0]]
         self.city_selection_combo_box.addItems([c.name for c in cities])
     
+    @pyqtSlot(int)
     def on_province_selection_changed(self, index: int) -> None:
         """
         Handle things to do after the user selected a province.
@@ -457,30 +492,45 @@ class MainWindow(QMainWindow):
             self.city_selection_combo_box.clear()
             self.city_selection_combo_box.addItems([c.name for c in cities])
     
+    @pyqtSlot(int)
     def on_global_checkbox_changed(self, state: int) -> None:
         """
         Handle things to do after the user checked or unchecked the global checkbox.
         """
         if state == Qt.Checked:
-            self.country_selection_combo_box.clear()
-            self.province_selection_combo_box.clear()
-            self.city_selection_combo_box.clear()
             self.country_checkbox.setChecked(False)
+            self.country_selection_combo_box.clear_and_disable()
+            self.province_selection_combo_box.clear_and_disable()
+            self.city_selection_combo_box.clear_and_disable()
         else:
             self.set_default_location_selection()
     
+    @pyqtSlot(int)
     def on_country_checkbox_changed(self, state: int) -> None:
         """
         Handle things to do after the user checked or unchecked the country only checkbox.
         """
         if state == Qt.Checked:
             self.global_checkbox.setChecked(False)
-            self.province_selection_combo_box.clear()
-            self.city_selection_combo_box.clear()
+            self.province_selection_combo_box.clear_and_disable()
+            self.city_selection_combo_box.clear_and_disable()
         else:
+            self.province_selection_combo_box.setEnabled(True)
+            self.city_selection_combo_box.setEnabled(True)
+
             country = data.SORTED_COUNTRIES[self.country_selection_combo_box.currentIndex()]
-            if country in data.COUNTRIES_TO_PROVINCES:
-                self.province_selection_combo_box.addItems([p.name for p in data.COUNTRIES_TO_PROVINCES[country]])
+
+            if country not in data.COUNTRIES_TO_PROVINCES:
+                return
+
+            self.province_selection_combo_box.enable_and_add_itmes([p.name
+                                                                    for p in data.COUNTRIES_TO_PROVINCES[country]])
+            province = data.COUNTRIES_TO_PROVINCES[country]
+            if province[0] not in data.PROVINCES_TO_CITIES:
+                return
+
+            self.city_selection_combo_box.enable_and_add_itmes([c.name
+                                                                for c in data.PROVINCES_TO_CITIES[province[0]]])
     
     def set_default_location_selection(self):
         """
@@ -492,10 +542,114 @@ class MainWindow(QMainWindow):
             - city = None
         """
         self.country_selection_combo_box.clear()
-        self.country_selection_combo_box.addItems(c.name for c in data.SORTED_COUNTRIES)
+        self.country_selection_combo_box.enable_and_add_itmes(c.name for c in data.SORTED_COUNTRIES)
         default_country = data.Country('Canada')
         self.country_selection_combo_box.setCurrentIndex(data.SORTED_COUNTRIES.index(default_country))
         default_provinces = data.COUNTRIES_TO_PROVINCES[default_country]
         self.province_selection_combo_box.clear()
-        self.province_selection_combo_box.addItems(p.name for p in default_provinces)
+        self.province_selection_combo_box.enable_and_add_itmes(p.name for p in default_provinces)
         self.city_selection_combo_box.clear()
+        self.city_selection_combo_box.setEnabled(True)
+
+
+# ================================================================================================
+# Initialization window.
+# ================================================================================================
+
+class ProgressUpdateThread(QThread):
+    on_updated: pyqtSignal = pyqtSignal(int)
+    is_complete: bool = False
+    
+    def __init__(self, parent=None):
+        super(ProgressUpdateThread, self).__init__(parent)
+    
+    def run(self) -> None:
+        while True:
+            if self.is_complete:
+                self.exit()
+                return
+            progress = data.get_progress()
+            self.on_updated.emit(math.floor(progress * 100))
+            time.sleep(0.1)
+            if progress >= 1:
+                self.is_complete = True
+
+
+class InitWindow(QWidget):
+    """
+    The window displayed at the initialization phase, including a progress bar indicating the percentage of data
+    initialized.
+    """
+    progress_bar: StandardProgressBar
+    progress_bar_update_thread: ProgressUpdateThread
+    
+    cancel_button: StandardPushButton
+    
+    helper_label: StandardLabel
+    
+    def __init__(self):
+        super(InitWindow, self).__init__()
+        self.init_window()
+    
+    def init_window(self):
+        self.resize(618, 50)
+        
+        # Center the window
+        frame_geometry = self.frameGeometry()
+        center_point = QDesktopWidget().availableGeometry().center()
+        frame_geometry.moveCenter(center_point)
+        self.move(frame_geometry.topLeft())
+        
+        # Set window title
+        self.setWindowTitle('Initializing...')
+        
+        # Initialize Widgets
+        self.init_widgets()
+        
+        # Initialize Layout
+        self.init_layout()
+        
+        # Initialize Signals
+        self.init_signals()
+    
+    def init_widgets(self):
+        self.progress_bar = StandardProgressBar(self)
+        self.cancel_button = StandardPushButton('Cancel')
+        self.helper_label = StandardLabel("We have 2,470,748 observations in our data sets and many manipulations, \n"
+                                          "so it may take a bit to load.")
+    
+    def init_layout(self):
+        main_layout = QVBoxLayout(self)
+        main_layout.addWidget(self.progress_bar)
+        main_layout.addWidget(self.cancel_button)
+        main_layout.addWidget(self.helper_label)
+        self.setLayout(main_layout)
+    
+    def init_signals(self):
+        self.progress_bar_update_thread = ProgressUpdateThread()
+        self.progress_bar_update_thread.on_updated.connect(self.update_progress_bar)
+        self.progress_bar_update_thread.start()
+        
+        self.cancel_button.clicked.connect(self.on_cancel_button_clicked)
+    
+    @pyqtSlot(int)
+    def update_progress_bar(self, progress: int) -> None:
+        if progress >= 100:
+            self.helper_label.setText('Successfully Loaded! Our main window will appear soon!')
+            self.helper_label.adjustSize()
+            self.progress_bar.setValue(progress)
+            time.sleep(3)
+            self.close()
+        else:
+            self.progress_bar.setValue(progress)
+    
+    @staticmethod
+    def on_cancel_button_clicked():
+        import _thread
+        _thread.interrupt_main()
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        import _thread
+        _thread.interrupt_main()
+        
+    
