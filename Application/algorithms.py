@@ -14,7 +14,9 @@ def bubble_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool = Fa
     Sorts the List lst in-place based on compare function using bubble sort algorithm.
     
     If the reverse parameter is True, then this function should sort lst in descending order.
-    
+
+    Time Complexity: O(n^2)
+
     Note:
         - This function mutate the lst object.
         - The compare parameter is a function who takes two objects and return 1 if the first
@@ -47,7 +49,9 @@ def selection_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool =
     Sorts the List lst in-place based on compare function using selection sort algorithm.
     
     If the reverse parameter is True, then this function should sort lst in descending order.
-    
+
+    Time Complexity: O(n^2)
+
     Note:
         - This function mutate the lst object.
         - The compare parameter is a function who takes two objects and return 1 if the first
@@ -85,6 +89,8 @@ def insertion_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool =
 
     If the reverse parameter is True, then this function should sort lst in descending order.
 
+    Time Complexity: O(n^2)
+    
     Note:
         - This function mutate the lst object.
         - The compare parameter is a function who takes two objects and return 1 if the first
