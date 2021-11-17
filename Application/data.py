@@ -3,6 +3,8 @@ CSC110 Final Project - Data Classes File
 
 Contains functions to read Raw CSV File that has the specified format
 """
+import math
+import threading
 from typing import List, Set, Dict
 from enum import Enum
 import datetime
@@ -240,11 +242,13 @@ CITIES: Set[City] = set()
 SORTED_CITIES: List[City] = []
 PROVINCES_TO_CITIES: Dict[Province, List[City]] = {}
 
-STATUS_DICT = {'Fully open'            : ClosureStatus.FULLY_OPEN,
-               'Partially open'        : ClosureStatus.PARTIALLY_OPEN,
-               'Closed due to COVID-19': ClosureStatus.CLOSED,
-               'Academic break'        : ClosureStatus.ACADEMIC_BREAK
-               }
+# Status correspond to the raw school closure data set.
+STATUS_DICT = {
+    'Fully open'            : ClosureStatus.FULLY_OPEN,
+    'Partially open'        : ClosureStatus.PARTIALLY_OPEN,
+    'Closed due to COVID-19': ClosureStatus.CLOSED,
+    'Academic break'        : ClosureStatus.ACADEMIC_BREAK
+}
 
 # Country names in the closure data set will be replaced by the value.
 CLOSURE_COUNTRY_NAMES_FIX: Dict[str, str] = {
@@ -304,8 +308,12 @@ CLOSURE_COUNTRIES_DELETE: Set[str] = {
     'Tuvalu'
 }
 
-test_covid_countries = set()
-test_closure_countries = set()
+# Basically len(ALL_COVID_CASES) + len(ALL_SCHOOL_CLOSURES)
+TOTAL_NUMBER_DATA = 2470748
+TOTAL_PROGRESS = TOTAL_NUMBER_DATA + math.ceil(TOTAL_NUMBER_DATA * 0.001) + math.ceil(TOTAL_NUMBER_DATA * 0.001)
+
+# The current progress
+progress = 0
 
 
 # =================================================================================================
@@ -332,6 +340,8 @@ def init_data() -> None:
     global PROVINCES_TO_CITIES
     PROVINCES_TO_CITIES = algorithms.group(SORTED_CITIES, lambda c: c.province)
     
+    global progress
+    
     # Init covid cases
     global COUNTRIES_TO_ALL_COVID_CASES
     COUNTRIES_TO_ALL_COVID_CASES = algorithms.group(ALL_COVID_CASES, lambda c: c.country)
@@ -346,14 +356,20 @@ def init_data() -> None:
         COUNTRIES_TO_COVID_CASES[country] = calculate_country_total_covid_cases(country)
     # Global covid cases (No country, whole earth)
     init_global_total_covid_cases()
+    progress += math.ceil(TOTAL_NUMBER_DATA * 0.001)
     
     # Init school closures
     global COUNTRIES_TO_ALL_SCHOOL_CLOSURES
     COUNTRIES_TO_ALL_SCHOOL_CLOSURES = algorithms.group(ALL_SCHOOL_CLOSURES, lambda c: c.country)
     init_global_school_closures()
+    progress += math.ceil(TOTAL_NUMBER_DATA * 0.001)
     
     timestamp2 = time.time()
     print(f'Successfully initialize all data in {round(timestamp2 - timestamp1, 2)} seconds!')
+
+
+def get_progress() -> float:
+    return progress / TOTAL_PROGRESS
 
 
 def init_global_school_closures() -> None:
@@ -461,6 +477,8 @@ def read_covid_data_global(filename: str) -> None:
                                                      cases=int(row[i]),
                                                      city=None,
                                                      province=province))
+                global progress
+                progress += 1
 
 
 def read_covid_data_US(filename: str) -> None:
@@ -505,6 +523,8 @@ def read_covid_data_US(filename: str) -> None:
                                                      cases=int(row[i]),
                                                      city=city,
                                                      province=province))
+                global progress
+                progress += 1
 
 
 def read_closure_data(filename: str) -> None:
@@ -531,6 +551,8 @@ def read_closure_data(filename: str) -> None:
                                                                             day=int(day)),
                                                          country=Country(country_name),
                                                          status=STATUS_DICT[row[3]]))
+            global progress
+            progress += 1
 
 
 def is_in_ascii(s: str) -> bool:
