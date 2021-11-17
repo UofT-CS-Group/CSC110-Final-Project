@@ -272,15 +272,15 @@ CLOSURE_COUNTRY_NAMES_FIX: Dict[str, str] = {
 
 # "Country" names in the covid data set that will be deleted.
 COVID_COUNTRIES_DELETE: Set[str] = {
+    'Burma',
     'Diamond Princess',
     'Holy See',
+    'Kosovo',
     'MS Zaandam',
+    'Sao Tome and Principe',
     'Summer Olympics 2020',
     'Taiwan*',
-    'West Bank and Gaza',
-    'Burma',
-    'Kosovo',
-    'Sao Tome and Principe'
+    'West Bank and Gaza'
 }
 
 # Country names in the closure data set that will be deleted.
@@ -495,9 +495,6 @@ def read_covid_data_US(filename: str) -> None:
             country = Country(row[7])
             province = Province(row[6], country)
             city = City(row[5], province)
-            
-            if not is_in_ascii(country.name):
-                continue
             
             COUNTRIES.add(country)
             
