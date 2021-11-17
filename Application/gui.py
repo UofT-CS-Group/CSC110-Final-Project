@@ -587,6 +587,8 @@ class InitWindow(QWidget):
     
     helper_label: StandardLabel
     
+    is_complete: bool = False
+    
     def __init__(self):
         super(InitWindow, self).__init__()
         self.init_window()
@@ -635,6 +637,7 @@ class InitWindow(QWidget):
     @pyqtSlot(int)
     def update_progress_bar(self, progress: int) -> None:
         if progress >= 100:
+            self.is_complete = True
             self.helper_label.setText('Successfully Loaded! Our main window will appear soon!')
             self.helper_label.adjustSize()
             self.progress_bar.setValue(progress)
@@ -649,7 +652,9 @@ class InitWindow(QWidget):
         _thread.interrupt_main()
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        import _thread
-        _thread.interrupt_main()
-        
+        if not self.is_complete:
+            import _thread
+            _thread.interrupt_main()
+        else:
+            super(InitWindow, self).closeEvent(a0)
     
