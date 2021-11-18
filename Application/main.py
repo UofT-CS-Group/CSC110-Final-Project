@@ -12,38 +12,32 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
 
-class InitWindowThread(threading.Thread):
-    """
-    The thread of the initialization window.
-    """
-    
-    def __init__(self):
-        super(InitWindowThread, self).__init__()
-        self.setDaemon(True)
-        self.setName('Initialization Window Thread')
-    
-    def run(self) -> None:
-        init_app = QApplication(sys.argv)
-        
-        init_window = gui.InitWindow()
-        init_window.show()
-        
-        init_app.exec_()
-
-
 if __name__ == '__main__':
     print('Initializing...')
-    
-    init_window_thread = InitWindowThread()
-    init_window_thread.start()
-    
-    data.init_data()
-    
-    time.sleep(3.2)
-    
+
+    # TODO: Download any resource files needed and place them into the correct folders.
+
+    # Initialize all data on another thread because we don't want it to block our main thread
+    # for 15 seconds.
+    data_thread = threading.Thread(target=data.init_data, name='data_thread')
+    data_thread.start()
+
+    print(f'Current Running Threads: {threading.enumerate()}')
+
+    # Create the QApplication instance.
     app = QApplication(sys.argv)
+
+    init_window = gui.InitWindow()
+    init_window.show()
     
-    main_window = gui.MainWindow()
-    main_window.show()
+    # We need to retain a reference here to avoid garbage collection.
+    # main_window will be initialized after the data are fully loaded
+    # in gui.InitWindow#update_progress_bar method.
+    main_window: gui.MainWindow
     
+    # Start the event loop with app.exec
+    # After the program stopped, app.exec will return a exit code which could indicate
+    # whether there is an error, and sys.exit will get it.
+    # If we don't call it with sys.exit, the exit code will always be 0 no matter if an
+    # error happened.
     sys.exit(app.exec_())
