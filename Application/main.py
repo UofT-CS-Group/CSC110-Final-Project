@@ -13,10 +13,6 @@ from PyQt5.QtCore import *
 
 
 if __name__ == '__main__':
-    print('Initializing...')
-
-    # TODO: Download any resource files needed and place them into the correct folders.
-
     # Initialize all data on another thread because we don't want it to block our main thread
     # for 15 seconds.
     data_thread = threading.Thread(target=data.init_data, name='data_thread')
