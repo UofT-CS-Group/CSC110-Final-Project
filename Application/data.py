@@ -1,7 +1,7 @@
 """
 CSC110 Final Project - Data Classes File
 
-Contains functions to read Raw CSV File that has the specified format
+Contains functions to do all processings with our datasets
 """
 import math
 import threading
@@ -10,6 +10,8 @@ from enum import Enum
 import datetime
 import csv
 import algorithms
+import requests
+import os
 
 
 # =================================================================================================
@@ -324,11 +326,66 @@ progress = 0
 # Read raw data into ALL_COVID_CASES and ALL_SCHOOL_CLOSURES.
 # =================================================================================================
 
+def download_data() -> None:
+    """
+    Downloads the datasets from our GitHub repository
+
+    This function overwrites whatever files already exist at the specified location
+
+    List of downloads:
+        - time_series_covid19_confirmed_global.csv
+        - time_series_covid19_confirmed_US.csv
+        - full_dataset_31_oct.csv
+    """
+    try:
+        os.mkdir('resources/covid_cases_datasets')
+        os.mkdir('resources/school_closures_datasets')
+
+    except FileExistsError:
+        pass
+
+    # Ray's random gist dump, contains all three datasets.
+    covid19_us_url = 'https://gist.githubusercontent.com/Lei-Tin/6581b1c27212fabdd35754dcc3d5de62/' \
+                     'raw/c3597829095ea1c3ebe0cc6955b3a0d2febb9489/' \
+                     'time_series_covid19_confirmed_US.csv'
+    covid19_global_url = 'https://gist.githubusercontent.com/Lei-Tin/' \
+                         '6581b1c27212fabdd35754dcc3d5de62/raw/' \
+                         'c3597829095ea1c3ebe0cc6955b3a0d2febb9489/' \
+                         'time_series_covid19_confirmed_global.csv'
+    closure_url = 'https://gist.githubusercontent.com/Lei-Tin/' \
+                  '6581b1c27212fabdd35754dcc3d5de62/raw/c3597829095ea1c3ebe0cc6955b3a0d2febb9489/' \
+                  'full_dataset_31_oct.csv'
+
+    covid19_us_dataset = requests.get(covid19_us_url)
+    covid19_global_dataset = requests.get(covid19_global_url)
+    closure_dataset = requests.get(closure_url)
+
+    # Writes the files in the specified directories
+    open('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv', 'wb')\
+        .write(covid19_us_dataset.content)
+    open('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv', 'wb')\
+        .write(covid19_global_dataset.content)
+    open('resources/school_closures_datasets/full_dataset_31_oct.csv', 'wb')\
+        .write(closure_dataset.content)
+
+
 def init_data() -> None:
     """Read and process all data needed."""
     import time
     timestamp1 = time.time()
-    
+
+    try:
+        open('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
+        open('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
+        open('resources/school_closures_datasets/full_dataset_31_oct.csv')
+
+    except FileNotFoundError:
+        print('Datasets not found! Downloading...')
+        download_data()
+        print('Download success!')
+
+    print('Initializing data...')
+
     read_covid_data_global(
             'resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
     read_covid_data_US('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
@@ -369,10 +426,11 @@ def init_data() -> None:
     progress += math.ceil(TOTAL_NUMBER_DATA * 0.001)
     
     timestamp2 = time.time()
-    print(f'Successfully initialize all data in {round(timestamp2 - timestamp1, 2)} seconds!')
+    print(f'Successfully initialized all data in {round(timestamp2 - timestamp1, 2)} seconds!')
 
 
 def get_progress() -> float:
+    """Return the current progress divided by the total progress"""
     return progress / TOTAL_PROGRESS
 
 
