@@ -3,15 +3,15 @@ Main GUI + backend here
 I know it's in efficient and shitty
 Just for temp use
 """
-import math
-import time
-
 from PyQt5 import QtGui
 
 import algorithms
 import datetime
 import settings
 import data
+import math
+import time
+import main
 
 from typing import Iterable, List, Optional
 
@@ -29,9 +29,9 @@ from PyQt5.QtCore import *
 matplotlib.style.use('fast')
 
 
-# ================================================================================================
+# =================================================================================================
 # Helper functions and classes.
-# ================================================================================================
+# =================================================================================================
 
 
 def set_font(widget: QWidget,
@@ -136,9 +136,9 @@ class StandardProgressBar(QProgressBar):
         set_font(self)
 
 
-# ================================================================================================
+# =================================================================================================
 # Main window.
-# ================================================================================================
+# =================================================================================================
 
 
 class PlotCanvas(FigureCanvas):
@@ -190,15 +190,17 @@ class PlotCanvas(FigureCanvas):
         self.axes_closure.clear()
         self.axes_closure.plot(x_axis, y_axis, marker='.', color='green')
         self.axes_closure.set_yticks(ticks=[0, 1, 2, 3], minor=False)
-        self.axes_closure.set_yticklabels(labels=['Academic Break', 'Fully Open', 'Partially Open', 'Closed'],
-                                          minor=False)
+        self.axes_closure.set_yticklabels(
+                labels=['Academic Break', 'Fully Open', 'Partially Open', 'Closed'],
+                minor=False)
         for text in self.axes_closure.get_xticklabels():
             text.set_rotation(40.0)
         self.draw()
         self.is_closure_cross_hair_init = False
     
     def on_mouse_move(self, event: matplotlib.backend_bases.MouseEvent) -> None:
-        # The reason why the cross-hair is laggy is because self.draw() takes a very long time to draw.
+        # The reason why the cross-hair is laggy is because self.draw()
+        # takes a very long time to draw.
         # This part of code is a little bit shitty, but it is not worthy to fix
         if event.inaxes:
             x = event.xdata
@@ -212,10 +214,10 @@ class PlotCanvas(FigureCanvas):
                 real_x = (x - datetime.date.fromtimestamp(0)).days
                 
                 if not self.is_covid_cross_hair_init:
-                    self.covid_horizontal_cross_hair = self.axes_covid.axhline(y=y, color='black', linewidth=0.8,
-                                                                               linestyle='--')
-                    self.covid_vertical_cross_hair = self.axes_covid.axvline(x=real_x, color='black', linewidth=0.8,
-                                                                             linestyle='--')
+                    self.covid_horizontal_cross_hair = self.axes_covid.axhline(
+                            y=y, color='black', linewidth=0.8, linestyle='--')
+                    self.covid_vertical_cross_hair = self.axes_covid.axvline(
+                            x=real_x, color='black', linewidth=0.8, linestyle='--')
                     self.is_covid_cross_hair_init = True
                 
                 self.covid_horizontal_cross_hair.set_visible(True)
@@ -231,10 +233,10 @@ class PlotCanvas(FigureCanvas):
                 real_x = (x - datetime.date.fromtimestamp(0)).days
                 
                 if not self.is_closure_cross_hair_init:
-                    self.closure_horizontal_cross_hair = self.axes_closure.axhline(y=y, color='black', linewidth=0.8,
-                                                                                   linestyle='--')
-                    self.closure_vertical_cross_hair = self.axes_closure.axvline(x=real_x, color='black', linewidth=0.8,
-                                                                                 linestyle='--')
+                    self.closure_horizontal_cross_hair = self.axes_closure.axhline(
+                            y=y, color='black', linewidth=0.8, linestyle='--')
+                    self.closure_vertical_cross_hair = self.axes_closure.axvline(
+                            x=real_x, color='black', linewidth=0.8, linestyle='--')
                     self.is_closure_cross_hair_init = True
                 
                 self.closure_horizontal_cross_hair.set_visible(True)
@@ -245,12 +247,16 @@ class PlotCanvas(FigureCanvas):
                 self.draw()
         else:
             if self.is_covid_cross_hair_init:
-                if self.covid_horizontal_cross_hair.get_visible() and self.covid_vertical_cross_hair.get_visible():
+                if self.covid_horizontal_cross_hair.get_visible() and \
+                        self.covid_vertical_cross_hair.get_visible():
+
                     self.covid_horizontal_cross_hair.set_visible(False)
                     self.covid_vertical_cross_hair.set_visible(False)
                     self.draw()
             if self.is_closure_cross_hair_init:
-                if self.closure_horizontal_cross_hair.get_visible() and self.closure_vertical_cross_hair.get_visible():
+                if self.closure_horizontal_cross_hair.get_visible() and \
+                        self.closure_vertical_cross_hair.get_visible():
+
                     self.closure_horizontal_cross_hair.set_visible(False)
                     self.closure_vertical_cross_hair.set_visible(False)
                     self.draw()
@@ -374,9 +380,12 @@ class MainWindow(QMainWindow):
         # The layout for country, province, and city selection
         location_selection_layout = QFormLayout()
         controller_layout.addLayout(location_selection_layout)
-        location_selection_layout.addRow(self.country_selection_label, self.country_selection_combo_box)
-        location_selection_layout.addRow(self.province_selection_label, self.province_selection_combo_box)
-        location_selection_layout.addRow(self.city_selection_label, self.city_selection_combo_box)
+        location_selection_layout.addRow(self.country_selection_label,
+                                         self.country_selection_combo_box)
+        location_selection_layout.addRow(self.province_selection_label,
+                                         self.province_selection_combo_box)
+        location_selection_layout.addRow(self.city_selection_label,
+                                         self.city_selection_combo_box)
         
         # The layout for date range
         date_range_layout = QFormLayout()
@@ -407,8 +416,10 @@ class MainWindow(QMainWindow):
         self.confirm_button.clicked.connect(self.confirm_button_handler)
         self.confirm_button_handler()
         
-        self.country_selection_combo_box.currentIndexChanged.connect(self.on_country_selection_changed)
-        self.province_selection_combo_box.currentIndexChanged.connect(self.on_province_selection_changed)
+        self.country_selection_combo_box.currentIndexChanged.connect(
+                self.on_country_selection_changed)
+        self.province_selection_combo_box.currentIndexChanged.connect(
+                self.on_province_selection_changed)
     
     @pyqtSlot()
     def confirm_button_handler(self) -> None:
@@ -425,27 +436,31 @@ class MainWindow(QMainWindow):
         end_date = datetime.date(q_end_date.year(), q_end_date.month(), q_end_date.day())
         
         if self.global_checkbox.isChecked():
-            filtered_covid_cases = algorithms.linear_predicate(data.GLOBAL_COVID_CASES,
-                                                               lambda item: start_date <= item.date <= end_date)
-            filtered_school_closures = algorithms.linear_predicate(data.GLOBAL_SCHOOL_CLOSURES,
-                                                                   lambda item: start_date <= item.date <= end_date)
+            filtered_covid_cases = algorithms.linear_predicate(
+                    data.GLOBAL_COVID_CASES, lambda item: start_date <= item.date <= end_date)
+
+            filtered_school_closures = algorithms.linear_predicate(
+                    data.GLOBAL_SCHOOL_CLOSURES, lambda item: start_date <= item.date <= end_date)
         else:
             country = data.Country(self.country_selection_combo_box.currentText())
+
             if self.country_checkbox.isChecked():
-                filtered_covid_cases = algorithms.linear_predicate(data.COUNTRIES_TO_COVID_CASES[country],
-                                                                   lambda item: start_date <= item.date <= end_date)
+                filtered_covid_cases = algorithms.linear_predicate(
+                        data.COUNTRIES_TO_COVID_CASES[country],
+                        lambda item: start_date <= item.date <= end_date)
             else:
                 province = data.Province(self.province_selection_combo_box.currentText(), country)
                 city = data.City(self.city_selection_combo_box.currentText(), province)
-                filtered_covid_cases = algorithms.linear_predicate(data.COUNTRIES_TO_ALL_COVID_CASES[country],
-                                                                   lambda item: (province.name == '' or
-                                                                                 item.province == province) and
-                                                                                (city.name == '' or
-                                                                                 item.city == city) and
-                                                                                start_date <= item.date <= end_date)
+                filtered_covid_cases = algorithms.linear_predicate(
+                        data.COUNTRIES_TO_ALL_COVID_CASES[country],
+                        lambda item: (province.name == '' or item.province == province) and
+                                     (city.name == '' or item.city == city) and
+                                     start_date <= item.date <= end_date)
             
-            filtered_school_closures = algorithms.linear_predicate(data.COUNTRIES_TO_ALL_SCHOOL_CLOSURES[country],
-                                                                   lambda item: start_date <= item.date <= end_date)
+            filtered_school_closures = algorithms.linear_predicate(
+                    data.COUNTRIES_TO_ALL_SCHOOL_CLOSURES[country],
+                    lambda item: start_date <= item.date <= end_date
+            )
         
         self.plot_canvas.plot_school_closures(filtered_school_closures)
         self.plot_canvas.plot_covid_cases(filtered_covid_cases)
@@ -522,14 +537,14 @@ class MainWindow(QMainWindow):
             if country not in data.COUNTRIES_TO_PROVINCES:
                 return
 
-            self.province_selection_combo_box.enable_and_add_items([p.name
-                                                                    for p in data.COUNTRIES_TO_PROVINCES[country]])
+            self.province_selection_combo_box.enable_and_add_items(
+                    [p.name for p in data.COUNTRIES_TO_PROVINCES[country]])
             province = data.COUNTRIES_TO_PROVINCES[country]
             if province[0] not in data.PROVINCES_TO_CITIES:
                 return
 
-            self.city_selection_combo_box.enable_and_add_items([c.name
-                                                                for c in data.PROVINCES_TO_CITIES[province[0]]])
+            self.city_selection_combo_box.enable_and_add_items(
+                    [c.name for c in data.PROVINCES_TO_CITIES[province[0]]])
     
     def set_default_location_selection(self):
         """
@@ -541,9 +556,11 @@ class MainWindow(QMainWindow):
             - city = None
         """
         self.country_selection_combo_box.clear()
-        self.country_selection_combo_box.enable_and_add_items(c.name for c in data.SORTED_COUNTRIES)
+        self.country_selection_combo_box.enable_and_add_items(c.name
+                                                              for c in data.SORTED_COUNTRIES)
         default_country = data.Country('Canada')
-        self.country_selection_combo_box.setCurrentIndex(data.SORTED_COUNTRIES.index(default_country))
+        self.country_selection_combo_box.setCurrentIndex(
+                data.SORTED_COUNTRIES.index(default_country))
         default_provinces = data.COUNTRIES_TO_PROVINCES[default_country]
         self.province_selection_combo_box.clear()
         self.province_selection_combo_box.enable_and_add_items(p.name for p in default_provinces)
@@ -551,9 +568,9 @@ class MainWindow(QMainWindow):
         self.city_selection_combo_box.setEnabled(True)
 
 
-# ================================================================================================
+# =================================================================================================
 # Initialization window.
-# ================================================================================================
+# =================================================================================================
 
 class ProgressUpdateThread(QThread):
     on_updated: pyqtSignal = pyqtSignal(int)
@@ -565,16 +582,16 @@ class ProgressUpdateThread(QThread):
         while True:
             progress = data.get_progress()
             self.on_updated.emit(math.floor(progress * 100))
-            time.sleep(0.1)
             if progress >= 1:
                 self.exit()
                 return
+            time.sleep(0.1)
 
 
 class InitWindow(QWidget):
     """
-    The window displayed at the initialization phase, including a progress bar indicating the percentage of data
-    initialized.
+    The window displayed at the initialization phase,
+    including a progress bar indicating the percentage of data initialized.
     """
     progress_bar: StandardProgressBar
     progress_bar_update_thread: ProgressUpdateThread
@@ -590,8 +607,6 @@ class InitWindow(QWidget):
         self.init_window()
     
     def init_window(self):
-        self.resize(618, 50)
-        
         # Center the window
         frame_geometry = self.frameGeometry()
         center_point = QDesktopWidget().availableGeometry().center()
@@ -613,8 +628,10 @@ class InitWindow(QWidget):
     def init_widgets(self):
         self.progress_bar = StandardProgressBar(self)
         self.cancel_button = StandardPushButton('Cancel')
-        self.helper_label = StandardLabel("We have 2,470,748 observations in our data sets and many manipulations, \n"
-                                          "so it may take a bit to load.")
+        self.helper_label = StandardLabel(
+                "We have 2,470,748 observations in our data sets and many manipulations, \n"
+                "so it may take a bit to load."
+        )
     
     def init_layout(self):
         main_layout = QVBoxLayout(self)
@@ -638,17 +655,29 @@ class InitWindow(QWidget):
             self.helper_label.adjustSize()
             self.progress_bar.setValue(progress)
             time.sleep(3)
+            # This close action will trigger the closeEvent
             self.close()
-            # QApplication.instance().quit()
+            # WARNING: We cannot just main_window = MainWindow() because Python's garbage
+            # collection will remove it instantly!
+            main.main_window = MainWindow()
+            main.main_window.show()
         else:
             self.progress_bar.setValue(progress)
     
-    @staticmethod
-    def on_cancel_button_clicked():
+    @pyqtSlot()
+    def on_cancel_button_clicked(self):
+        """
+        Handle the things to do after the user clicked the cancel button.
+        
+        This function will directly interrupt the main thread by raising an exception.
+        """
         import _thread
         _thread.interrupt_main()
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        """
+        Handle the things to do after the user press the red close button on the right corner.
+        """
         if not self.is_complete:
             import _thread
             _thread.interrupt_main()
