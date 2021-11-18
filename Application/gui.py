@@ -183,7 +183,8 @@ class PlotCanvas(FigureCanvas):
         self.is_covid_cross_hair_init = False
     
     def plot_school_closures(self, school_closures: List[data.SchoolClosureData]) -> None:
-        x_axis = [c.date for c in school_closures]
+        # Using if to ensure that the axes of the two plots are the same
+        x_axis = [c.date for c in school_closures if c.date in self.covid_x_data]
         y_axis = [c.status.value for c in school_closures]
         self.closure_x_data = x_axis
         self.closure_y_data = y_axis
@@ -461,10 +462,10 @@ class MainWindow(QMainWindow):
                     data.COUNTRIES_TO_ALL_SCHOOL_CLOSURES[country],
                     lambda item: start_date <= item.date <= end_date
             )
-        
-        self.plot_canvas.plot_school_closures(filtered_school_closures)
+
         self.plot_canvas.plot_covid_cases(filtered_covid_cases)
-    
+        self.plot_canvas.plot_school_closures(filtered_school_closures)
+
     @pyqtSlot(int)
     def on_country_selection_changed(self, index: int) -> None:
         """
