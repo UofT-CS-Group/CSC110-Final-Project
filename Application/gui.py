@@ -12,6 +12,7 @@ import data
 import math
 import time
 import main
+import numpy as np
 
 from typing import Iterable, List, Optional
 
@@ -19,6 +20,7 @@ import matplotlib.lines
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib import pyplot
+import matplotlib.cm as cm
 import matplotlib.style
 
 import matplotlib.backend_bases
@@ -169,7 +171,16 @@ class PlotCanvas(FigureCanvas):
         self.axes_covid, self.axes_closure = self.figure.subplots(2, 1)
         super(PlotCanvas, self).__init__(self.figure)
         self.mpl_connect("motion_notify_event", self.on_mouse_move)
-    
+        # Initialize curr_x and curr_y to None and updated from the on_mouse_move function
+        self.curr_x = None
+        self.curr_y = None
+
+        # Formatting the right upper corner of the display
+        self.axes_covid.format_coord = lambda x, y: \
+            f'Date = {self.curr_x}, Cases = {self.curr_y}'
+        self.axes_closure.format_coord = lambda x, y: \
+            f'Date = {self.curr_x}, Status = {data.NUM_TO_STATUS_DICT[self.curr_y]}'
+
     def plot_covid_cases(self, covid_cases: List[data.CovidCaseData]) -> None:
         x_axis = [c.date for c in covid_cases]
         y_axis = [c.cases for c in covid_cases]
@@ -226,6 +237,10 @@ class PlotCanvas(FigureCanvas):
                 
                 self.covid_horizontal_cross_hair.set_ydata(y)
                 self.covid_vertical_cross_hair.set_xdata(real_x)
+
+                self.curr_x = x
+                self.curr_y = y
+
                 self.draw()
             elif event.inaxes == self.axes_closure:
                 index = algorithms.binary_search(self.closure_x_data, x_date)
@@ -245,6 +260,10 @@ class PlotCanvas(FigureCanvas):
                 
                 self.closure_horizontal_cross_hair.set_ydata(y)
                 self.closure_vertical_cross_hair.set_xdata(real_x)
+
+                self.curr_x = x
+                self.curr_y = y
+
                 self.draw()
         else:
             if self.is_covid_cross_hair_init:
@@ -253,6 +272,8 @@ class PlotCanvas(FigureCanvas):
 
                     self.covid_horizontal_cross_hair.set_visible(False)
                     self.covid_vertical_cross_hair.set_visible(False)
+                    self.curr_x = None
+                    self.curr_y = None
                     self.draw()
             if self.is_closure_cross_hair_init:
                 if self.closure_horizontal_cross_hair.get_visible() and \
@@ -260,6 +281,8 @@ class PlotCanvas(FigureCanvas):
 
                     self.closure_horizontal_cross_hair.set_visible(False)
                     self.closure_vertical_cross_hair.set_visible(False)
+                    self.curr_x = None
+                    self.curr_y = None
                     self.draw()
 
 
@@ -546,7 +569,7 @@ class MainWindow(QMainWindow):
 
             self.city_selection_combo_box.enable_and_add_items(
                     [c.name for c in data.PROVINCES_TO_CITIES[province[0]]])
-    
+
     def set_default_location_selection(self):
         """
         Set the location combo box to its default values.
