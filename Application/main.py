@@ -13,14 +13,14 @@ from PyQt5.QtCore import *
 
 
 if __name__ == '__main__':
-    print('Starting application...')
+    data.logging.info('Starting application...')
 
     # Initialize all data on another thread because we don't want it to block our main thread
     # for 15 seconds.
     data_thread = threading.Thread(target=data.init_data, name='data_thread')
     data_thread.start()
 
-    print(f'Current Running Threads: {threading.enumerate()}')
+    data.logging.info(f'Current Running Threads: {threading.enumerate()}')
 
     # Create the QApplication instance.
     app = QApplication(sys.argv)
