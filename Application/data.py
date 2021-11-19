@@ -4,6 +4,7 @@ CSC110 Final Project - Data Classes File
 Contains functions to read Raw CSV File that has the specified format
 """
 import math
+import os
 import threading
 from typing import List, Set, Dict
 from enum import Enum
@@ -15,6 +16,8 @@ import algorithms
 # =================================================================================================
 # Classes
 # =================================================================================================
+import settings
+
 
 class ClosureStatus(Enum):
     """ A enum class that represents the closure status of schools.
@@ -333,12 +336,15 @@ def init_data() -> None:
             'resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
     read_covid_data_US('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
     read_closure_data('resources/school_closures_datasets/full_dataset_31_oct.csv')
-    
+
     # Init locations
-    SORTED_COUNTRIES.extend(sorted([c for c in COUNTRIES], key=lambda c: c.name))
-    SORTED_PROVINCES.extend(sorted([p for p in PROVINCES], key=lambda p: p.name))
-    SORTED_CITIES.extend(sorted([c for c in CITIES], key=lambda c: c.name))
-    
+    SORTED_COUNTRIES.extend(settings.sort([c for c in COUNTRIES],
+                                          compare=lambda c1, c2: 1 if c1.name > c2.name else -1))
+    SORTED_PROVINCES.extend(settings.sort([p for p in PROVINCES],
+                                          compare=lambda p1, p2: 1 if p1.name > p2.name else -1))
+    SORTED_CITIES.extend(settings.sort([c for c in CITIES],
+                                       compare=lambda c1, c2: 1 if c1.name > c2.name else -1))
+
     global COUNTRIES_TO_PROVINCES
     COUNTRIES_TO_PROVINCES = algorithms.group(SORTED_PROVINCES, lambda p: p.country)
     global PROVINCES_TO_CITIES

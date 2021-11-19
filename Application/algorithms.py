@@ -9,6 +9,7 @@ from typing import List, Callable, TypeVar, Dict, Hashable
 T = TypeVar('T')
 
 
+# Algorithms
 def bubble_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool = False) -> None:
     """
     Sorts the List lst in-place based on compare function using bubble sort algorithm.
@@ -142,32 +143,32 @@ def merge(left_lst: List[T], right_lst: List[T], compare: Callable[[T, T], int],
     merged_lst = []
     i = 0
     j = 0
-
+    
     while i < len(left_lst) and j < len(right_lst):
         if not reverse:
             # Calling compare to see if the first input is lesser than the second one
             if compare(left_lst[i], right_lst[j]) == -1:
                 merged_lst.append(left_lst[i])
                 i += 1
-
+            
             # Else, it must be the case that left_lst[i] is larger than or equal to right_lst[j]
             else:
                 merged_lst.append(right_lst[j])
                 j += 1
-
+        
         else:
             if compare(left_lst[i], right_lst[j]) == 1:
                 merged_lst.append(left_lst[i])
                 i += 1
-
+            
             else:
                 merged_lst.append(right_lst[j])
                 j += 1
-
+    
     # Then add the result of the values in the merged list
     merged_lst.extend(left_lst[i:])
     merged_lst.extend(right_lst[j:])
-
+    
     return merged_lst
 
 
@@ -189,17 +190,17 @@ def merge_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool = Fal
     [6, 5, 4, 3, 2, 1]
     """
     lst_len = len(lst)
-
+    
     # Base case with list length being 1
     if lst_len == 1:
         return lst
-
+    
     # Mid point
     mid = lst_len // 2
-
+    
     left_half = merge_sort(lst[:mid], compare, reverse)
     right_half = merge_sort(lst[mid:], compare, reverse)
-
+    
     # Merges the left half and right half respectively.
     return merge(left_half, right_half, compare, reverse)
 
@@ -270,4 +271,11 @@ def binary_search(sorted_lst: List[T], target: T) -> int:
             right = middle - 1
     return -1
 
-# More later...
+
+# Constants
+SORTING_ALGORITHMS: Dict = {
+    'Bubble Sort'   : bubble_sort,
+    'Selection Sort': selection_sort,
+    'Insertion Sort': insertion_sort,
+    'Merge Sort'    : merge_sort
+}

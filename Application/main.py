@@ -17,11 +17,6 @@ if __name__ == '__main__':
 
     # TODO: Download any resource files needed and place them into the correct folders.
 
-    # Initialize all data on another thread because we don't want it to block our main thread
-    # for 15 seconds.
-    data_thread = threading.Thread(target=data.init_data, name='data_thread')
-    data_thread.start()
-
     print(f'Current Running Threads: {threading.enumerate()}')
 
     # Create the QApplication instance.
