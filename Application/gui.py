@@ -271,7 +271,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Main Window')
 
         # Set window icon
-        self.setWindowIcon(QIcon('icon.jpg'))
+        self.setWindowIcon(QIcon('resources/assets/icon.jpg'))
         
         # Initialize status bar
         self.statusBar().showMessage('Ready.')
