@@ -228,7 +228,7 @@ def linear_predicate(lst: List[T], predicate: Callable[[T], bool]) -> List[T]:
     return [item for item in lst if predicate(item)]
 
 
-def linear_search(unsorted_lst: List[T], target: T) -> List[T]:
+def linear_search(unsorted_lst: List[T], target: T) -> int:
     """
     Return the index of the target in the unsorted lst if target is in the unsorted lst,
     and return [-1] otherwise.
@@ -236,19 +236,16 @@ def linear_search(unsorted_lst: List[T], target: T) -> List[T]:
     Time Complexity: O(n)
 
     >>> linear_search([5, 2, 6, 4, 6, 6], 6)
-    [2, 4, 5]
+    2
     >>> linear_search([6, 2, 5, 4, 1, 6], 10)
-    [-1]
+    -1
     """
     lst_len = len(unsorted_lst)
-    found = [-1]
+    found = -1
 
     for i in range(lst_len):
         if unsorted_lst[i] == target:
-            if -1 in found:
-                found[0] = i
-            else:
-                found.append(i)
+            return i
 
     return found
 
