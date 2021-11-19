@@ -12,7 +12,6 @@ import data
 import math
 import time
 import main
-import numpy as np
 
 from typing import Iterable, List, Optional
 
@@ -20,7 +19,6 @@ import matplotlib.lines
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib import pyplot
-import matplotlib.cm as cm
 import matplotlib.style
 
 import matplotlib.backend_bases
