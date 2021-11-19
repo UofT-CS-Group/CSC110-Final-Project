@@ -253,6 +253,13 @@ STATUS_DICT = {
     'Academic break'        : ClosureStatus.ACADEMIC_BREAK
 }
 
+NUM_TO_STATUS_DICT = {
+    0: 'Academic break',
+    1: 'Fully open',
+    2: 'Partially open',
+    3: 'Closed due to COVID-19'
+}
+
 # Country names in the closure data set will be replaced by the value.
 CLOSURE_COUNTRY_NAMES_FIX: Dict[str, str] = {
     'Bolivia (Plurinational State of)'                    : 'Bolivia',
