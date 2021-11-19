@@ -9,11 +9,25 @@ from typing import List, Set, Dict
 from enum import Enum
 import datetime
 import csv
+import logging
 import hashlib
 import algorithms
 import settings
 import requests
 import os
+import sys
+
+# =================================================================================================
+# Initialize logger
+# =================================================================================================
+root = logging.getLogger()
+root.setLevel(logging.DEBUG)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('[%(asctime)s] - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+root.addHandler(handler)
 
 
 # =================================================================================================
@@ -341,16 +355,14 @@ def md5_hash(filename: str) -> str:
     """
     Return the MD5 hash of the specified filename
     """
-    buffer_size = 65536
+    buffer_size = settings.BUFFER_SIZE
     md5 = hashlib.md5()
 
     with open(filename, 'rb') as file:
-        while True:
-            data = file.read(buffer_size)
-            if not data:
-                break
-
+        data = file.read(buffer_size)
+        while data:
             md5.update(data)
+            data = file.read(buffer_size)
 
     return md5.hexdigest()
 
@@ -360,12 +372,21 @@ def check_files() -> bool:
     Return if we downloaded the right files using the MD5 checksum
     """
     check_covid19_us = md5_hash('resources/covid_cases_datasets/'
-                                'time_series_covid19_confirmed_US.csv') == settings.covid19_us_md5
+                                'time_series_covid19_confirmed_US.csv') == settings.COVID19_US_MD5
     check_covid19_global = md5_hash('resources/covid_cases_datasets/'
                                     'time_series_covid19_confirmed_global.csv'
-                                    ) == settings.covid19_global_md5
+                                    ) == settings.COVID19_GLOBAL_MD5
     check_closure = md5_hash('resources/school_closures_datasets/'
-                             'full_dataset_31_oct.csv') == settings.closure_md5
+                             'full_dataset_31_oct.csv') == settings.CLOSURE_MD5
+
+    if not check_covid19_us:
+        logging.warning('COVID19 US Dataset Checksum failed!')
+
+    if not check_covid19_global:
+        logging.warning('COVID19 Global Dataset MD5 Checksum failed!')
+
+    if not check_closure:
+        logging.warning('School Closure Dataset MD5 Checksum failed!')
 
     return check_covid19_us and check_covid19_global and check_closure
 
@@ -381,18 +402,15 @@ def download_data() -> None:
         - time_series_covid19_confirmed_US.csv
         - full_dataset_31_oct.csv
     """
-    try:
-        os.mkdir('resources')
-        os.mkdir('resources/covid_cases_datasets')
-        os.mkdir('resources/school_closures_datasets')
 
-    except FileExistsError:
-        pass
+    os.makedirs('resources/covid_cases_datasets', exist_ok=True)
+    os.makedirs('resources/school_closures_datasets', exist_ok=True)
+    os.makedirs('resources/assets', exist_ok=True)
 
     # All URLs contained in settings.py, can be changed anytime
-    covid19_us_url = settings.covid19_us_url
-    covid19_global_url = settings.covid19_global_url
-    closure_url = settings.closure_url
+    covid19_us_url = settings.COVID19_US_URL
+    covid19_global_url = settings.COVID19_GLOBAL_URL
+    closure_url = settings.CLOSURE_URL
 
     # Downloads the file and writes it in our directories
     try:
@@ -410,15 +428,17 @@ def download_data() -> None:
         with open('resources/school_closures_datasets/full_dataset_31_oct.csv', 'wb') as closure_file:
             closure_file.write(closure_dataset.content)
     except requests.exceptions.ConnectionError or requests.exceptions.ConnectTimeout:
-        print('Connection Failed...')
-        print('Please download the files from settings.py and move them into the resources directory')
-        print('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
-        print('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
-        print('resources/school_closures_datasets/full_dataset_31_oct.csv')
-
         # Crashes the application's GUI window
         import _thread
         _thread.interrupt_main()
+
+        logging.critical('Connection Failed... Aborting application!')
+        logging.info('Please download the files from settings.py and move them into the resources directory')
+        logging.info('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
+        logging.info('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
+        logging.info('resources/school_closures_datasets/full_dataset_31_oct.csv')
+
+        raise Exception('Download Failure. Please scroll up to see instructions.')
 
 
 def init_data() -> None:
@@ -432,29 +452,29 @@ def init_data() -> None:
         open('resources/school_closures_datasets/full_dataset_31_oct.csv')
 
     except FileNotFoundError:
-        print('Datasets not found! Downloading...')
+        logging.warning('Datasets not found! Downloading...')
         download_data()
-        print('Download success!')
+        logging.info('Download success!')
 
-    print('Checking completeness of dataset...')
+    logging.info('Checking completeness of dataset...')
 
     if not check_files():
-        print('MD5 Checksum failed!')
-        print('Attempting to download original dataset')
+        logging.warning('MD5 Checksum failed!')
+        logging.info('Attempting to download original dataset')
         download_data()
-        print('Download success!')
+        logging.info('Download success!')
 
     # Aborts the application if MD5 Checksum failed twice
     if not check_files():
-        print('MD5 Checksum still failed! Aborting.')
-        print('Perhaps your disk is corrupted?')
+        logging.critical('MD5 Checksum still failed! Aborting.')
+        logging.info('Perhaps your disk is corrupted?')
 
         # Crashes the application's GUI window
         import _thread
         _thread.interrupt_main()
 
-    print('MD5 Checksum passed!')
-    print('Initializing data...')
+    logging.info('MD5 Checksum passed!')
+    logging.info('Initializing data...')
 
     read_covid_data_global(
             'resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
@@ -496,7 +516,7 @@ def init_data() -> None:
     progress += math.ceil(TOTAL_NUMBER_DATA * 0.001)
 
     timestamp2 = time.time()
-    print(f'Successfully initialized all data in {round(timestamp2 - timestamp1, 2)} seconds!')
+    logging.info(f'Successfully initialized all data in {round(timestamp2 - timestamp1, 2)} seconds!')
 
 
 def get_progress() -> float:
