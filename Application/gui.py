@@ -20,6 +20,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib import pyplot
 import matplotlib.style
+import matplotlib
 
 import matplotlib.backend_bases
 from PyQt5.QtGui import *
@@ -193,7 +194,7 @@ class PlotCanvas(FigureCanvas):
     
     def plot_school_closures(self, school_closures: List[data.SchoolClosureData]) -> None:
         # Using if to ensure that the axes of the two plots are the same
-        x_axis = [c.date for c in school_closures if c.date in self.covid_x_data]
+        x_axis = [c.date for c in school_closures]
         y_axis = [c.status.value for c in school_closures]
         self.closure_x_data = x_axis
         self.closure_y_data = y_axis
@@ -378,7 +379,7 @@ class MainWindow(QMainWindow):
         self.plot_canvas = PlotCanvas()
         self.plot_navigation_tool_bar = NavigationToolbar(self.plot_canvas, self)
         set_font(self.plot_navigation_tool_bar)
-        
+
         # Confirm button
         self.confirm_button = StandardPushButton('Confirm')
     
