@@ -6,7 +6,16 @@ Settings include:
     - Dataset links
     - And more...
 """
+import algorithms
 import logging
+
+from algorithms import T
+from typing import Callable, List
+
+# Project sorting algorithm
+def sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool = False) -> List[T]:
+    return algorithms.merge_sort(lst, compare, reverse)
+
 
 # =================================================================================================
 # Font

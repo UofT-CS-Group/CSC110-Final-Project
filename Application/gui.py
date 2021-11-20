@@ -283,7 +283,6 @@ class PlotCanvas(FigureCanvas):
             if self.is_covid_cross_hair_init:
                 if self.covid_horizontal_cross_hair.get_visible() and \
                         self.covid_vertical_cross_hair.get_visible():
-
                     self.covid_horizontal_cross_hair.set_visible(False)
                     self.covid_vertical_cross_hair.set_visible(False)
                     self.curr_x = None
@@ -292,7 +291,6 @@ class PlotCanvas(FigureCanvas):
             if self.is_closure_cross_hair_init:
                 if self.closure_horizontal_cross_hair.get_visible() and \
                         self.closure_vertical_cross_hair.get_visible():
-
                     self.closure_horizontal_cross_hair.set_visible(False)
                     self.closure_vertical_cross_hair.set_visible(False)
                     self.curr_x = None
@@ -487,12 +485,12 @@ class MainWindow(QMainWindow):
         if self.global_checkbox.isChecked():
             filtered_covid_cases = algorithms.linear_predicate(
                     data.GLOBAL_COVID_CASES, lambda item: start_date <= item.date <= end_date)
-
+            
             filtered_school_closures = algorithms.linear_predicate(
                     data.GLOBAL_SCHOOL_CLOSURES, lambda item: start_date <= item.date <= end_date)
         else:
             country = data.Country(self.country_selection_combo_box.currentText())
-
+            
             if self.country_checkbox.isChecked():
                 filtered_covid_cases = algorithms.linear_predicate(
                         data.COUNTRIES_TO_COVID_CASES[country],
@@ -580,18 +578,18 @@ class MainWindow(QMainWindow):
         else:
             self.province_selection_combo_box.setEnabled(True)
             self.city_selection_combo_box.setEnabled(True)
-
+            
             country = data.SORTED_COUNTRIES[self.country_selection_combo_box.currentIndex()]
-
+            
             if country not in data.COUNTRIES_TO_PROVINCES:
                 return
-
+            
             self.province_selection_combo_box.enable_and_add_items(
                     [p.name for p in data.COUNTRIES_TO_PROVINCES[country]])
             province = data.COUNTRIES_TO_PROVINCES[country]
             if province[0] not in data.PROVINCES_TO_CITIES:
                 return
-
+            
             self.city_selection_combo_box.enable_and_add_items(
                     [c.name for c in data.PROVINCES_TO_CITIES[province[0]]])
 
@@ -621,6 +619,15 @@ class MainWindow(QMainWindow):
 # Initialization window.
 # =================================================================================================
 
+class DataQThread(QThread):
+    
+    def __init__(self, parent=None) -> None:
+        super(DataQThread, self).__init__(parent)
+    
+    def run(self):
+        data.init_data()
+
+
 class ProgressUpdateThread(QThread):
     on_updated: pyqtSignal = pyqtSignal(int)
 
@@ -649,6 +656,10 @@ class InitWindow(QWidget):
 
     helper_label: StandardLabel
 
+    
+    sorting_algorithm_combo_box: StandardComboBox
+    sorting_algorithm_confirm_button: StandardPushButton
+
     is_complete: bool = False
 
     def __init__(self):
@@ -656,6 +667,7 @@ class InitWindow(QWidget):
         self.init_window()
 
     def init_window(self):
+        self.resize(800, 200)
         # Center the window
         frame_geometry = self.frameGeometry()
         center_point = QDesktopWidget().availableGeometry().center()
@@ -674,27 +686,51 @@ class InitWindow(QWidget):
         # Initialize Signals
         self.init_signals()
 
+        # Start detecting changes in progress
+        self.progress_bar_update_thread.start()
+
     def init_widgets(self):
         self.progress_bar = StandardProgressBar(self)
         self.cancel_button = StandardPushButton('Cancel')
         self.helper_label = StandardLabel(
-                "We have 2,470,748 observations in our data sets and many manipulations, \n"
-                "so it may take a bit to load."
+                'Please select a sorting algorithm for the whole project.\n'
         )
+        self.sorting_algorithm_combo_box = StandardComboBox(
+                self, items=settings.sort([s for s in algorithms.SORTING_ALGORITHMS],
+                                          lambda s1, s2: 1 if s1 > s2 else -1)
+        )
+        self.sorting_algorithm_confirm_button = StandardPushButton('Confirm')
 
     def init_layout(self):
         main_layout = QVBoxLayout(self)
         main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.cancel_button)
         main_layout.addWidget(self.helper_label)
+        
+        algorithms_select_layout = QHBoxLayout(self)
+        algorithms_select_layout.addWidget(self.sorting_algorithm_combo_box)
+        algorithms_select_layout.addWidget(self.sorting_algorithm_confirm_button)
+        main_layout.addLayout(algorithms_select_layout)
+        
         self.setLayout(main_layout)
 
     def init_signals(self):
+        self.cancel_button.clicked.connect(self.on_cancel_button_clicked)
+        self.sorting_algorithm_confirm_button.clicked.connect(self.on_confirm_button_clicked)
+        
         self.progress_bar_update_thread = ProgressUpdateThread()
         self.progress_bar_update_thread.on_updated.connect(self.update_progress_bar)
-        self.progress_bar_update_thread.start()
-
-        self.cancel_button.clicked.connect(self.on_cancel_button_clicked)
+    
+    @pyqtSlot()
+    def on_confirm_button_clicked(self):
+        self.helper_label.setText(
+                'We have 2,470,748 observations in our data sets and many manipulations, \n'
+                'so it may take a bit to load.'
+        )
+        algorithm_str = self.sorting_algorithm_combo_box.currentText()
+        settings.sort = algorithms.SORTING_ALGORITHMS[algorithm_str]
+        data_thread = DataQThread(parent=QApplication.instance())
+        data_thread.start()
 
     @pyqtSlot(int)
     def update_progress_bar(self, progress: int) -> None:
@@ -722,7 +758,7 @@ class InitWindow(QWidget):
         """
         import _thread
         _thread.interrupt_main()
-
+    
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         """
         Handle the things to do after the user press the red close button on the right corner.
