@@ -48,6 +48,23 @@ def set_font(widget: QWidget,
     widget.setFont(font)
 
 
+def set_title_font(widget: QWidget,
+                   font_family: str = settings.FONT_FAMILY,
+                   font_size: int = settings.FONT_SIZE_RESEARCH_QUESTION) -> None:
+    """
+    Set the font of the title (our research question) to given font and size.
+
+    Note:
+        - By default, it will set the font of the title (our research question) to
+        the font settings specified in settings.py
+    """
+    font: QFont = widget.font()
+    font.setFamily(font_family)
+    font.setPointSize(font_size)
+    font.setBold(True)
+    widget.setFont(font)
+
+
 class StandardLabel(QLabel):
     """
     A standard label for our project.
@@ -61,6 +78,12 @@ class StandardLabel(QLabel):
 
         # Set Default Text
         self.setText(text)
+
+    def set_research_question_font(self) -> None:
+        """
+        Set the font of the title (our research question).
+        """
+        set_title_font(self)
 
 
 class StandardPushButton(QPushButton):
@@ -88,6 +111,10 @@ class StandardComboBox(QComboBox):
         set_font(self)
         if items is not None:
             self.addItems(items)
+
+        # Set the field width to avoid omitting
+        self.setStyleSheet(f'QAbstractItemView::item {qSetFieldWidth(50)}')
+        self.setView(QListView())
 
     def clear_and_disable(self):
         self.clear()
@@ -164,7 +191,7 @@ class PlotCanvas(FigureCanvas):
 
     def __init__(self) -> None:
         self.figure = pyplot.Figure(tight_layout=True, linewidth=1)
-        self.axes_covid, self.axes_closure = self.figure.subplots(2, 1)
+        self.axes_covid, self.axes_closure = self.figure.subplots(1, 2)
 
         super(PlotCanvas, self).__init__(self.figure)
         self.mpl_connect("motion_notify_event", self.on_mouse_move)
@@ -301,6 +328,8 @@ class MainWindow(QMainWindow):
     """
     The main window of our program.
     """
+    research_question_label_1: QLabel
+    research_question_label_2: QLabel
 
     plot_navigation_tool_bar: NavigationToolbar
     plot_canvas: PlotCanvas
@@ -364,6 +393,15 @@ class MainWindow(QMainWindow):
         """
         Init all widgets and their attributes.
         """
+        # Title (Research Question)
+        self.research_question_label_1 = StandardLabel('Educational Crisis - A Closer Examination '
+                                                       'on the Correlations Between')
+        self.research_question_label_1.set_research_question_font()
+        self.research_question_label_1.setAlignment(Qt.AlignBottom)
+        self.research_question_label_2 = StandardLabel('Covid - 19 and School Closures Around the Globe')
+        self.research_question_label_2.set_research_question_font()
+        self.research_question_label_2.setAlignment(Qt.AlignTop)
+
         # Country selections
         self.country_selection_label = StandardLabel('Country: ')
         self.country_selection_combo_box = StandardComboBox(self)
@@ -409,42 +447,59 @@ class MainWindow(QMainWindow):
         Init the layout for all widgets.
         """
         # The main layout of the main window
-        main_layout = QHBoxLayout()
+        main_layout = QVBoxLayout()
+
+        # The layout for our research question
+        # I use two lines to show our long title to make it look better
+        research_question_layout_1 = QHBoxLayout()
+        main_layout.addLayout(research_question_layout_1)
+        research_question_layout_1.addStretch(1)
+        research_question_layout_1.addWidget(self.research_question_label_1)
+        research_question_layout_1.addStretch(1)
+        research_question_layout_2 = QHBoxLayout()
+        main_layout.addLayout(research_question_layout_2)
+        research_question_layout_2.addStretch(1)
+        research_question_layout_2.addWidget(self.research_question_label_2)
+        research_question_layout_2.addStretch(1)
 
         # The layout for our options controller
-        controller_layout = QVBoxLayout()
-        # Golden Ratio 0.618 : 1
-        main_layout.addLayout(controller_layout, 382)
+        controller_layout = QHBoxLayout()
+        main_layout.addLayout(controller_layout)
         controller_layout.addStretch(1)
 
-        # For temp use
-        # TODO: Better Layout
-        checkbox_layout = QHBoxLayout(self)
+        # The layout for our checkbox
+        checkbox_layout = QVBoxLayout(self)
         controller_layout.addLayout(checkbox_layout)
         checkbox_layout.addWidget(self.global_checkbox)
         checkbox_layout.addWidget(self.country_checkbox)
+        controller_layout.addStretch(1)
 
         # The layout for country, province, and city selection
+        # I comment out the province and city selection because it's useless?
         location_selection_layout = QFormLayout()
         controller_layout.addLayout(location_selection_layout)
         location_selection_layout.addRow(self.country_selection_label,
                                          self.country_selection_combo_box)
-        location_selection_layout.addRow(self.province_selection_label,
-                                         self.province_selection_combo_box)
-        location_selection_layout.addRow(self.city_selection_label,
-                                         self.city_selection_combo_box)
+        # location_selection_layout.addRow(self.province_selection_label,
+        #                                  self.province_selection_combo_box)
+        # location_selection_layout.addRow(self.city_selection_label,
+        #                                  self.city_selection_combo_box)
 
         # The layout for date range
-        date_range_layout = QFormLayout()
-        controller_layout.addLayout(date_range_layout)
-        date_range_layout.addRow(self.start_date_label, self.start_date_edit)
-        date_range_layout.addRow(self.end_date_label, self.end_date_edit)
+        start_date_range_layout = QFormLayout()
+        controller_layout.addLayout(start_date_range_layout)
+        start_date_range_layout.addRow(self.start_date_label, self.start_date_edit)
+        end_date_range_layout = QFormLayout()
+        controller_layout.addLayout(end_date_range_layout)
+        end_date_range_layout.addRow(self.end_date_label, self.end_date_edit)
+        controller_layout.addStretch(3)
 
-        controller_layout.addWidget(self.confirm_button)
+        # The confirm button
+        main_layout.addWidget(self.confirm_button)
 
         # The layout for our plot
         plot_layout = QVBoxLayout()
-        main_layout.addLayout(plot_layout, 618)
+        main_layout.addLayout(plot_layout)
         plot_layout.addWidget(self.plot_navigation_tool_bar)
         plot_layout.addWidget(self.plot_canvas)
 
