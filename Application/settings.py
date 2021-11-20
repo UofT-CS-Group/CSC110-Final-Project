@@ -6,11 +6,12 @@ Settings include:
     - Dataset links
     - And more...
 """
-import algorithms
 import logging
-
-from algorithms import T
 from typing import Callable, List
+
+import algorithms
+from algorithms import T
+
 
 # Project sorting algorithm
 def sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool = False) -> List[T]:

@@ -3,28 +3,26 @@ Main GUI + backend here
 I know it's in efficient and shitty
 Just for temp use
 """
-from PyQt5 import QtGui
-
-import algorithms
 import datetime
-import settings
-import data
 import math
 import time
-import main
-
 from typing import Iterable, List, Optional
 
-import matplotlib.lines
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib import pyplot
-import matplotlib.style
-
 import matplotlib.backend_bases
+import matplotlib.lines
+import matplotlib.style
+from PyQt5 import QtGui
+from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from matplotlib import pyplot
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+
+import algorithms
+import data
+import main
+import settings
 
 matplotlib.style.use('fast')
 
@@ -179,7 +177,8 @@ class PlotCanvas(FigureCanvas):
         self.axes_covid.format_coord = lambda _, __: \
             f'Date = {self.curr_x}, Cases = {self.curr_y}'
         self.axes_closure.format_coord = lambda _, __: \
-            f'Date = {self.curr_x}, Status = {data.ENUM_TO_STATUS_DICT[data.ClosureStatus(self.curr_y)]}'
+            f'Date = {self.curr_x}, Status = ' \
+            f'{data.ENUM_TO_STATUS_DICT[data.ClosureStatus(self.curr_y)]}'
         self.draw()
 
     def plot_covid_cases(self, covid_cases: List[data.CovidCaseData]) -> None:
@@ -485,12 +484,12 @@ class MainWindow(QMainWindow):
         if self.global_checkbox.isChecked():
             filtered_covid_cases = algorithms.linear_predicate(
                     data.GLOBAL_COVID_CASES, lambda item: start_date <= item.date <= end_date)
-            
+
             filtered_school_closures = algorithms.linear_predicate(
                     data.GLOBAL_SCHOOL_CLOSURES, lambda item: start_date <= item.date <= end_date)
         else:
             country = data.Country(self.country_selection_combo_box.currentText())
-            
+
             if self.country_checkbox.isChecked():
                 filtered_covid_cases = algorithms.linear_predicate(
                         data.COUNTRIES_TO_COVID_CASES[country],
@@ -578,18 +577,18 @@ class MainWindow(QMainWindow):
         else:
             self.province_selection_combo_box.setEnabled(True)
             self.city_selection_combo_box.setEnabled(True)
-            
+
             country = data.SORTED_COUNTRIES[self.country_selection_combo_box.currentIndex()]
-            
+
             if country not in data.COUNTRIES_TO_PROVINCES:
                 return
-            
+
             self.province_selection_combo_box.enable_and_add_items(
                     [p.name for p in data.COUNTRIES_TO_PROVINCES[country]])
             province = data.COUNTRIES_TO_PROVINCES[country]
             if province[0] not in data.PROVINCES_TO_CITIES:
                 return
-            
+
             self.city_selection_combo_box.enable_and_add_items(
                     [c.name for c in data.PROVINCES_TO_CITIES[province[0]]])
 
@@ -620,10 +619,10 @@ class MainWindow(QMainWindow):
 # =================================================================================================
 
 class DataQThread(QThread):
-    
+
     def __init__(self, parent=None) -> None:
         super(DataQThread, self).__init__(parent)
-    
+
     def run(self):
         data.init_data()
 
@@ -656,7 +655,6 @@ class InitWindow(QWidget):
 
     helper_label: StandardLabel
 
-    
     sorting_algorithm_combo_box: StandardComboBox
     sorting_algorithm_confirm_button: StandardPushButton
 
@@ -706,21 +704,21 @@ class InitWindow(QWidget):
         main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.cancel_button)
         main_layout.addWidget(self.helper_label)
-        
+
         algorithms_select_layout = QHBoxLayout(self)
         algorithms_select_layout.addWidget(self.sorting_algorithm_combo_box)
         algorithms_select_layout.addWidget(self.sorting_algorithm_confirm_button)
         main_layout.addLayout(algorithms_select_layout)
-        
+
         self.setLayout(main_layout)
 
     def init_signals(self):
         self.cancel_button.clicked.connect(self.on_cancel_button_clicked)
         self.sorting_algorithm_confirm_button.clicked.connect(self.on_confirm_button_clicked)
-        
+
         self.progress_bar_update_thread = ProgressUpdateThread()
         self.progress_bar_update_thread.on_updated.connect(self.update_progress_bar)
-    
+
     @pyqtSlot()
     def on_confirm_button_clicked(self):
         self.helper_label.setText(
@@ -758,7 +756,7 @@ class InitWindow(QWidget):
         """
         import _thread
         _thread.interrupt_main()
-    
+
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         """
         Handle the things to do after the user press the red close button on the right corner.

@@ -4,20 +4,19 @@ CSC110 Final Project - Data Classes File
 Contains functions to do all processings with our datasets
 Also contains CONSTANTS and classes
 """
+import csv
+import datetime
+import hashlib
 import math
 import os
-import threading
-from typing import List, Set, Dict
 from enum import Enum
-import datetime
-import csv
-import hashlib
+from typing import Dict, List, Set
+
+import requests
+
 import algorithms
-import settings
 import main
 import settings
-import requests
-import os
 
 
 # =================================================================================================
@@ -264,9 +263,9 @@ STATUS_DICT = {
 
 ENUM_TO_STATUS_DICT = {
     ClosureStatus.ACADEMIC_BREAK: 'Academic break',
-    ClosureStatus.FULLY_OPEN: 'Fully open',
+    ClosureStatus.FULLY_OPEN    : 'Fully open',
     ClosureStatus.PARTIALLY_OPEN: 'Partially open',
-    ClosureStatus.CLOSED: 'Closed due to COVID-19'
+    ClosureStatus.CLOSED        : 'Closed due to COVID-19'
 }
 
 # Country names in the closure data set will be replaced by the value.
@@ -411,12 +410,13 @@ def download_data() -> None:
             covid19_us_file.write(covid19_us_dataset.content)
 
         covid19_global_dataset = requests.get(covid19_global_url)
-        with open('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv', 'wb')\
+        with open('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv', 'wb') \
                 as covid19_global_file:
             covid19_global_file.write(covid19_global_dataset.content)
 
         closure_dataset = requests.get(closure_url)
-        with open('resources/school_closures_datasets/full_dataset_31_oct.csv', 'wb') as closure_file:
+        with open('resources/school_closures_datasets/full_dataset_31_oct.csv', 'wb') \
+                as closure_file:
             closure_file.write(closure_dataset.content)
     except requests.exceptions.ConnectionError or requests.exceptions.ConnectTimeout:
         # Crashes the application's GUI window
@@ -424,7 +424,8 @@ def download_data() -> None:
         _thread.interrupt_main()
 
         main.logging.critical('Connection Failed... Aborting application!')
-        main.logging.info('Please download the files from settings.py and move them into the resources directory')
+        main.logging.info('Please download the files from settings.py and '
+                          'move them into the resources directory')
         main.logging.info('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
         main.logging.info('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
         main.logging.info('resources/school_closures_datasets/full_dataset_31_oct.csv')
@@ -510,7 +511,8 @@ def init_data() -> None:
     progress += math.ceil(TOTAL_NUMBER_DATA * 0.001)
 
     timestamp2 = time.time()
-    main.logging.info(f'Successfully initialized all data in {round(timestamp2 - timestamp1, 2)} seconds!')
+    main.logging.info(f'Successfully initialized all data in '
+                      f'{round(timestamp2 - timestamp1, 2)} seconds!')
 
 
 def get_progress() -> float:
