@@ -56,11 +56,11 @@ class StandardLabel(QLabel):
     
     When needed, we could add more attributes and functions.
     """
-    
+
     def __init__(self, text: str = ''):
         super(StandardLabel, self).__init__()
         set_font(self)
-        
+
         # Set Default Text
         self.setText(text)
 
@@ -71,7 +71,7 @@ class StandardPushButton(QPushButton):
     
     When needed, we could add more attributes and functions.
     """
-    
+
     def __init__(self, text: str = '', *__args):
         super().__init__(*__args)
         set_font(self)
@@ -84,17 +84,17 @@ class StandardComboBox(QComboBox):
     
     When needed, we could add more attributes and functions.
     """
-    
+
     def __init__(self, parent=None, items: Iterable = None):
         super().__init__(parent)
         set_font(self)
         if items is not None:
             self.addItems(items)
-    
+
     def clear_and_disable(self):
         self.clear()
         self.setEnabled(False)
-    
+
     def enable_and_add_items(self, texts: Iterable[str]):
         self.setEnabled(True)
         self.addItems(texts)
@@ -106,8 +106,8 @@ class StandardDateEdit(QDateEdit):
     
     When needed, we could add more attributes and functions.
     """
-    
-    def __init__(self, *__args):
+
+    def __init__(self, *__args) -> None:
         super().__init__(*__args)
         set_font(self)
 
@@ -118,7 +118,7 @@ class StandardCheckbox(QCheckBox):
 
     When needed, we could add more attributes and functions.
     """
-    
+
     def __init__(self, text: str, parent: Optional[QWidget] = None) -> None:
         super().__init__(text, parent)
         set_font(self)
@@ -130,7 +130,7 @@ class StandardProgressBar(QProgressBar):
 
     When needed, we could add more attributes and functions.
     """
-    
+
     def __init__(self, parent: Optional[QWidget] = None):
         super(StandardProgressBar, self).__init__(parent)
         set_font(self)
@@ -145,32 +145,45 @@ class PlotCanvas(FigureCanvas):
     """
     Figure widget from matplotlib with a cross-hair.
     """
-    
+
     figure: pyplot.Figure
     axes_covid: pyplot.Axes
     axes_closure: pyplot.Axes
-    
+
     covid_x_data: List[datetime.date]
     covid_y_data: List[int]
-    
+
     closure_x_data: List[datetime.date]
     closure_y_data: List[int]
-    
+
     is_covid_cross_hair_init: bool = False
     covid_horizontal_cross_hair: matplotlib.lines.Line2D
     covid_vertical_cross_hair: matplotlib.lines.Line2D
-    
+
     is_closure_cross_hair_init: bool = False
     closure_horizontal_cross_hair: matplotlib.lines.Line2D
     closure_vertical_cross_hair: matplotlib.lines.Line2D
-    
+
     def __init__(self) -> None:
         self.figure = pyplot.Figure(tight_layout=True, linewidth=1)
         self.axes_covid, self.axes_closure = self.figure.subplots(2, 1)
+
         super(PlotCanvas, self).__init__(self.figure)
         self.mpl_connect("motion_notify_event", self.on_mouse_move)
-    
+
+        # Initialize curr_x and curr_y to None and updated from the on_mouse_move function
+        self.curr_x = None
+        self.curr_y = None
+
+        # Formatting the right upper corner of the display
+        self.axes_covid.format_coord = lambda _, __: \
+            f'Date = {self.curr_x}, Cases = {self.curr_y}'
+        self.axes_closure.format_coord = lambda _, __: \
+            f'Date = {self.curr_x}, Status = {data.ENUM_TO_STATUS_DICT[data.ClosureStatus(self.curr_y)]}'
+        self.draw()
+
     def plot_covid_cases(self, covid_cases: List[data.CovidCaseData]) -> None:
+        """Plots the COVID Data in self.axes_covid"""
         x_axis = [c.date for c in covid_cases]
         y_axis = [c.cases for c in covid_cases]
         self.covid_x_data = x_axis
@@ -179,10 +192,17 @@ class PlotCanvas(FigureCanvas):
         self.axes_covid.plot(x_axis, y_axis, marker='.', color='orange')
         for text in self.axes_covid.get_xticklabels():
             text.set_rotation(40.0)
+
+        # Setting labels and title
+        self.axes_covid.set_title('COVID-19 Cases')
+        self.axes_covid.set_xlabel('Dates')
+        self.axes_covid.set_ylabel('Cumulative cases')
+
         self.draw()
         self.is_covid_cross_hair_init = False
-    
+
     def plot_school_closures(self, school_closures: List[data.SchoolClosureData]) -> None:
+        """Plots the Closure Data in self.axes_closure"""
         x_axis = [c.date for c in school_closures]
         y_axis = [c.status.value for c in school_closures]
         self.closure_x_data = x_axis
@@ -195,10 +215,16 @@ class PlotCanvas(FigureCanvas):
                 minor=False)
         for text in self.axes_closure.get_xticklabels():
             text.set_rotation(40.0)
+
+        # Setting labels and title
+        self.axes_closure.set_title('School Closure Status')
+        self.axes_closure.set_xlabel('Dates')
+
         self.draw()
         self.is_closure_cross_hair_init = False
-    
+
     def on_mouse_move(self, event: matplotlib.backend_bases.MouseEvent) -> None:
+        """The handler of on_mouse_move event, renders the crosshair"""
         # The reason why the cross-hair is laggy is because self.draw()
         # takes a very long time to draw.
         # This part of code is a little bit shitty, but it is not worthy to fix
@@ -212,38 +238,46 @@ class PlotCanvas(FigureCanvas):
                 # I don't know why it works, but it works.
                 y = self.covid_y_data[min(index + 1, len(self.covid_y_data) - 1)]
                 real_x = (x - datetime.date.fromtimestamp(0)).days
-                
+
                 if not self.is_covid_cross_hair_init:
                     self.covid_horizontal_cross_hair = self.axes_covid.axhline(
                             y=y, color='black', linewidth=0.8, linestyle='--')
                     self.covid_vertical_cross_hair = self.axes_covid.axvline(
                             x=real_x, color='black', linewidth=0.8, linestyle='--')
                     self.is_covid_cross_hair_init = True
-                
+
                 self.covid_horizontal_cross_hair.set_visible(True)
                 self.covid_vertical_cross_hair.set_visible(True)
-                
+
                 self.covid_horizontal_cross_hair.set_ydata(y)
                 self.covid_vertical_cross_hair.set_xdata(real_x)
+
+                self.curr_x = x
+                self.curr_y = y
+
                 self.draw()
             elif event.inaxes == self.axes_closure:
                 index = algorithms.binary_search(self.closure_x_data, x_date)
                 x = self.closure_x_data[index]
                 y = self.closure_y_data[min(index + 1, len(self.closure_y_data) - 1)]
                 real_x = (x - datetime.date.fromtimestamp(0)).days
-                
+
                 if not self.is_closure_cross_hair_init:
                     self.closure_horizontal_cross_hair = self.axes_closure.axhline(
                             y=y, color='black', linewidth=0.8, linestyle='--')
                     self.closure_vertical_cross_hair = self.axes_closure.axvline(
                             x=real_x, color='black', linewidth=0.8, linestyle='--')
                     self.is_closure_cross_hair_init = True
-                
+
                 self.closure_horizontal_cross_hair.set_visible(True)
                 self.closure_vertical_cross_hair.set_visible(True)
-                
+
                 self.closure_horizontal_cross_hair.set_ydata(y)
                 self.closure_vertical_cross_hair.set_xdata(real_x)
+
+                self.curr_x = x
+                self.curr_y = y
+
                 self.draw()
         else:
             if self.is_covid_cross_hair_init:
@@ -251,12 +285,16 @@ class PlotCanvas(FigureCanvas):
                         self.covid_vertical_cross_hair.get_visible():
                     self.covid_horizontal_cross_hair.set_visible(False)
                     self.covid_vertical_cross_hair.set_visible(False)
+                    self.curr_x = None
+                    self.curr_y = None
                     self.draw()
             if self.is_closure_cross_hair_init:
                 if self.closure_horizontal_cross_hair.get_visible() and \
                         self.closure_vertical_cross_hair.get_visible():
                     self.closure_horizontal_cross_hair.set_visible(False)
                     self.closure_vertical_cross_hair.set_visible(False)
+                    self.curr_x = None
+                    self.curr_y = None
                     self.draw()
 
 
@@ -264,60 +302,65 @@ class MainWindow(QMainWindow):
     """
     The main window of our program.
     """
-    
+
     plot_navigation_tool_bar: NavigationToolbar
     plot_canvas: PlotCanvas
-    
+
     global_checkbox: StandardCheckbox
     country_checkbox: StandardCheckbox
-    
+
     country_selection_label: StandardLabel
     country_selection_combo_box: StandardComboBox
-    
+
     province_selection_label: StandardLabel
     province_selection_combo_box: StandardComboBox
-    
+
     city_selection_label: StandardLabel
     city_selection_combo_box: StandardComboBox
-    
+
     start_date_label: StandardLabel
     end_date_label: StandardLabel
     start_date_edit: StandardDateEdit
     end_date_edit: StandardDateEdit
-    
+
     confirm_button: StandardPushButton
-    
+
     def __init__(self, *args, **kwargs) -> None:
         super(MainWindow, self).__init__(*args, **kwargs)
         self.init_window()
-    
+
     def init_window(self) -> None:
+        """Initialize the main window"""
         self.resize(1400, 865)
-        
+
         # Center the window
         frame_geometry = self.frameGeometry()
         center_point = QDesktopWidget().availableGeometry().center()
         frame_geometry.moveCenter(center_point)
         self.move(frame_geometry.topLeft())
-        
+
         # Set window title
         self.setWindowTitle('Main Window')
 
         # Set window icon
         self.setWindowIcon(QIcon('resources/assets/icon.jpg'))
-        
+
         # Initialize status bar
         self.statusBar().showMessage('Ready.')
-        
+
         # Initialize Widgets
         self.init_widgets()
-        
+
         # Initialize Layout
         self.init_layout()
-        
+
         # Initialize signals (events)
         self.init_signals()
-    
+
+        # Presses the confirm button once when opening the application
+        # Renders the plot of the global COVID cases
+        self.confirm_button_handler()
+
     def init_widgets(self) -> None:
         """
         Init all widgets and their attributes.
@@ -325,59 +368,63 @@ class MainWindow(QMainWindow):
         # Country selections
         self.country_selection_label = StandardLabel('Country: ')
         self.country_selection_combo_box = StandardComboBox(self)
-        
+
         self.global_checkbox = StandardCheckbox('Global', self)
         # This setChecked does not trigger the slot because we haven't connected it at this point.
         self.global_checkbox.setChecked(True)
         self.country_checkbox = StandardCheckbox('Country Total', self)
-        
+
         # Province selection
         self.province_selection_label = StandardLabel('Province: ')
         self.province_selection_combo_box = StandardComboBox(self)
-        
+
         # City selection
         self.city_selection_label = StandardLabel('City: ')
         self.city_selection_combo_box = StandardComboBox(self)
-        
+
         # Date selections
         self.start_date_label = StandardLabel('Start Date: ')
         self.end_date_label = StandardLabel('End Date: ')
         self.start_date_edit = StandardDateEdit()
         self.end_date_edit = StandardDateEdit()
-        self.start_date_edit.setMinimumDate(data.ALL_COVID_CASES[0].date)
-        self.start_date_edit.setMaximumDate(data.ALL_COVID_CASES[-2].date)
-        self.end_date_edit.setMinimumDate(data.ALL_COVID_CASES[1].date)
-        self.end_date_edit.setMaximumDate(data.ALL_COVID_CASES[-1].date)
-        self.end_date_edit.setDate(data.ALL_COVID_CASES[-1].date)
-        
+
+        max_date = min(data.ALL_COVID_CASES[-1].date, data.ALL_SCHOOL_CLOSURES[-1].date)
+        min_date = max(data.ALL_COVID_CASES[0].date, data.ALL_SCHOOL_CLOSURES[0].date)
+
+        self.start_date_edit.setMinimumDate(min_date)
+        self.start_date_edit.setMaximumDate(max_date)
+        self.end_date_edit.setMinimumDate(min_date)
+        self.end_date_edit.setMaximumDate(max_date)
+        self.end_date_edit.setDate(max_date)
+
         # Plot
         self.plot_canvas = PlotCanvas()
         self.plot_navigation_tool_bar = NavigationToolbar(self.plot_canvas, self)
         set_font(self.plot_navigation_tool_bar)
-        
+
         # Confirm button
         self.confirm_button = StandardPushButton('Confirm')
-    
+
     def init_layout(self) -> None:
         """
         Init the layout for all widgets.
         """
         # The main layout of the main window
         main_layout = QHBoxLayout()
-        
+
         # The layout for our options controller
         controller_layout = QVBoxLayout()
         # Golden Ratio 0.618 : 1
         main_layout.addLayout(controller_layout, 382)
         controller_layout.addStretch(1)
-        
+
         # For temp use
         # TODO: Better Layout
         checkbox_layout = QHBoxLayout(self)
         controller_layout.addLayout(checkbox_layout)
         checkbox_layout.addWidget(self.global_checkbox)
         checkbox_layout.addWidget(self.country_checkbox)
-        
+
         # The layout for country, province, and city selection
         location_selection_layout = QFormLayout()
         controller_layout.addLayout(location_selection_layout)
@@ -387,25 +434,25 @@ class MainWindow(QMainWindow):
                                          self.province_selection_combo_box)
         location_selection_layout.addRow(self.city_selection_label,
                                          self.city_selection_combo_box)
-        
+
         # The layout for date range
         date_range_layout = QFormLayout()
         controller_layout.addLayout(date_range_layout)
         date_range_layout.addRow(self.start_date_label, self.start_date_edit)
         date_range_layout.addRow(self.end_date_label, self.end_date_edit)
-        
+
         controller_layout.addWidget(self.confirm_button)
-        
+
         # The layout for our plot
         plot_layout = QVBoxLayout()
         main_layout.addLayout(plot_layout, 618)
         plot_layout.addWidget(self.plot_navigation_tool_bar)
         plot_layout.addWidget(self.plot_canvas)
-        
+
         widget = QWidget(self)
         widget.setLayout(main_layout)
         self.setCentralWidget(widget)
-    
+
     def init_signals(self) -> None:
         """
         Init the signals.
@@ -413,15 +460,14 @@ class MainWindow(QMainWindow):
         self.global_checkbox.stateChanged.connect(self.on_global_checkbox_changed)
         self.on_global_checkbox_changed(Qt.Checked)
         self.country_checkbox.stateChanged.connect(self.on_country_checkbox_changed)
-        
+
         self.confirm_button.clicked.connect(self.confirm_button_handler)
-        self.confirm_button_handler()
-        
+
         self.country_selection_combo_box.currentIndexChanged.connect(
                 self.on_country_selection_changed)
         self.province_selection_combo_box.currentIndexChanged.connect(
                 self.on_province_selection_changed)
-    
+
     @pyqtSlot()
     def confirm_button_handler(self) -> None:
         """
@@ -429,13 +475,13 @@ class MainWindow(QMainWindow):
         """
         filtered_covid_cases: List[data.CovidCaseData] = []
         filtered_school_closures: List[data.SchoolClosureData] = []
-        
+
         # Current date range
         q_start_date: QDate = self.start_date_edit.date()
         q_end_date: QDate = self.end_date_edit.date()
         start_date = datetime.date(q_start_date.year(), q_start_date.month(), q_start_date.day())
         end_date = datetime.date(q_end_date.year(), q_end_date.month(), q_end_date.day())
-        
+
         if self.global_checkbox.isChecked():
             filtered_covid_cases = algorithms.linear_predicate(
                     data.GLOBAL_COVID_CASES, lambda item: start_date <= item.date <= end_date)
@@ -457,15 +503,15 @@ class MainWindow(QMainWindow):
                         lambda item: (province.name == '' or item.province == province) and
                                      (city.name == '' or item.city == city) and
                                      start_date <= item.date <= end_date)
-            
+
             filtered_school_closures = algorithms.linear_predicate(
                     data.COUNTRIES_TO_ALL_SCHOOL_CLOSURES[country],
                     lambda item: start_date <= item.date <= end_date
             )
-        
-        self.plot_canvas.plot_school_closures(filtered_school_closures)
+
         self.plot_canvas.plot_covid_cases(filtered_covid_cases)
-    
+        self.plot_canvas.plot_school_closures(filtered_school_closures)
+
     @pyqtSlot(int)
     def on_country_selection_changed(self, index: int) -> None:
         """
@@ -473,24 +519,24 @@ class MainWindow(QMainWindow):
         """
         self.province_selection_combo_box.clear()
         self.city_selection_combo_box.clear()
-        
+
         country = data.SORTED_COUNTRIES[index]
-        
+
         if country not in data.COUNTRIES_TO_PROVINCES:
             return
         if self.country_checkbox.isChecked():
             return
-        
+
         provinces = data.COUNTRIES_TO_PROVINCES[country]
         self.province_selection_combo_box.addItems([p.name for p in provinces])
-        
+
         province = provinces[0]
         if province not in data.PROVINCES_TO_CITIES:
             return
-        
+
         cities = data.PROVINCES_TO_CITIES[provinces[0]]
         self.city_selection_combo_box.addItems([c.name for c in cities])
-    
+
     @pyqtSlot(int)
     def on_province_selection_changed(self, index: int) -> None:
         """
@@ -501,12 +547,12 @@ class MainWindow(QMainWindow):
             return
         provinces = data.COUNTRIES_TO_PROVINCES[country]
         province = provinces[index]
-        
+
         if province in data.PROVINCES_TO_CITIES:
             cities = data.PROVINCES_TO_CITIES[province]
             self.city_selection_combo_box.clear()
             self.city_selection_combo_box.addItems([c.name for c in cities])
-    
+
     @pyqtSlot(int)
     def on_global_checkbox_changed(self, state: int) -> None:
         """
@@ -519,7 +565,7 @@ class MainWindow(QMainWindow):
             self.city_selection_combo_box.clear_and_disable()
         else:
             self.set_default_location_selection()
-    
+
     @pyqtSlot(int)
     def on_country_checkbox_changed(self, state: int) -> None:
         """
@@ -546,8 +592,8 @@ class MainWindow(QMainWindow):
             
             self.city_selection_combo_box.enable_and_add_items(
                     [c.name for c in data.PROVINCES_TO_CITIES[province[0]]])
-    
-    def set_default_location_selection(self):
+
+    def set_default_location_selection(self) -> None:
         """
         Set the location combo box to its default values.
 
@@ -584,10 +630,10 @@ class DataQThread(QThread):
 
 class ProgressUpdateThread(QThread):
     on_updated: pyqtSignal = pyqtSignal(int)
-    
-    def __init__(self, parent=None):
+
+    def __init__(self, parent=None) -> None:
         super(ProgressUpdateThread, self).__init__(parent)
-    
+
     def run(self) -> None:
         while True:
             progress = data.get_progress()
@@ -605,20 +651,21 @@ class InitWindow(QWidget):
     """
     progress_bar: StandardProgressBar
     progress_bar_update_thread: ProgressUpdateThread
-    
+
     cancel_button: StandardPushButton
-    
+
     helper_label: StandardLabel
+
     
     sorting_algorithm_combo_box: StandardComboBox
     sorting_algorithm_confirm_button: StandardPushButton
-    
+
     is_complete: bool = False
-    
+
     def __init__(self):
         super(InitWindow, self).__init__()
         self.init_window()
-    
+
     def init_window(self):
         self.resize(800, 200)
         # Center the window
@@ -626,22 +673,22 @@ class InitWindow(QWidget):
         center_point = QDesktopWidget().availableGeometry().center()
         frame_geometry.moveCenter(center_point)
         self.move(frame_geometry.topLeft())
-        
+
         # Set window title
         self.setWindowTitle('Initializing...')
-        
+
         # Initialize Widgets
         self.init_widgets()
-        
+
         # Initialize Layout
         self.init_layout()
-        
+
         # Initialize Signals
         self.init_signals()
 
         # Start detecting changes in progress
         self.progress_bar_update_thread.start()
-    
+
     def init_widgets(self):
         self.progress_bar = StandardProgressBar(self)
         self.cancel_button = StandardPushButton('Cancel')
@@ -653,7 +700,7 @@ class InitWindow(QWidget):
                                           lambda s1, s2: 1 if s1 > s2 else -1)
         )
         self.sorting_algorithm_confirm_button = StandardPushButton('Confirm')
-    
+
     def init_layout(self):
         main_layout = QVBoxLayout(self)
         main_layout.addWidget(self.progress_bar)
@@ -666,7 +713,7 @@ class InitWindow(QWidget):
         main_layout.addLayout(algorithms_select_layout)
         
         self.setLayout(main_layout)
-    
+
     def init_signals(self):
         self.cancel_button.clicked.connect(self.on_cancel_button_clicked)
         self.sorting_algorithm_confirm_button.clicked.connect(self.on_confirm_button_clicked)
@@ -684,7 +731,7 @@ class InitWindow(QWidget):
         settings.sort = algorithms.SORTING_ALGORITHMS[algorithm_str]
         data_thread = DataQThread(parent=QApplication.instance())
         data_thread.start()
-    
+
     @pyqtSlot(int)
     def update_progress_bar(self, progress: int) -> None:
         if progress >= 100:
@@ -701,7 +748,7 @@ class InitWindow(QWidget):
             main.main_window.show()
         else:
             self.progress_bar.setValue(progress)
-    
+
     @pyqtSlot()
     def on_cancel_button_clicked(self):
         """

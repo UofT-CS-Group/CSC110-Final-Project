@@ -7,17 +7,25 @@ import time
 import gui
 import data
 import threading
+import logging
+import sys
+import settings
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
+# =================================================================================================
+# Initialize logger
+# =================================================================================================
+logging.basicConfig(stream=sys.stdout,
+                    level=settings.LOG_LEVEL,
+                    format=settings.LOG_FORMAT)
+
 
 if __name__ == '__main__':
-    print('Initializing...')
+    logging.info('Starting application...')
 
-    # TODO: Download any resource files needed and place them into the correct folders.
-
-    print(f'Current Running Threads: {threading.enumerate()}')
+    logging.info(f'Current Running Threads: {threading.enumerate()}')
 
     # Create the QApplication instance.
     app = QApplication(sys.argv)
