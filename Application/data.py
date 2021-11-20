@@ -11,12 +11,12 @@ from enum import Enum
 import datetime
 import csv
 import algorithms
+import settings
 
 
 # =================================================================================================
 # Classes
 # =================================================================================================
-import settings
 
 
 class ClosureStatus(Enum):

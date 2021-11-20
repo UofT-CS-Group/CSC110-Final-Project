@@ -638,6 +638,9 @@ class InitWindow(QWidget):
         
         # Initialize Signals
         self.init_signals()
+
+        # Start detecting changes in progress
+        self.progress_bar_update_thread.start()
     
     def init_widgets(self):
         self.progress_bar = StandardProgressBar(self)
@@ -670,7 +673,6 @@ class InitWindow(QWidget):
         
         self.progress_bar_update_thread = ProgressUpdateThread()
         self.progress_bar_update_thread.on_updated.connect(self.update_progress_bar)
-        self.progress_bar_update_thread.start()
     
     @pyqtSlot()
     def on_confirm_button_clicked(self):
