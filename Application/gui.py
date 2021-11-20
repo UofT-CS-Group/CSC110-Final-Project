@@ -179,7 +179,7 @@ class PlotCanvas(FigureCanvas):
         self.axes_covid.format_coord = lambda _, __: \
             f'Date = {self.curr_x}, Cases = {self.curr_y}'
         self.axes_closure.format_coord = lambda _, __: \
-            f'Date = {self.curr_x}, Status = {data.NUM_TO_STATUS_DICT[self.curr_y]}'
+            f'Date = {self.curr_x}, Status = {data.ENUM_TO_STATUS_DICT[data.ClosureStatus(self.curr_y)]}'
         self.draw()
 
     def plot_covid_cases(self, covid_cases: List[data.CovidCaseData]) -> None:
