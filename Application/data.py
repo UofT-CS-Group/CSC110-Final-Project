@@ -1,7 +1,7 @@
 """
 CSC110 Final Project - Data Classes File
 
-Contains functions to do all processings with our datasets
+Contains functions to do all processing with our datasets
 Also contains CONSTANTS and classes
 """
 # Python built-ins
