@@ -1,12 +1,16 @@
 """
 The main entry of our program.
 """
+# Python built-ins
 import logging
 import sys
 
+# PyQt5
 from PyQt5.QtWidgets import *
 
-import gui
+# Our modules
+import gui_main
+import gui_init
 import settings
 
 # =================================================================================================
@@ -25,13 +29,13 @@ if __name__ == '__main__':
     # Create the QApplication instance.
     app = QApplication(sys.argv)
 
-    init_window = gui.InitWindow()
+    init_window = gui_init.InitWindow()
     init_window.show()
 
     # We need to retain a reference here to avoid garbage collection.
     # main_window will be initialized after the data are fully loaded
     # in gui.InitWindow#update_progress_bar method.
-    main_window: gui.MainWindow
+    main_window: gui_main.MainWindow
 
     # Start the event loop with app.exec
     # After the program stopped, app.exec will return a exit code which could indicate

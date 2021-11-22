@@ -6,9 +6,11 @@ Settings include:
     - Dataset links
     - And more...
 """
+# Python built-ins
 import logging
 from typing import Callable, List
 
+# Our modules
 import algorithms
 from algorithms import T
 
