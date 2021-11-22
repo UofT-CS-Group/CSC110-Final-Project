@@ -23,6 +23,11 @@ logging.basicConfig(stream=sys.stdout,
 # =================================================================================================
 # Main Chunk
 # =================================================================================================
+# We need to retain a reference here to avoid garbage collection.
+# main_window will be initialized after the data are fully loaded
+# in gui.InitWindow#update_progress_bar method.
+main_window: gui_main.MainWindow
+
 if __name__ == '__main__':
     logging.info('Starting application...')
 
@@ -31,11 +36,6 @@ if __name__ == '__main__':
 
     init_window = gui_init.InitWindow()
     init_window.show()
-
-    # We need to retain a reference here to avoid garbage collection.
-    # main_window will be initialized after the data are fully loaded
-    # in gui.InitWindow#update_progress_bar method.
-    main_window: gui_main.MainWindow
 
     # Start the event loop with app.exec
     # After the program stopped, app.exec will return a exit code which could indicate
