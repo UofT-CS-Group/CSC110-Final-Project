@@ -4,18 +4,21 @@ CSC110 Final Project - Data Classes File
 Contains functions to do all processings with our datasets
 Also contains CONSTANTS and classes
 """
+# Python built-ins
 import csv
 import datetime
 import hashlib
+import logging
 import math
 import os
 from enum import Enum
 from typing import Dict, List, Set
 
+# Requests library
 import requests
 
+# Our modules
 import algorithms
-import main
 import settings
 
 
@@ -370,13 +373,13 @@ def check_files() -> bool:
                              'full_dataset_31_oct.csv') == settings.CLOSURE_MD5
 
     if not check_covid19_us:
-        main.logging.warning('COVID19 US Dataset Checksum failed!')
+        logging.warning('COVID19 US Dataset Checksum failed!')
 
     if not check_covid19_global:
-        main.logging.warning('COVID19 Global Dataset MD5 Checksum failed!')
+        logging.warning('COVID19 Global Dataset MD5 Checksum failed!')
 
     if not check_closure:
-        main.logging.warning('School Closure Dataset MD5 Checksum failed!')
+        logging.warning('School Closure Dataset MD5 Checksum failed!')
 
     return check_covid19_us and check_covid19_global and check_closure
 
@@ -423,12 +426,12 @@ def download_data() -> None:
         import _thread
         _thread.interrupt_main()
 
-        main.logging.critical('Connection Failed... Aborting application!')
-        main.logging.info('Please download the files from settings.py and '
+        logging.critical('Connection Failed... Aborting application!')
+        logging.info('Please download the files from settings.py and '
                           'move them into the resources directory')
-        main.logging.info('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
-        main.logging.info('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
-        main.logging.info('resources/school_closures_datasets/full_dataset_31_oct.csv')
+        logging.info('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
+        logging.info('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
+        logging.info('resources/school_closures_datasets/full_dataset_31_oct.csv')
 
         raise Exception('Download Failure. Please scroll up to see instructions.')
 
@@ -444,29 +447,29 @@ def init_data() -> None:
         open('resources/school_closures_datasets/full_dataset_31_oct.csv')
 
     except FileNotFoundError:
-        main.logging.warning('Datasets not found! Downloading...')
+        logging.warning('Datasets not found! Downloading...')
         download_data()
-        main.logging.info('Download success!')
+        logging.info('Download success!')
 
-    main.logging.info('Checking completeness of dataset...')
+    logging.info('Checking completeness of dataset...')
 
     if not check_files():
-        main.logging.warning('MD5 Checksum failed!')
-        main.logging.info('Attempting to download original dataset')
+        logging.warning('MD5 Checksum failed!')
+        logging.info('Attempting to download original dataset')
         download_data()
-        main.logging.info('Download success!')
+        logging.info('Download success!')
 
     # Aborts the application if MD5 Checksum failed twice
     if not check_files():
-        main.logging.critical('MD5 Checksum still failed! Aborting.')
-        main.logging.info('Perhaps your disk is corrupted?')
+        logging.critical('MD5 Checksum still failed! Aborting.')
+        logging.info('Perhaps your disk is corrupted?')
 
         # Crashes the application's GUI window
         import _thread
         _thread.interrupt_main()
 
-    main.logging.info('MD5 Checksum passed!')
-    main.logging.info('Initializing data...')
+    logging.info('MD5 Checksum passed!')
+    logging.info('Initializing data...')
 
     read_covid_data_global(
             'resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
@@ -511,7 +514,7 @@ def init_data() -> None:
     progress += math.ceil(TOTAL_NUMBER_DATA * 0.001)
 
     timestamp2 = time.time()
-    main.logging.info(f'Successfully initialized all data in '
+    logging.info(f'Successfully initialized all data in '
                       f'{round(timestamp2 - timestamp1, 2)} seconds!')
 
 

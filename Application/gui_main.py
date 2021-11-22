@@ -1,142 +1,29 @@
 """
-Main GUI + backend here
-I know it's in efficient and shitty
-Just for temp use
+This module contains the main window and its elements of our project.
 """
+# Python built-ins
 import datetime
-import math
-import time
-from typing import Iterable, List, Optional
+from typing import List
 
-import matplotlib.backend_bases
-import matplotlib.lines
-import matplotlib.style
-from PyQt5 import QtGui
+# PyQt5
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+
+# Matplotlib
+import matplotlib.backend_bases
+import matplotlib.lines
+import matplotlib.style
 from matplotlib import pyplot
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-import algorithms
+# Our modules
 import data
-import main
-import settings
+import algorithms
+from gui_utils import *
 
 matplotlib.style.use('fast')
-
-
-# =================================================================================================
-# Helper functions and classes.
-# =================================================================================================
-
-
-def set_font(widget: QWidget,
-             font_family: str = settings.FONT_FAMILY,
-             font_size: int = settings.FONT_SIZE) -> None:
-    """
-    Set the font of given widget to given font and size.
-    
-    Note:
-        - By default, it will set the font of the given widget to the font settings specified in
-        settings.py
-    """
-    font: QFont = widget.font()
-    font.setFamily(font_family)
-    font.setPointSize(font_size)
-    widget.setFont(font)
-
-
-class StandardLabel(QLabel):
-    """
-    A standard label for our project.
-    
-    When needed, we could add more attributes and functions.
-    """
-
-    def __init__(self, text: str = ''):
-        super(StandardLabel, self).__init__()
-        set_font(self)
-
-        # Set Default Text
-        self.setText(text)
-
-
-class StandardPushButton(QPushButton):
-    """
-    A standard push button for our project.
-    
-    When needed, we could add more attributes and functions.
-    """
-
-    def __init__(self, text: str = '', *__args):
-        super().__init__(*__args)
-        set_font(self)
-        self.setText(text)
-
-
-class StandardComboBox(QComboBox):
-    """
-    A standard combo box for our project.
-    
-    When needed, we could add more attributes and functions.
-    """
-
-    def __init__(self, parent=None, items: Iterable = None):
-        super().__init__(parent)
-        set_font(self)
-        if items is not None:
-            self.addItems(items)
-
-    def clear_and_disable(self):
-        self.clear()
-        self.setEnabled(False)
-
-    def enable_and_add_items(self, texts: Iterable[str]):
-        self.setEnabled(True)
-        self.addItems(texts)
-
-
-class StandardDateEdit(QDateEdit):
-    """
-    A standard date edit for our project.
-    
-    When needed, we could add more attributes and functions.
-    """
-
-    def __init__(self, *__args) -> None:
-        super().__init__(*__args)
-        set_font(self)
-
-
-class StandardCheckbox(QCheckBox):
-    """
-    A standard checkbox for our project.
-
-    When needed, we could add more attributes and functions.
-    """
-
-    def __init__(self, text: str, parent: Optional[QWidget] = None) -> None:
-        super().__init__(text, parent)
-        set_font(self)
-
-
-class StandardProgressBar(QProgressBar):
-    """
-    A standard progress bar for our project.
-
-    When needed, we could add more attributes and functions.
-    """
-
-    def __init__(self, parent: Optional[QWidget] = None):
-        super(StandardProgressBar, self).__init__(parent)
-        set_font(self)
-
-
-# =================================================================================================
-# Main window.
-# =================================================================================================
 
 
 class PlotCanvas(FigureCanvas):
@@ -223,10 +110,10 @@ class PlotCanvas(FigureCanvas):
         self.is_closure_cross_hair_init = False
 
     def on_mouse_move(self, event: matplotlib.backend_bases.MouseEvent) -> None:
-        """The handler of on_mouse_move event, renders the crosshair"""
+        """The handler of on_mouse_move event, renders the cross hair"""
         # The reason why the cross-hair is laggy is because self.draw()
         # takes a very long time to draw.
-        # This part of code is a little bit shitty, but it is not worthy to fix
+        # This code is a little bit shitty, but we could fix it later.
         if event.inaxes:
             x = event.xdata
             x = datetime.timedelta(days=x)
@@ -297,10 +184,18 @@ class PlotCanvas(FigureCanvas):
                     self.draw()
 
 
-class MainWindow(QMainWindow):
+class MainWindowUI(QMainWindow):
     """
-    The main window of our program.
+    This is the UI of our Main Window with no functionalities.
+
+    Note:
+        - We should put, initialize, and layout all widgets needed here.
+
+    Instance Attributes:
+        - ...
     """
+    width: int = 1400
+    height: int = 865
 
     plot_navigation_tool_bar: NavigationToolbar
     plot_canvas: PlotCanvas
@@ -325,12 +220,12 @@ class MainWindow(QMainWindow):
     confirm_button: StandardPushButton
 
     def __init__(self, *args, **kwargs) -> None:
-        super(MainWindow, self).__init__(*args, **kwargs)
+        super(MainWindowUI, self).__init__(*args, **kwargs)
         self.init_window()
 
     def init_window(self) -> None:
         """Initialize the main window"""
-        self.resize(1400, 865)
+        self.resize(self.width, self.height)
 
         # Center the window
         frame_geometry = self.frameGeometry()
@@ -342,7 +237,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Main Window')
 
         # Set window icon
-        self.setWindowIcon(QIcon('resources/assets/icon.jpg'))
+        icon = QIcon('resources/assets/icon.jpg')
+        self.setWindowIcon(icon)
 
         # Initialize status bar
         self.statusBar().showMessage('Ready.')
@@ -352,13 +248,6 @@ class MainWindow(QMainWindow):
 
         # Initialize Layout
         self.init_layout()
-
-        # Initialize signals (events)
-        self.init_signals()
-
-        # Presses the confirm button once when opening the application
-        # Renders the plot of the global COVID cases
-        self.confirm_button_handler()
 
     def init_widgets(self) -> None:
         """
@@ -451,6 +340,21 @@ class MainWindow(QMainWindow):
         widget = QWidget(self)
         widget.setLayout(main_layout)
         self.setCentralWidget(widget)
+
+
+class MainWindow(MainWindowUI):
+    """
+    The main window of our program.
+    """
+
+    def __init__(self, *args, **kwargs) -> None:
+        super(MainWindow, self).__init__(*args, **kwargs)
+        # Initialize signals (events)
+        self.init_signals()
+
+        # Presses the confirm button once when opening the application
+        # Renders the plot of the global COVID cases
+        self.confirm_button_handler()
 
     def init_signals(self) -> None:
         """
@@ -614,155 +518,3 @@ class MainWindow(QMainWindow):
         self.city_selection_combo_box.setEnabled(True)
 
 
-# =================================================================================================
-# Initialization window.
-# =================================================================================================
-
-class DataQThread(QThread):
-
-    def __init__(self, parent=None) -> None:
-        super(DataQThread, self).__init__(parent)
-
-    def run(self):
-        data.init_data()
-
-
-class ProgressUpdateThread(QThread):
-    on_updated: pyqtSignal = pyqtSignal(int)
-
-    def __init__(self, parent=None) -> None:
-        super(ProgressUpdateThread, self).__init__(parent)
-
-    def run(self) -> None:
-        while True:
-            progress = data.get_progress()
-            self.on_updated.emit(math.floor(progress * 100))
-            if progress >= 1:
-                self.exit()
-                return
-            time.sleep(0.1)
-
-
-class InitWindow(QWidget):
-    """
-    The window displayed at the initialization phase,
-    including a progress bar indicating the percentage of data initialized.
-    """
-    progress_bar: StandardProgressBar
-    progress_bar_update_thread: ProgressUpdateThread
-
-    cancel_button: StandardPushButton
-
-    helper_label: StandardLabel
-
-    sorting_algorithm_combo_box: StandardComboBox
-    sorting_algorithm_confirm_button: StandardPushButton
-
-    is_complete: bool = False
-
-    def __init__(self):
-        super(InitWindow, self).__init__()
-        self.init_window()
-
-    def init_window(self):
-        self.resize(800, 200)
-        # Center the window
-        frame_geometry = self.frameGeometry()
-        center_point = QDesktopWidget().availableGeometry().center()
-        frame_geometry.moveCenter(center_point)
-        self.move(frame_geometry.topLeft())
-
-        # Set window title
-        self.setWindowTitle('Initializing...')
-
-        # Initialize Widgets
-        self.init_widgets()
-
-        # Initialize Layout
-        self.init_layout()
-
-        # Initialize Signals
-        self.init_signals()
-
-        # Start detecting changes in progress
-        self.progress_bar_update_thread.start()
-
-    def init_widgets(self):
-        self.progress_bar = StandardProgressBar(self)
-        self.cancel_button = StandardPushButton('Cancel')
-        self.helper_label = StandardLabel(
-                'Please select a sorting algorithm for the whole project.\n'
-        )
-        self.sorting_algorithm_combo_box = StandardComboBox(
-                self, items=settings.sort([s for s in algorithms.SORTING_ALGORITHMS],
-                                          lambda s1, s2: 1 if s1 > s2 else -1)
-        )
-        self.sorting_algorithm_confirm_button = StandardPushButton('Confirm')
-
-    def init_layout(self):
-        main_layout = QVBoxLayout(self)
-        main_layout.addWidget(self.progress_bar)
-        main_layout.addWidget(self.cancel_button)
-        main_layout.addWidget(self.helper_label)
-
-        algorithms_select_layout = QHBoxLayout(self)
-        algorithms_select_layout.addWidget(self.sorting_algorithm_combo_box)
-        algorithms_select_layout.addWidget(self.sorting_algorithm_confirm_button)
-        main_layout.addLayout(algorithms_select_layout)
-
-        self.setLayout(main_layout)
-
-    def init_signals(self):
-        self.cancel_button.clicked.connect(self.on_cancel_button_clicked)
-        self.sorting_algorithm_confirm_button.clicked.connect(self.on_confirm_button_clicked)
-
-        self.progress_bar_update_thread = ProgressUpdateThread()
-        self.progress_bar_update_thread.on_updated.connect(self.update_progress_bar)
-
-    @pyqtSlot()
-    def on_confirm_button_clicked(self):
-        self.helper_label.setText(
-                'We have 2,470,748 observations in our data sets and many manipulations, \n'
-                'so it may take a bit to load.'
-        )
-        algorithm_str = self.sorting_algorithm_combo_box.currentText()
-        settings.sort = algorithms.SORTING_ALGORITHMS[algorithm_str]
-        data_thread = DataQThread(parent=QApplication.instance())
-        data_thread.start()
-
-    @pyqtSlot(int)
-    def update_progress_bar(self, progress: int) -> None:
-        if progress >= 100:
-            self.is_complete = True
-            self.helper_label.setText('Successfully Loaded! Our main window will appear soon!')
-            self.helper_label.adjustSize()
-            self.progress_bar.setValue(progress)
-            time.sleep(3)
-            # This close action will trigger the closeEvent
-            self.close()
-            # WARNING: We cannot just main_window = MainWindow() because Python's garbage
-            # collection will remove it instantly!
-            main.main_window = MainWindow()
-            main.main_window.show()
-        else:
-            self.progress_bar.setValue(progress)
-
-    @pyqtSlot()
-    def on_cancel_button_clicked(self):
-        """
-        Handle the things to do after the user clicked the cancel button.
-        
-        This function will directly interrupt the main thread by raising an exception.
-        """
-        import _thread
-        _thread.interrupt_main()
-
-    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        """
-        Handle the things to do after the user press the red close button on the right corner.
-        """
-        if not self.is_complete:
-            import _thread
-            _thread.interrupt_main()
-        else:
-            super(InitWindow, self).closeEvent(a0)
