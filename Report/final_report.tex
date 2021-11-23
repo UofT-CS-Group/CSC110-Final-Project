@@ -1,0 +1,300 @@
+\documentclass[fontsize=11pt]{article}
+\usepackage{amsmath}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{parskip}
+\setlength\parindent{0pt}
+
+\title{CSC110 Project Report\\ Educational Crisis - A Closer Examination on the Correlations Between Covid-19 and School Closures Around the Globe}
+\author{Shouyi (Ray) Hung, Yuhan (Charlotte) Chen, Mengyuan (Alyssa) Li, and Fuyang (Scott) Cui}
+\date{\today}
+
+\begin{document}
+    \maketitle
+
+    \tableofcontents
+
+    \newpage
+
+    \section{Introduction}
+
+    COVID-19 profoundly impacted students’ learning environment and strategies. \textbf{Therefore, we are curious about how this global pandemic correlates with school closures all around the world as time passes, which is one of the main influencing factors that entirely changed our way of learning and living.} We will compare the levels of School Closure with the severity of COVID-19 of different countries in a specified time frame.
+
+    As a group of students, COVID-19 changed our way of learning from face-to-face to online for quite a long time. In 2021, results from the National Survey of Public Education's Response to COVID-19 had shown that more than 46\%\footnote{National Survey of Public Education's Response to COVID-19 Infographic, https://www.air.org/sites/default/files/2021-07/infographic-results-national-covid-survey-june-2021\_1.pdf} of the students in the US across all grades are studying remotely. However, after COVID-19 eased a little bit, some of our schools reverted to the traditional in-person learning classes. A very prevalent issue amongst students is frequently switching between online and in-person learning. Under such circumstances, learning became increasingly hard as time passed.
+
+    Besides, as international students, we were energetic and excited about future university life. However, everything became harsh and unpredictable after the emergence of COVID-19. We are now bothered by expensive flight tickets, personal safety issues, and potential school closures as a result of the pandemic. For example, two of our group members are currently living in China because of COVID-19 and are troubled by the inconveniences of timezone differences.
+
+    Therefore, we aim to discover a general relationship between COVID-19 and school closures. With the help of the observed correlation, we could be more prepared in countering the impacts of COVID-19 as individuals. For example, we could reasonably predict the next virus outbreak based on our project and switch to online classes beforehand.
+
+    Additionally, from a broader scope, our project could provide intuitions to educational institutions about the trend of school closures and COVID-19 cases. Therefore, they could identify whether they made a correct decision of closing/opening schools during the pandemic, and draft plans to minimize the impacts in the future. In other words, we could utilize our project as a guide to help prevent future impacts that could rain onto the educational sectors that suffered during the current pandemic.
+
+    \newpage
+
+    \section{Dataset Description}
+
+    We have identified two main datasets that will be relevant for our project’s implementation.
+
+    These are:
+
+    \begin{enumerate}
+        \item
+        Global School Closures for COVID-19\footnote{School Closure survey report, www.kaggle.com/salehahmedrony/global-school-closures-covid19} – Obtained from Kaggle, compiled by Saleh Ahmed Rony, sourced from UNESCO
+
+        \item
+        COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University\footnote{One of the most used COVID-19 Cases Database, github.com/CSSEGISandData/COVID-19} – Obtained from GitHub, compiled by JHU, sourced from WHO, ECDC, DXY, US CDC, etc.
+    \end{enumerate}
+
+    Both datasets will be stored in a Comma Separated Value file, which will allow us to read from them easily through Python’s csv library.
+
+    Furthermore, both datasets are very credible as they are sourced from multiple sites, including but not limited to WHO, ECDC, and US CDC. Furthermore, these datasets are also licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0), which allows us to utilize these data for our own needs.
+
+    The datasets that we have downloaded and utilized in this project were chosen because they were compiled in a way that allows easy access and manipulation. By using datasets that are already organized could improve the efficiency and robustness of our program.
+
+    The Global COVID-19 Dataset (Time series) has the following structure:
+
+    \begin{center}
+        \begin{tabular}{ |c|c|c|c|c|c|c|c| }
+            \hline
+            Province/State & Country/Region & Lat      & Long     & 1/22/20 & 1/23/20 & 1/24/20 & ... \\
+            \hline
+            & Afghanistan    & 33.93911 & 67.70995 & 0       & 0       & 0       & ... \\
+            \hline
+            & Albania        & 41.1533  & 20.1683  & 0       & 0       & 0       & ... \\
+            \hline
+            ...            & ...            & ...      & ...      & ...     & ...     & ...     & ... \\
+            \hline
+        \end{tabular}
+    \end{center}
+
+    The headers extend up until November 1, 2021 for the dataset that we will be using in our application.
+
+    Starting from column 5 and onwards (for the Global COVID-19 Dataset) contains the amount of cumulative cases for the specified country in the date shown in the header row.
+
+    The US Data set for COVID-19 (Time series) will have a little bit of variation, but it is generally the same.
+
+    The School Closure Dataset has the following structure:
+    \begin{center}
+        \begin{tabular}{ |c|c|c|c|c| }
+            \hline
+            Date       & ISO & Country  & Status                  & Note\\
+            \hline
+            17/02/2020 & CHN & China    & Partially open          & \\
+            \hline
+            17/02/2020 & MNG & Mongolia & Closed due to COVID-19  & \\
+            \hline
+            ...        & ... & ...      & ...                     & ...\\
+            \hline
+        \end{tabular}
+    \end{center}
+
+    The data is organized by entries of different country each day.
+
+    Some of the country names in our datasets contain characters that are not part of the standard ASCII table. An example would be "Cura\c{c}ao", where "\c{c}" is a French (Latin script) letter.
+
+    Since these letters are not in the standard ASCII Table, displaying and encoding issues may arise. So for convenience, we will ignore them.
+
+    For the purpose of this project, we will simplify the standard ASCII Table to only contain characters from "a-z", "A-Z", "0-9", "!-\~{}".
+
+    These letters also correspond to "string.ascii\_lowercase", "string.ascii\_uppercase", "string.digits", and "string.punctutation" respectively, from the Python string library.
+
+    \newpage
+
+
+    \section{Computational Overview}
+
+    Our project will be separated into 3 main parts of implementations: Data Processing, Graphical User Interface (GUI) implementation, and Misc.
+
+    \subsection{Data Processing}
+
+    \subsubsection{Downloading Data}
+
+    In this part of the implementation, we have utilized the libaries requests, os, and hashlib to download and verify files downloaded respectively.
+
+    The requests library allows the application to reach out to a certain URL and get the contents that are contained in that URL. We will use this library in combination with os to download and save the file in the user's working directory, so our application can run with the specified data.
+
+    Specifically, we used requests.get, which allows us to retrieve the information contained in the specified URL, and os.makedirs, which allows us to create directories to store our files in.
+
+    We utilized a Public GitHub repository to upload all assets, so the application can visit the specified URL and obtain all the assets needed without needing any Verification Token.
+
+    We also implemented a MD5 Hash function\footnote{Implementation referenced from StackOverFlow, https://stackoverflow.com/questions/3431825/generating-an-md5-checksum-of-a-file} that uses the hashlib library.
+
+    Specifically, we used hashlib.md5 to create the MD5 value of a certain file, and hashlib.md5.hexdigest to return the result in a string.
+
+    For the files that are being downloaded, the application will compare it with the specified MD5 Checksum value we ran on our machines to ensure that the files downloaded are the same as the ones we are working with.
+
+    The purpose of this sub-sub-section is to ensure that our application will run on any machine.
+
+    \subsubsection{Data Manipulation Algorithms}
+
+    We have written an algorithms.py file to contain most of the sorting algorithms that we know. This includes but not limited to: Merge Sort, Bubble Sort, Selection Sort, Insertion Sort, Linear Search, Binary Search.
+
+    The purpose of this part of the implementation is to demonstrate the impact on running time if we utilized another sorting algorithm instead of the original one.
+
+    On default, our application will choose Merge Sort as the default sorting algorithm, which is the sorting algorithm that has the fastest running time.
+
+    The different searching algorithms will be utilized with our GUI application to display the covid case results that are linked to the country that the user selected.
+
+    \subsubsection{Data Initialization}
+
+    We read the data into Python with help of the Python \emph{csv} library.
+
+    For our COVID-19 Datasets, we only used the columns with the headers "Country" and "Dates", as they provide information for us to plot in the application.
+
+    For our School Closure Dataset, we used all of the columns aside from the "Note" column, as it provides information in a way that is hard to process.
+
+    Then, by using the data we have loaded into Python, we performed multiple filtrations to the loaded data so that we can obtain GLOBAL CONSTANTS that will be used by the other Python files.
+
+    Our program created the following data classes:
+
+    \begin{itemize}
+        \item ClosureStatus - An Enum class that maps the different status of school closure to an Enum value
+        \item Location - A class that represents a location
+        \item Country - A class that represents a country, based on its location
+        \item BaseData - A basic class
+        \item TimeBasedData - A data class that is based on time
+        \item CovidCaseData - A class that represents an entry in Covid data based on a Time and Country
+        \item SchoolClosureData - A class that represents an entry in Closure Data based on a Time and Country
+    \end{itemize}
+
+    Our program will generate the following GLOBAL CONSTANTS:
+
+    \begin{itemize}
+        \item ALL\_COVID\_CASES - A list of all CovidCaseData objects read from the csv file, including Provinces and Cities
+        \item COUNTRIES\_TO\_COVID\_CASES - A dictionary mapping from a country name to all of its respective CovidCaseData
+        \item GLOBAL\_COVID\_CASES - A list of all CovidCaseData that contains cases summed across all countries on a certain date
+        \item ALL\_SCHOOL\_CLOSURES - A list of all SchoolClosureData that is read from the csv file
+        \item COUNTRIES\_TO\_ALL\_SCHOOL\_CLOSURES - A dictionary mapping from a country name to all of its respective SchoolClosureData
+        \item GLOBAL\_SCHOOL\_CLOSURES - A list of SchoolClosureData with only dates and the status of the majority of the schools in that date
+        \item COUNTRIES - A list of Country objects that are read from the CSV Files
+        \item SORTED\_COUNTRIES - A list of sorted Country objects from COUNTRIES
+    \end{itemize}
+
+    Then, we converted the raw data read from the csv files into the data classes specified above, so we could easily utilize those data in practice.
+
+    We stored all of our data in data.py as GLOBAL CONSTANTS, which will allow the other Python files to import and utilize them directly. We will refer to data.py in our gui.py file to display graphs.
+
+    This brings us to the next part of our project, which is GUI Implementation.
+
+    \subsection{GUI Implementation}
+
+    We mainly utilized \emph{PyQt5} to generate an interactive user interface and \emph{Matplotlib} to plot graphs.
+
+    We have implemented the following functionalities:
+
+    \begin{itemize}
+        \item A fully functional Graphical User Interface with menu bar, multiple buttons, input date edits, and sliders
+        \item A loading progress bar in the main UI Window when data is not fully initialized yet
+        \item Navigation bar that can allow user to interact with the graph plotted in various ways (Panning, zooming, customizing, etc.)
+        \item Scatter plot COVID-19 cases and school closures visualizations supporting filtering by country names
+        \item Different plot types to display the correlation between COVID-19 cases and school closure visualizations
+    \end{itemize}
+
+    \subsubsection{Main Window}
+
+    We utilized PyQt5.QtCore, PyQt5.QtGui, and PyQt5.QtWidgets to create the main window.
+
+    This window consists of the following classes:
+
+    \begin{itemize}
+        \item Standard Label - The class we use to add a text label
+        \item Standard Push Button - The class we use to add a confirm button
+        \item Standard Combo Box - The class we use to choose which country's data to display
+        \item Standard Date Edit - The class we use to select the start date and end date
+        \item Standard Checkbox - The class we use to select options
+        \item Standard Progress Bar - The class used to display the progress
+        \item Plot Canvas - The class that is used to plot figures on the Main Window
+    \end{itemize}
+
+    The PyQt Main Window that we display will use a combination of the classes above to output the desired window.
+
+    \subsection{Misc}
+
+    Aside from the main window and data manipulation libraries, we also included the libraries sys, logging, time, and typing.
+
+    The libraries sys and logging are used to generate a log in the console to inform the users of the different actions that our application is doing.
+
+    The time library is used to evaluate the time that it takes for us to initialize the data and to output the time in the console log.
+
+    Lastly, we used typing to specify the types of inputs that our functions will be taking, in algorithms.py, data.py, and gui.py.
+
+    \newpage
+
+    \section{Instructions}
+
+    \begin{enumerate}
+        \item [1]
+            Open PyCharm and navigate to the directory where requirements.txt is located. Open requirements.txt.
+
+        \item [2]
+            Install all libraries mentioned in the notification of PyCharm
+
+        \item [3]
+            Run main.py and wait for the application to finish downloading and initializing the data
+
+        \item [4]
+            After initialization of the application, you should be able to see a Window that popped out. At this point, you are free to explore our application.
+
+        \item [5]
+            You should be able to set start and end dates for the plot, pan and zoom on the plot, select countries and plot the result again, and utilize the menu bar for more configurations.
+
+    \end{enumerate}
+
+    \section{Changes from the Proposal}
+
+    \begin{itemize}
+        \item Added MLA Style Footnote in multiple occasions
+        \item Added more details in Computational Overview
+        \item Added features to download dataset and write in working directories
+        \item Added features to hash a file in MD5 to ensure its completeness
+        \item Removed some unused references and added new ones
+    \end{itemize}
+
+    \section{Discussion}
+
+    \subsection{Results and Conclusion}
+
+    Our application can be utilized to visually determine if there are any correlations between COVID-19 Cases of a certain country and School Closure status of the certain country. This would be enough for us to answer the research question, because we can clearly identify a trend between COVID-19 Cases and School Closure statuses.
+
+    Furthermore, we can also utilize this application to generate plots about data around the world that can be shared to raise awareness, which could allow educational sectors to be more prepared for future events like the COVID-19 Pandemic.
+
+    We can also identify some of the "Outliers" from the general trend for some countries. These may exist because their country officials decided for schools to continue operating amidst the severe conditions posed.
+
+    \subsection{Limitations}
+
+    \subsubsection{Overall Limitations}
+
+    A major limitation of our application is the fact that our data is not a 100\% accurate data from all around the globe. School Closure Data being used is uploaded by an individual on Kaggle. The COVID-19 Data can also contain inaccurate information.
+
+    Furthermore, we recklessly removed some of the country names in our datasets because they contain non-ASCII characters, which limits the amount of data.
+
+    We also removed some country names because they were not present in both datasets, making the actual data presented in our application even more limited.
+
+    \subsubsection{Obstacles}
+
+    Our application crashes all day, all night, 24 * 7, non-stop. Making us want to drop out of CSC110. But nevertheless, we still overcame the difficulties and produced a "Functioning" application.
+
+    \subsection{Next steps}
+
+    We will be carrying the skills we developed in this project into other projects in the future. We have now acquired the ability to download, process, and hash data. These abilities would be necessary to create any automated application in the future.
+
+    We also acquired one of the most important skills in the Computer Science Industry, which is to design a Graphical User Interface. This is the ultimate version of "Designer to User" contract, which provides a very "Easy to use" interface so that users without any knowledge in Computer Science can also use this application to their advantage.
+
+    This project will be held public on GitHub repository for anyone to fork and create an updated version of the application. We have included docstrings and comments everywhere around our code for anyone that wishes to fork our Repository.
+
+    We will also claim copyright, specifically MIT License 2.0 in the GitHub repository, so no harm will be done to the University of Toronto's CSC110Y1 Fall's instructing team, specifically Professor Mario Badr, Professor Thomas Fairgrieve, and Professor David Liu.
+
+    \newpage
+
+    \section{References}
+
+    “Coronavirus.” World Health Organization, WHO, 10 Jan. 2020, www.who.int/health-topics/coronavirus\#tab=tab\_1.
+
+    “CSV File Reading and Writing — Python 3.10.0 Documentation.” Python Documentation, docs.python.org/3/library/csv.html. Accessed 30 Oct. 2021.
+
+    Johns Hopkins University. “GitHub - CSSEGISandData/COVID-19: Novel Coronavirus (COVID-19) Cases, Provided by JHU CSSE.” GitHub, CSSEGISandData, github.com/CSSEGISandData/COVID-19. Accessed 30 Oct. 2021.
+
+    Kaggle | Global School Closures for COVID-19. Saleh Ahmed Rony, www.kaggle.com/salehahmedrony/global-school-closures-covid19. Accessed 30 Oct. 2021.
+
+    https://stackoverflow.com/questions/3431825/generating-an-md5-checksum-of-a-file
+
+\end{document}
