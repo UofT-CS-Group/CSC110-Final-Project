@@ -2,12 +2,13 @@
 This module contains some GUI utilities like classes and helper methods for our project.
 """
 # Python built-ins
+import datetime
 from typing import Iterable, Optional
 
 # PyQt5
+from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
 
 # Our modules
 import settings
@@ -46,12 +47,9 @@ class StandardLabel(QLabel):
     When needed, we could add more attributes and methods.
     """
 
-    def __init__(self, text: str = 'Standard Label'):
-        super(StandardLabel, self).__init__()
+    def __init__(self, text: str = 'Standard Label', parent: Optional[QWidget] = None):
+        super(StandardLabel, self).__init__(text, parent)
         set_font(self)
-
-        # Set Default Text
-        self.setText(text)
 
 
 class StandardPushButton(QPushButton):
@@ -61,10 +59,9 @@ class StandardPushButton(QPushButton):
     When needed, we could add more attributes and methods.
     """
 
-    def __init__(self, text: str = 'Push Button', *args):
-        super(StandardPushButton, self).__init__(*args)
+    def __init__(self, text: str = 'Push Button', parent: Optional[QWidget] = None):
+        super(StandardPushButton, self).__init__(text, parent)
         set_font(self)
-        self.setText(text)
 
 
 class StandardComboBox(QComboBox):
@@ -97,9 +94,13 @@ class StandardDateEdit(QDateEdit):
     When needed, we could add more attributes and methods.
     """
 
-    def __init__(self, *args) -> None:
-        super(StandardDateEdit, self).__init__(*args)
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super(StandardDateEdit, self).__init__(parent)
         set_font(self)
+
+    def set_extremum_date(self, minimum: datetime.date, maximum: datetime.date):
+        self.setMinimumDate(minimum)
+        self.setMaximumDate(maximum)
 
 
 class StandardCheckbox(QCheckBox):
@@ -147,6 +148,7 @@ class StandardGroupBox(QGroupBox):
 
     def __init__(self, title: str = 'Group Box', parent: Optional[QWidget] = None):
         super(StandardGroupBox, self).__init__(title, parent)
+        set_font(self)
 
 
 class StandardSlider(QSlider):
@@ -162,6 +164,7 @@ class StandardSlider(QSlider):
     def __init__(self, orientation: Qt.Orientation = Qt.Horizontal,
                  parent: Optional[QWidget] = None):
         super(StandardSlider, self).__init__(orientation, parent)
+        set_font(self)
 
 
 class StandardTabWidget(QTabWidget):
@@ -173,3 +176,16 @@ class StandardTabWidget(QTabWidget):
 
     def __init__(self, parent: Optional[QWidget] = None):
         super(StandardTabWidget, self).__init__(parent)
+        set_font(self)
+
+
+class StandardLineEdit(QLineEdit):
+    """
+    A standard line edit for our project.
+
+    When needed, we could add more attributes and methods.
+    """
+
+    def __init__(self, contents: str = '', parent: Optional[QWidget] = None) -> None:
+        super().__init__(contents, parent)
+        set_font(self)

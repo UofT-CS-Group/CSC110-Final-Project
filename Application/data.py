@@ -1,24 +1,17 @@
 """
-CSC110 Final Project - Data Classes File
-
-Contains functions to do all processing with our datasets
-Also contains CONSTANTS and classes
+This module contains all classes, functions, and constants for our data.
 """
 # Python built-ins
 import csv
 import datetime
-import hashlib
 import logging
 import math
-import os
 from enum import Enum
 from typing import Dict, List, Set
 
-# Requests library
-import requests
-
 # Our modules
 import algorithms
+import resource_manager
 import settings
 
 
@@ -41,7 +34,8 @@ class ClosureStatus(Enum):
 
 
 class Location(object):
-    """ A class that represents a physical location in the world.
+    """
+    A class that represents a physical location in the world.
 
     Instance Attributes:
         - name: A string that represents the name of this location.
@@ -63,7 +57,8 @@ class Location(object):
 
 
 class Country(Location):
-    """ A class that represents a country in the world.
+    """
+    A class that represents a country in the world.
     
     Instance Attributes:
         - name: A string that represents the name of this country.
@@ -83,8 +78,9 @@ class Country(Location):
 
 
 class Province(Location):
-    """ A class that represents a province in a country.
-    
+    """
+    A class that represents a province in a country.
+
     Instance Attributes:
         - name: A string that represents the name of this province.
         - country: A Country object that represents the country of this province.
@@ -103,29 +99,9 @@ class Province(Location):
         return super().__hash__()
 
 
-class City(Location):
-    """ A class that represents a city in a province.
-    
-    Instance Attributes:
-        - name: A string that represents the name of this city.
-        - province: A Province object that represents the province of this city.
-    """
-
-    province: Province
-
-    def __init__(self, name: str, province: Province) -> None:
-        super().__init__(name)
-        self.province = province
-
-    def __eq__(self, other) -> bool:
-        return super().__eq__(other) and self.province == other.province
-
-    def __hash__(self) -> int:
-        return super().__hash__()
-
-
 class BaseData(object):
-    """ A class that represents the most basic data.
+    """
+    A class that represents the most basic data.
     """
 
     def __init__(self) -> None:
@@ -133,10 +109,11 @@ class BaseData(object):
 
 
 class TimeBasedData(BaseData):
-    """ A class that represents the data that is based on date and time.
+    """
+    A class that represents the data that is based on date and time.
 
     Instance Attributes:
-        - date: A datetime object that represent the time of this data.
+        - date: A date object that represent the time of this data.
     """
 
     date: datetime.date
@@ -150,10 +127,10 @@ class TimeBasedData(BaseData):
 
 
 class CovidCaseData(TimeBasedData):
-    """ A class that represents a location's covid cases data at a time.
+    """
+    A class that represents a location's covid cases data at a time.
     
     Instance Attributes:
-        - city: The city. None if not applicable.
         - province: The province. None if not applicable.
         - country: The country. None if not applicable (For global data).
         - cases: The number of confirmed COVID-19 cases at this date and location.
@@ -162,33 +139,31 @@ class CovidCaseData(TimeBasedData):
         - self.cases >= 0
     """
 
-    city: City
     province: Province
     country: Country
     cases: int
 
     def __init__(self, date: datetime.date, cases: int,
-                 country: Country = None, city: City = None, province: Province = None) -> None:
+                 country: Country = None, province: Province = None) -> None:
         super().__init__(date)
         self.country = country
         self.cases = cases
-        self.city = city
         self.province = province
 
     def __eq__(self, other) -> bool:
         return super().__eq__(other) and \
-               self.city == other.city and \
                self.province == other.province and \
                self.country == other.country and \
                self.cases == other.cases
 
     def __str__(self) -> str:
-        return f'{self.cases} cases in {self.city} {self.province} {self.country} ' \
+        return f'{self.cases} cases in {self.province} {self.country} ' \
                f'at {str(self.date)}'
 
 
 class SchoolClosureData(TimeBasedData):
-    """ A class that stores the closure state of schools in a country at a time.
+    """
+    A class that stores the closure state of schools in a country at a time.
     
     Instance Attributes:
         - country: The country. Should not be None for our project.
@@ -217,7 +192,7 @@ class SchoolClosureData(TimeBasedData):
 # =================================================================================================
 
 # =================================================================================================
-# Covid
+# COVID 19
 # All covid cases from our datasets.
 ALL_COVID_CASES: List[CovidCaseData] = []
 COUNTRIES_TO_ALL_COVID_CASES: Dict[Country, List[CovidCaseData]] = {}
@@ -233,7 +208,7 @@ GLOBAL_COVID_CASES: List[CovidCaseData] = []
 # All school closures from our datasets.
 ALL_SCHOOL_CLOSURES: List[SchoolClosureData] = []
 
-COUNTRIES_TO_ALL_SCHOOL_CLOSURES: Dict[Country, List[SchoolClosureData]] = {}
+COUNTRIES_TO_SCHOOL_CLOSURES: Dict[Country, List[SchoolClosureData]] = {}
 
 GLOBAL_SCHOOL_CLOSURES: List[SchoolClosureData] = []
 
@@ -242,17 +217,19 @@ GLOBAL_SCHOOL_CLOSURES: List[SchoolClosureData] = []
 # All countries from our datasets.
 COUNTRIES: Set[Country] = set()
 SORTED_COUNTRIES: List[Country] = []
+KEY_COUNTRIES: List[Country] = [
+    Country('China'),
+    Country('US'),
+    Country('Canada'),
+    Country('Russia'),
+    Country('United Kingdom'),
+    Country('France'),
+]
 
 # All provinces from our datasets.
 PROVINCES: Set[Province] = set()
 SORTED_PROVINCES: List[Province] = []
 COUNTRIES_TO_PROVINCES: Dict[Country, List[Province]] = {}
-
-# All cities from our datasets.
-# Should contain only US cities.
-CITIES: Set[City] = set()
-SORTED_CITIES: List[City] = []
-PROVINCES_TO_CITIES: Dict[Province, List[City]] = {}
 
 # =================================================================================================
 # Mappings
@@ -329,14 +306,17 @@ CLOSURE_COUNTRIES_DELETE: Set[str] = {
     'Tuvalu'
 }
 
-# Basically len(ALL_COVID_CASES) + len(ALL_SCHOOL_CLOSURES)
-TOTAL_NUMBER_DATA = 2470748
+# len(ALL_COVID_CASES) + len(ALL_SCHOOL_CLOSURES)
+TOTAL_NUMBER_DATA = 304410
+# TOTAL_NUMBER_DATA + data manipulation + download datasets
 TOTAL_PROGRESS = TOTAL_NUMBER_DATA + \
-                 math.ceil(TOTAL_NUMBER_DATA * 0.001) + \
-                 math.ceil(TOTAL_NUMBER_DATA * 0.001)
+                 math.ceil(TOTAL_NUMBER_DATA * 0.01) + \
+                 math.ceil(TOTAL_NUMBER_DATA * 0.01) + \
+                 math.ceil(TOTAL_NUMBER_DATA * 0.01)
 
-# The current progress
+# The current progress and its description
 progress = 0
+progress_description = ''
 
 
 # =================================================================================================
@@ -344,159 +324,45 @@ progress = 0
 # Read raw data into ALL_COVID_CASES and ALL_SCHOOL_CLOSURES.
 # =================================================================================================
 
-def md5_hash(filename: str) -> str:
-    """
-    Return the MD5 hash of the specified filename
-    """
-    buffer_size = settings.BUFFER_SIZE
-    md5 = hashlib.md5()
-
-    with open(filename, 'rb') as file:
-        data = file.read(buffer_size)
-        while data:
-            md5.update(data)
-            data = file.read(buffer_size)
-
-    return md5.hexdigest()
-
-
-def check_files() -> bool:
-    """
-    Return if we downloaded the right files using the MD5 checksum
-    """
-    check_covid19_us = md5_hash('resources/covid_cases_datasets/'
-                                'time_series_covid19_confirmed_US.csv') == settings.COVID19_US_MD5
-    check_covid19_global = md5_hash('resources/covid_cases_datasets/'
-                                    'time_series_covid19_confirmed_global.csv'
-                                    ) == settings.COVID19_GLOBAL_MD5
-    check_closure = md5_hash('resources/school_closures_datasets/'
-                             'full_dataset_31_oct.csv') == settings.CLOSURE_MD5
-
-    if not check_covid19_us:
-        logging.warning('COVID19 US Dataset Checksum failed!')
-
-    if not check_covid19_global:
-        logging.warning('COVID19 Global Dataset MD5 Checksum failed!')
-
-    if not check_closure:
-        logging.warning('School Closure Dataset MD5 Checksum failed!')
-
-    return check_covid19_us and check_covid19_global and check_closure
-
-
-def download_data() -> None:
-    """
-    Downloads the datasets from our GitHub repository
-
-    This function overwrites whatever files already exist at the specified location
-
-    List of downloads:
-        - time_series_covid19_confirmed_global.csv
-        - time_series_covid19_confirmed_US.csv
-        - full_dataset_31_oct.csv
-    """
-
-    os.makedirs('resources/covid_cases_datasets', exist_ok=True)
-    os.makedirs('resources/school_closures_datasets', exist_ok=True)
-    os.makedirs('resources/assets', exist_ok=True)
-
-    # All URLs contained in settings.py, can be changed anytime
-    covid19_us_url = settings.COVID19_US_URL
-    covid19_global_url = settings.COVID19_GLOBAL_URL
-    closure_url = settings.CLOSURE_URL
-
-    # Downloads the file and writes it in our directories
-    try:
-        covid19_us_dataset = requests.get(covid19_us_url)
-        with open('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv',
-                  'wb') as covid19_us_file:
-            covid19_us_file.write(covid19_us_dataset.content)
-
-        covid19_global_dataset = requests.get(covid19_global_url)
-        with open('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv', 'wb') \
-                as covid19_global_file:
-            covid19_global_file.write(covid19_global_dataset.content)
-
-        closure_dataset = requests.get(closure_url)
-        with open('resources/school_closures_datasets/full_dataset_31_oct.csv', 'wb') \
-                as closure_file:
-            closure_file.write(closure_dataset.content)
-    except requests.exceptions.ConnectionError or requests.exceptions.ConnectTimeout:
-        # Crashes the application's GUI window
-        import _thread
-        _thread.interrupt_main()
-
-        logging.critical('Connection Failed... Aborting application!')
-        logging.info('Please download the files from settings.py and '
-                          'move them into the resources directory')
-        logging.info('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
-        logging.info('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
-        logging.info('resources/school_closures_datasets/full_dataset_31_oct.csv')
-
-        raise Exception('Download Failure. Please scroll up to see instructions.')
-
-
 def init_data() -> None:
     """Read and process all data needed."""
     import time
     timestamp1 = time.time()
 
+    global progress
+    global progress_description
+
+    progress_description = 'Checking and downloading resources...'
     try:
-        open('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
-        open('resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
-        open('resources/school_closures_datasets/full_dataset_31_oct.csv')
+        resource_manager.init_resources()
+    except resource_manager.FailedToDownloadResourceException as e:
+        progress_description = str(e)
+        return
+    progress += math.ceil(TOTAL_NUMBER_DATA * 0.01)
 
-    except FileNotFoundError:
-        logging.warning('Datasets not found! Downloading...')
-        download_data()
-        logging.info('Download success!')
-
-    logging.info('Checking completeness of dataset...')
-
-    if not check_files():
-        logging.warning('MD5 Checksum failed!')
-        logging.info('Attempting to download original dataset')
-        download_data()
-        logging.info('Download success!')
-
-    # Aborts the application if MD5 Checksum failed twice
-    if not check_files():
-        logging.critical('MD5 Checksum still failed! Aborting.')
-        logging.info('Perhaps your disk is corrupted?')
-
-        # Crashes the application's GUI window
-        import _thread
-        _thread.interrupt_main()
-
-    logging.info('MD5 Checksum passed!')
     logging.info('Initializing data...')
 
+    progress_description = 'Reading data...'
     read_covid_data_global(
             'resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
-    read_covid_data_US('resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv')
     read_closure_data('resources/school_closures_datasets/full_dataset_31_oct.csv')
 
+    progress_description = 'Manipulating data...'
     # Init locations
     SORTED_COUNTRIES.extend(settings.sort([c for c in COUNTRIES],
                                           compare=lambda c1, c2: 1 if c1.name > c2.name else -1))
     SORTED_PROVINCES.extend(settings.sort([p for p in PROVINCES],
                                           compare=lambda p1, p2: 1 if p1.name > p2.name else -1))
-    SORTED_CITIES.extend(settings.sort([c for c in CITIES],
-                                       compare=lambda c1, c2: 1 if c1.name > c2.name else -1))
 
     global COUNTRIES_TO_PROVINCES
     COUNTRIES_TO_PROVINCES = algorithms.group(SORTED_PROVINCES, lambda p: p.country)
-    global PROVINCES_TO_CITIES
-    PROVINCES_TO_CITIES = algorithms.group(SORTED_CITIES, lambda c: c.province)
-
-    global progress
 
     # Init covid cases
     global COUNTRIES_TO_ALL_COVID_CASES
     COUNTRIES_TO_ALL_COVID_CASES = algorithms.group(ALL_COVID_CASES, lambda c: c.country)
     global COUNTRIES_TO_COVID_CASES
     COUNTRIES_TO_COVID_CASES = {k: algorithms.linear_predicate(
-            COUNTRIES_TO_ALL_COVID_CASES[k], lambda c: c.province is None and c.city is None
+            COUNTRIES_TO_ALL_COVID_CASES[k], lambda c: c.province is None
     ) for k in COUNTRIES_TO_ALL_COVID_CASES}
     # Special cases: Canada, China, and Australia
     specials = ['China', 'Canada', 'Australia']
@@ -505,22 +371,46 @@ def init_data() -> None:
         COUNTRIES_TO_COVID_CASES[country] = calculate_country_total_covid_cases(country)
     # Global covid cases (No country, whole earth)
     init_global_total_covid_cases()
-    progress += math.ceil(TOTAL_NUMBER_DATA * 0.001)
+    progress += math.ceil(TOTAL_NUMBER_DATA * 0.01)
 
     # Init school closures
-    global COUNTRIES_TO_ALL_SCHOOL_CLOSURES
-    COUNTRIES_TO_ALL_SCHOOL_CLOSURES = algorithms.group(ALL_SCHOOL_CLOSURES, lambda c: c.country)
+    global COUNTRIES_TO_SCHOOL_CLOSURES
+    COUNTRIES_TO_SCHOOL_CLOSURES = algorithms.group(ALL_SCHOOL_CLOSURES, lambda c: c.country)
     init_global_school_closures()
-    progress += math.ceil(TOTAL_NUMBER_DATA * 0.001)
+    progress += math.ceil(TOTAL_NUMBER_DATA * 0.01)
 
     timestamp2 = time.time()
+    seconds_elapsed = round(timestamp2 - timestamp1, 3)
+    progress_description = f'Ready in {seconds_elapsed} seconds!'
     logging.info(f'Successfully initialized all data in '
-                      f'{round(timestamp2 - timestamp1, 2)} seconds!')
+                 f'{seconds_elapsed} seconds!')
 
 
-def get_progress() -> float:
+def reset_data() -> None:
+    """
+    Reset all constants to their default status.
+    """
+    ALL_COVID_CASES.clear()
+    COUNTRIES_TO_ALL_COVID_CASES.clear()
+    COUNTRIES_TO_COVID_CASES.clear()
+    GLOBAL_COVID_CASES.clear()
+    ALL_SCHOOL_CLOSURES.clear()
+    COUNTRIES_TO_SCHOOL_CLOSURES.clear()
+    GLOBAL_SCHOOL_CLOSURES.clear()
+    COUNTRIES.clear()
+    SORTED_COUNTRIES.clear()
+    PROVINCES.clear()
+    SORTED_PROVINCES.clear()
+    COUNTRIES_TO_PROVINCES.clear()
+    global progress
+    progress = 0
+    global progress_description
+    progress_description = ''
+
+
+def get_progress() -> tuple[float, str]:
     """Return the current progress divided by the total progress"""
-    return progress / TOTAL_PROGRESS
+    return progress / TOTAL_PROGRESS, progress_description
 
 
 def init_global_school_closures() -> None:
@@ -554,7 +444,7 @@ def init_global_school_closures() -> None:
 def calculate_country_total_covid_cases(country: Country) -> List[CovidCaseData]:
     """
     Return a List containing the total covid cases of the given country.
-    The covid cases of the given country were previously separated by provinces and (or) cities.
+    The covid cases of the given country were previously separated by provinces.
     
     Preconditions:
         - country in COUNTRIES_TO_ALL_COVID_CASES
@@ -628,51 +518,6 @@ def read_covid_data_global(filename: str) -> None:
                 ALL_COVID_CASES.append(CovidCaseData(date=d,
                                                      country=country,
                                                      cases=int(row[i]),
-                                                     city=None,
-                                                     province=province))
-                global progress
-                progress += 1
-
-
-def read_covid_data_US(filename: str) -> None:
-    """
-    Read the resources/covid_cases_datasets/time_series_covid19_confirmed_US.csv
-    into ALL_COVID_CASES.
-    """
-    with open(filename) as file:
-        reader = csv.reader(file)
-
-        # Reads the first line header of the given file
-        header = next(reader)
-
-        for row in reader:
-            country = Country(row[7])
-            province = Province(row[6], country)
-            city = City(row[5], province)
-
-            COUNTRIES.add(country)
-
-            if province.name != '':
-                PROVINCES.add(province)
-            else:
-                province = None
-
-            if city.name != '':
-                CITIES.add(city)
-            else:
-                city = None
-
-            for i in range(11, len(header)):
-                raw_date = header[i].split('/')
-                d = datetime.date(year=int(f'20{raw_date[2]}'),
-                                  month=int(raw_date[0]),
-                                  day=int(raw_date[1])
-                                  )
-
-                ALL_COVID_CASES.append(CovidCaseData(date=d,
-                                                     country=country,
-                                                     cases=int(row[i]),
-                                                     city=city,
                                                      province=province))
                 global progress
                 progress += 1
