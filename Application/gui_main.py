@@ -454,7 +454,7 @@ class MainWindow(MainWindowUI):
     """
     progress_bar_update_thread: ProgressUpdateThread
 
-    is_user_change_date: bool = True
+    is_user_operation: bool = True
 
     def __init__(self, *args, **kwargs) -> None:
         super(MainWindow, self).__init__(*args, **kwargs)
@@ -577,10 +577,10 @@ class MainWindow(MainWindowUI):
         """
         max_date = min(data.ALL_COVID_CASES[-1].date, data.ALL_SCHOOL_CLOSURES[-1].date)
         min_date = max(data.ALL_COVID_CASES[0].date, data.ALL_SCHOOL_CLOSURES[0].date)
-        self.start_date_edit.set_extremum_date(min_date, max_date)
-        self.start_date_edit.setDate(min_date)
         self.end_date_edit.set_extremum_date(min_date, max_date)
         self.end_date_edit.setDate(max_date)
+        self.start_date_edit.set_extremum_date(min_date, max_date)
+        self.start_date_edit.setDate(min_date)
 
     @pyqtSlot(int, str)
     def update_progress_bar(self, progress: int, description: str) -> None:
@@ -664,16 +664,6 @@ class MainWindow(MainWindowUI):
 
     @pyqtSlot()
     def on_date_confirm_button_clicked(self) -> None:
-        """
-        If the start date is greater than the end date, then we will popup a message box
-        complaining that to our users.
-        """
-        start_date = self.start_date_edit.date().toPyDate()
-        end_date = self.end_date_edit.date().toPyDate()
-        if end_date < start_date:
-            QMessageBox.warning(self, 'Warning', 'End date should not be smaller than start date!',
-                                QMessageBox.Ok, QMessageBox.Ok)
-            return
         self.update_plot()
 
     @pyqtSlot()
@@ -685,7 +675,7 @@ class MainWindow(MainWindowUI):
         """
         When the date is edited by users, we update the tick of the slider to the correct position.
         """
-        if not self.is_user_change_date:
+        if not self.is_user_operation:
             return
         new_date = new_date.toPyDate()
         min_date = self.start_date_edit.minimumDate().toPyDate()
@@ -696,11 +686,27 @@ class MainWindow(MainWindowUI):
 
     @pyqtSlot(QDate)
     def on_start_date_edit_changed(self, new_date: QDate) -> None:
-        self.on_date_edit_changed(new_date, self.start_date_slider)
+        max_qdate = self.end_date_edit.date()
+        max_date = max_qdate.toPyDate()
+        if new_date.toPyDate() > max_date:
+            QMessageBox.warning(self, 'Warning', 'End date should not be smaller than start date!',
+                                QMessageBox.Ok, QMessageBox.Ok)
+            self.start_date_edit.setDate(max_qdate)
+            self.on_date_edit_changed(max_qdate, self.start_date_slider)
+        else:
+            self.on_date_edit_changed(new_date, self.start_date_slider)
 
     @pyqtSlot(QDate)
     def on_end_date_edit_changed(self, new_date: QDate) -> None:
-        self.on_date_edit_changed(new_date, self.end_date_slider)
+        min_qdate = self.start_date_edit.date()
+        min_date = min_qdate.toPyDate()
+        if new_date.toPyDate() < min_date:
+            QMessageBox.warning(self, 'Warning', 'End date should not be smaller than start date!',
+                                QMessageBox.Ok, QMessageBox.Ok)
+            self.end_date_edit.setDate(min_qdate)
+            self.on_date_edit_changed(min_qdate, self.end_date_slider)
+        else:
+            self.on_date_edit_changed(new_date, self.end_date_slider)
 
     def on_slider_moved(self, percentage: float, date_edit: StandardDateEdit) -> None:
         """
@@ -710,16 +716,22 @@ class MainWindow(MainWindowUI):
         max_date = self.end_date_edit.maximumDate().toPyDate()
         delta = max_date - min_date
         delta *= percentage
-        self.is_user_change_date = False
+        self.is_user_operation = False
         date_edit.setDate(min_date + delta)
-        self.is_user_change_date = True
+        self.is_user_operation = True
 
     @pyqtSlot(int)
     def on_start_date_slider_moved(self, new_value: int) -> None:
+        if new_value > self.end_date_slider.value():
+            self.start_date_slider.setValue(new_value - 1)
+            return
         percentage = new_value / self.start_date_slider.maximum()
         self.on_slider_moved(percentage, self.start_date_edit)
 
     @pyqtSlot(int)
     def on_end_date_slider_moved(self, new_value: int) -> None:
+        if new_value < self.start_date_slider.value():
+            self.end_date_slider.setValue(new_value + 1)
+            return
         percentage = new_value / self.end_date_slider.maximum()
         self.on_slider_moved(percentage, self.end_date_edit)
