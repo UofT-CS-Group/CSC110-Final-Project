@@ -34,6 +34,7 @@ if __name__ == '__main__':
 
     logging.info('Registering resources...')
     resource_manager.register_resources()
+    logging.info('Resources registered!')
 
     # Create the QApplication instance.
     app = QApplication(sys.argv)
@@ -44,8 +45,11 @@ if __name__ == '__main__':
             resource_manager.RESOURCES_DICT[resource_manager.ICON_RESOURCE_NAME]):
         logging.critical('Failed to download icons!')
         # Pls ignore the warning of the None, this is good.
-        QMessageBox.critical(None, 'Critical', 'Failed to download icons!',
+        QMessageBox.critical(None, 'Critical', 'Failed to download icons! \n'
+                                               'You will not see our icons of our program. :<',
                              QMessageBox.Ok, QMessageBox.Ok)
+    else:
+        logging.info('Icon initialized!')
 
     main_window = gui_main.MainWindow()
     main_window.show()
@@ -55,4 +59,6 @@ if __name__ == '__main__':
     # whether there is an error, and sys.exit will get it.
     # If we don't call it with sys.exit, the exit code will always be 0 no matter if an
     # error happened.
-    sys.exit(app.exec_())
+    exit_code = app.exec_()
+    logging.info(f'Application stopped with exit code {exit_code}!')
+    sys.exit(exit_code)

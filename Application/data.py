@@ -326,9 +326,6 @@ progress_description = ''
 
 def init_data() -> None:
     """Read and process all data needed."""
-    import time
-    timestamp1 = time.time()
-
     global progress
     global progress_description
 
@@ -341,6 +338,8 @@ def init_data() -> None:
     progress += math.ceil(TOTAL_NUMBER_DATA * 0.01)
 
     logging.info('Initializing data...')
+    import time
+    timestamp1 = time.time()
 
     progress_description = 'Reading data...'
     read_covid_data_global(
@@ -381,7 +380,7 @@ def init_data() -> None:
 
     timestamp2 = time.time()
     seconds_elapsed = round(timestamp2 - timestamp1, 3)
-    progress_description = f'Ready in {seconds_elapsed} seconds!'
+    progress_description = f'Ready in {seconds_elapsed} seconds with {settings.sort.__name__}!'
     logging.info(f'Successfully initialized all data in '
                  f'{seconds_elapsed} seconds!')
 
