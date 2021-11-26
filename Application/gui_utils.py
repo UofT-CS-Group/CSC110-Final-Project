@@ -9,10 +9,10 @@ from typing import Iterable, Optional
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 # Our modules
 import settings
-
 
 # =================================================================================================
 # Helper Functions
@@ -189,3 +189,36 @@ class StandardLineEdit(QLineEdit):
     def __init__(self, contents: str = '', parent: Optional[QWidget] = None) -> None:
         super().__init__(contents, parent)
         set_font(self)
+
+
+class StandardMenuBar(QMenuBar):
+    """
+    A standard menu bar for our project.
+
+    When needed, we could add more attributes and methods.
+    """
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super(StandardMenuBar, self).__init__(parent)
+        set_font(self)
+
+
+class StandardMenu(QMenu):
+    """
+    A standard menu for our project.
+
+    When needed, we could add more attributes and methods.
+    """
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super(StandardMenu, self).__init__(parent)
+        set_font(self)
+
+
+class StandardNavigationToolbar(NavigationToolbar):
+    """
+    A standard menu for our project.
+
+    When needed, we could add more attributes and methods.
+    """
+    toolitems = [t for t in NavigationToolbar.toolitems if t[0] in ('Home', 'Pan', 'Zoom')]

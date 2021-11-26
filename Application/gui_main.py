@@ -14,7 +14,6 @@ import matplotlib.lines
 import matplotlib.style
 from matplotlib import pyplot
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 # Our modules
 import algorithms
@@ -22,8 +21,14 @@ import data
 import resource_manager
 from gui_utils import *
 
-# PyQt5
+# Ctype
+import ctypes
+myappid = 'CSC110.covid_school_plot'  # Random identifier
 
+# Letting Windows display the Icon in the taskbar as well
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
+# PyQt5
 matplotlib.style.use('fast')
 
 
@@ -68,6 +73,15 @@ class PlotCanvas(FigureCanvas):
             f'{data.ENUM_TO_STATUS_DICT[data.ClosureStatus(self.curr_y)]}'
         self.draw()
 
+        # Setting labels and title for COVID Plot
+        self.axes_covid.set_title('COVID-19 Cases')
+        self.axes_covid.set_xlabel('Dates')
+        self.axes_covid.set_ylabel('Cumulative cases')
+
+        # Setting labels and title for Closure Plot
+        self.axes_closure.set_title('School Closure Status')
+        self.axes_closure.set_xlabel('Dates')
+
     def plot_covid_cases(self, covid_cases: List[data.CovidCaseData]) -> None:
         """Plots the COVID Data in self.axes_covid"""
         x_axis = [c.date for c in covid_cases]
@@ -79,7 +93,6 @@ class PlotCanvas(FigureCanvas):
         for text in self.axes_covid.get_xticklabels():
             text.set_rotation(40.0)
 
-        # Setting labels and title
         self.axes_covid.set_title('COVID-19 Cases')
         self.axes_covid.set_xlabel('Dates')
         self.axes_covid.set_ylabel('Cumulative cases')
@@ -102,7 +115,6 @@ class PlotCanvas(FigureCanvas):
         for text in self.axes_closure.get_xticklabels():
             text.set_rotation(40.0)
 
-        # Setting labels and title
         self.axes_closure.set_title('School Closure Status')
         self.axes_closure.set_xlabel('Dates')
 
@@ -184,6 +196,63 @@ class PlotCanvas(FigureCanvas):
                     self.draw()
 
 
+class Settings(QWidget):
+    """
+    The Window that will pop up when we click on the Settings button in the menubar
+    """
+    width: int = 600
+    height: int = 600
+
+    def __init__(self) -> None:
+        QWidget.__init__(self)
+
+        self.setWindowTitle('Configuration')
+
+        self.resize(self.width, self.height)
+        frame_geometry = self.frameGeometry()
+        center_point = QDesktopWidget().availableGeometry().center()
+        frame_geometry.moveCenter(center_point)
+        self.move(frame_geometry.topLeft())
+
+    def init_layout(self) -> None:
+        """
+        Initializes the settings window layout
+        """
+        # TODO: Initialize settings menu
+
+
+class About(QWidget):
+    """
+    The Window that will pop up when we click on the About Button in Menu
+    """
+    width: int = 400
+    height: int = 600
+
+    def __init__(self) -> None:
+        QWidget.__init__(self)
+
+        self.setWindowFlag(Qt.FramelessWindowHint)
+
+        self.setStyleSheet("background-color: rgba(255, 255, 255, 255);")
+
+        self.resize(self.width, self.height)
+        frame_geometry = self.frameGeometry()
+        center_point = QDesktopWidget().availableGeometry().center()
+        frame_geometry.moveCenter(center_point)
+        self.move(frame_geometry.topLeft())
+
+    def init_layout(self) -> None:
+        """
+        Initializes the about window layout
+        """
+        # TODO: I really don't know how you would format this
+        # I left a picture in "resources/assets/about_page.png", maybe looking like that works?
+
+    def mousePressEvent(self, e) -> None:
+        """Exits the application when you clicked on this window"""
+        self.close()
+
+
 class MainWindowUI(QMainWindow):
     """
     This is the UI of our Main Window with no functionalities.
@@ -247,6 +316,16 @@ class MainWindowUI(QMainWindow):
     plot_navigation_tool_bar: NavigationToolbar
     plot_canvas: PlotCanvas
 
+    # Menu bar
+    menu_bar: StandardMenuBar
+    file_menu: StandardMenu
+    edit_menu: StandardMenu
+    help_menu: StandardMenu
+
+    # Other pop-up windows
+    about_window: About
+    settings_window: Settings
+
     progress_bar: StandardProgressBar
 
     def __init__(self, *args, **kwargs) -> None:
@@ -299,12 +378,12 @@ class MainWindowUI(QMainWindow):
 
         # Initialization Group
         self.initialization_group = StandardGroupBox('Initialization', self)
-        self.algorithms_selection_label = StandardLabel('Select a sorting algorithms:',
+        self.algorithms_selection_label = StandardLabel('Select a sorting algorithm',
                                                         self.initialization_group)
         self.algorithms_selection_combo_box = \
             StandardComboBox(self.initialization_group, algorithms.SORTING_ALGORITHMS.keys())
         self.initialization_helper_label = StandardLabel(
-                'Please click the button \nto start initializing our data!'
+                'Please click the button below \nto initialize our data!'
         )
         self.initialization_button = StandardPushButton('Initialize', self.initialization_group)
 
@@ -333,7 +412,7 @@ class MainWindowUI(QMainWindow):
 
         # Plot
         self.plot_canvas = PlotCanvas()
-        self.plot_navigation_tool_bar = NavigationToolbar(self.plot_canvas, self)
+        self.plot_navigation_tool_bar = StandardNavigationToolbar(self.plot_canvas, self)
         set_font(self.plot_navigation_tool_bar)
 
         # Progress bar on status bar
@@ -342,6 +421,14 @@ class MainWindowUI(QMainWindow):
         set_font(self.progress_bar, font_size=10)
         self.statusBar().addPermanentWidget(self.progress_bar)
         self.progress_bar.setVisible(False)
+
+        # Menu bar
+        self.menu_bar = StandardMenuBar(self)
+        self.file_menu = self.menu_bar.addMenu('File')
+        self.edit_menu = self.menu_bar.addMenu('Edit')
+        self.help_menu = self.menu_bar.addMenu('Help')
+
+        self.setMenuBar(self.menu_bar)
 
     def init_layout(self) -> None:
         """
@@ -352,6 +439,8 @@ class MainWindowUI(QMainWindow):
         main_layout = QVBoxLayout(widget)
 
         controller_layout = QHBoxLayout(widget)
+
+        # Controller Layout Group
         main_layout.addLayout(controller_layout, 382)
 
         # Introduction Group
@@ -462,11 +551,40 @@ class MainWindow(MainWindowUI):
         # Please ignore the warning here.
         self.progress_bar_update_thread = ProgressUpdateThread(self)
 
+        # Initialize menu
+        self.init_menu()
+
         # Initialize signals
         self.init_signals()
 
         # Now, our data haven't initialized yet, so we disable all functional widgets for safety.
         self.set_enabled_functional_widgets(False)
+
+    def init_menu(self) -> None:
+        """
+        Initialize the menu bar
+        """
+        save_plot = QAction('Save current plot', self)
+        save_plot.setShortcut('Ctrl+S')
+        save_plot.triggered.connect(self.save_plot)
+
+        self.file_menu.addAction(save_plot)
+
+        settings_action = QAction('Configuration', self)
+        settings_action.triggered.connect(self.open_settings)
+
+        self.file_menu.addAction(settings_action)
+
+        exit_action = QAction('Exit App', self)
+        exit_action.setShortcut('Ctrl+Q')
+        exit_action.triggered.connect(self.exit)
+
+        self.file_menu.addAction(exit_action)
+
+        about_action = QAction('About', self)
+        about_action.triggered.connect(self.open_about)
+
+        self.help_menu.addAction(about_action)
 
     def init_signals(self) -> None:
         """
@@ -602,6 +720,7 @@ class MainWindow(MainWindowUI):
             self.set_enabled_functional_widgets(True)
             self.progress_bar.setVisible(False)
             self.update_plot()
+            self.initialization_helper_label.setText('Please click the button below \nto reinitialize our data!')
 
     @pyqtSlot()
     def on_init_button_clicked(self) -> None:
@@ -735,3 +854,31 @@ class MainWindow(MainWindowUI):
             return
         percentage = new_value / self.end_date_slider.maximum()
         self.on_slider_moved(percentage, self.end_date_edit)
+
+    def save_plot(self) -> None:
+        """Saves the current plots at the specified location"""
+        # The second return value is "Selected filter", which is useless
+        path, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG(*.png)")
+
+        if path == '':
+            # This is because the user may press cancel
+            return
+
+        # Saving canvas at desired path
+        self.plot_canvas.print_png(path)
+
+    def open_about(self) -> None:
+        """Opens the about window"""
+        self.about_window = About()
+        self.about_window.show()
+
+    def open_settings(self) -> None:
+        """Opens the settings window"""
+        self.settings_window = Settings()
+        self.settings_window.show()
+
+    def exit(self) -> None:
+        """Closes the application the moment when triggered"""
+        QApplication.quit()
+
+
