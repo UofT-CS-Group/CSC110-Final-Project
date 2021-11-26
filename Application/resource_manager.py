@@ -170,12 +170,13 @@ def init_resource(resource: Resource) -> bool:
         resource.is_init = True
         return True
     else:
-        for _ in range(RETRY_COUNT):
+        for i in range(RETRY_COUNT):
             resource.download()
             resource.generate_identifier()
             if resource.is_complete():
                 resource.is_init = True
                 return True
+            logging.error(f'Failed to download {resource.name} {i + 1} times! Retrying...')
     return False
 
 

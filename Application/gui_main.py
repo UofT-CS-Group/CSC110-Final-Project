@@ -16,8 +16,8 @@ from matplotlib import pyplot
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-import algorithms
 # Our modules
+import algorithms
 import data
 import resource_manager
 from gui_utils import *
