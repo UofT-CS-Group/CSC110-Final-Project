@@ -529,7 +529,7 @@ class MainWindow(MainWindowUI):
         Initialize the menu bar
         """
         # File menu
-        save_plot = QAction('Save current plot', self)
+        save_plot = QAction('Save Current Plot', self)
         save_plot.setShortcut('Ctrl+S')
         save_plot.triggered.connect(self.save_plot)
 
@@ -617,7 +617,7 @@ class MainWindow(MainWindowUI):
         # Show marker toggle menu
         marker_menu = self.settings_menu.addMenu('Show Marker')
 
-        covid_marker = QAction('COVID Plot', self)
+        covid_marker = QAction('COVID-19 Plot', self)
         closure_marker = QAction('Closure Plot', self)
 
         covid_marker.setCheckable(True)
