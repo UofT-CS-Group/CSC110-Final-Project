@@ -9,6 +9,8 @@ from typing import Iterable, Optional
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+
+# Matplotlib
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 # Our modules
@@ -200,7 +202,7 @@ class StandardMenuBar(QMenuBar):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super(StandardMenuBar, self).__init__(parent)
-        set_font(self)
+        set_font(self, font_size=12)
 
 
 class StandardMenu(QMenu):
@@ -212,7 +214,7 @@ class StandardMenu(QMenu):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super(StandardMenu, self).__init__(parent)
-        set_font(self)
+        set_font(self, font_size=12)
 
 
 class StandardNavigationToolbar(NavigationToolbar):

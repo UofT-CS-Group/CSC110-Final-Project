@@ -23,12 +23,13 @@ from gui_utils import *
 
 # Ctype
 import ctypes
+
+
 myappid = 'CSC110.covid_school_plot'  # Random identifier
 
 # Letting Windows display the Icon in the taskbar as well
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
-# PyQt5
 matplotlib.style.use('fast')
 
 
@@ -196,63 +197,6 @@ class PlotCanvas(FigureCanvas):
                     self.draw()
 
 
-class Settings(QWidget):
-    """
-    The Window that will pop up when we click on the Settings button in the menubar
-    """
-    width: int = 600
-    height: int = 600
-
-    def __init__(self) -> None:
-        QWidget.__init__(self)
-
-        self.setWindowTitle('Configuration')
-
-        self.resize(self.width, self.height)
-        frame_geometry = self.frameGeometry()
-        center_point = QDesktopWidget().availableGeometry().center()
-        frame_geometry.moveCenter(center_point)
-        self.move(frame_geometry.topLeft())
-
-    def init_layout(self) -> None:
-        """
-        Initializes the settings window layout
-        """
-        # TODO: Initialize settings menu
-
-
-class About(QWidget):
-    """
-    The Window that will pop up when we click on the About Button in Menu
-    """
-    width: int = 400
-    height: int = 600
-
-    def __init__(self) -> None:
-        QWidget.__init__(self)
-
-        self.setWindowFlag(Qt.FramelessWindowHint)
-
-        self.setStyleSheet("background-color: rgba(255, 255, 255, 255);")
-
-        self.resize(self.width, self.height)
-        frame_geometry = self.frameGeometry()
-        center_point = QDesktopWidget().availableGeometry().center()
-        frame_geometry.moveCenter(center_point)
-        self.move(frame_geometry.topLeft())
-
-    def init_layout(self) -> None:
-        """
-        Initializes the about window layout
-        """
-        # TODO: I really don't know how you would format this
-        # I left a picture in "resources/assets/about_page.png", maybe looking like that works?
-
-    def mousePressEvent(self, e) -> None:
-        """Exits the application when you clicked on this window"""
-        self.close()
-
-
 class MainWindowUI(QMainWindow):
     """
     This is the UI of our Main Window with no functionalities.
@@ -321,10 +265,6 @@ class MainWindowUI(QMainWindow):
     file_menu: StandardMenu
     edit_menu: StandardMenu
     help_menu: StandardMenu
-
-    # Other pop-up windows
-    about_window: About
-    settings_window: Settings
 
     progress_bar: StandardProgressBar
 
@@ -570,21 +510,12 @@ class MainWindow(MainWindowUI):
 
         self.file_menu.addAction(save_plot)
 
-        settings_action = QAction('Configuration', self)
-        settings_action.triggered.connect(self.open_settings)
-
-        self.file_menu.addAction(settings_action)
-
         exit_action = QAction('Exit App', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.triggered.connect(self.exit)
 
         self.file_menu.addAction(exit_action)
 
-        about_action = QAction('About', self)
-        about_action.triggered.connect(self.open_about)
-
-        self.help_menu.addAction(about_action)
 
     def init_signals(self) -> None:
         """
@@ -866,16 +797,6 @@ class MainWindow(MainWindowUI):
 
         # Saving canvas at desired path
         self.plot_canvas.print_png(path)
-
-    def open_about(self) -> None:
-        """Opens the about window"""
-        self.about_window = About()
-        self.about_window.show()
-
-    def open_settings(self) -> None:
-        """Opens the settings window"""
-        self.settings_window = Settings()
-        self.settings_window.show()
 
     def exit(self) -> None:
         """Closes the application the moment when triggered"""
