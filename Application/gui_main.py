@@ -41,6 +41,12 @@ class PlotCanvas(FigureCanvas):
     axes_covid: pyplot.Axes
     axes_closure: pyplot.Axes
 
+    curr_x: datetime.date
+    curr_y: int
+
+    covid_line_color: str
+    closure_line_color: str
+
     covid_x_data: List[datetime.date]
     covid_y_data: List[int]
 
@@ -62,9 +68,9 @@ class PlotCanvas(FigureCanvas):
         super(PlotCanvas, self).__init__(self.figure)
         self.mpl_connect("motion_notify_event", self.on_mouse_move)
 
-        # Initialize curr_x and curr_y to None and updated from the on_mouse_move function
-        self.curr_x = None
-        self.curr_y = None
+        # Setting default line color of COVID to Yellow and school Closure to green
+        self.covid_line_color = 'orange'
+        self.closure_line_color = 'green'
 
         # Formatting the right upper corner of the display
         self.axes_covid.format_coord = lambda _, __: \
@@ -90,7 +96,7 @@ class PlotCanvas(FigureCanvas):
         self.covid_x_data = x_axis
         self.covid_y_data = y_axis
         self.axes_covid.clear()
-        self.axes_covid.plot(x_axis, y_axis, marker='.', color='orange')
+        self.axes_covid.plot(x_axis, y_axis, marker='.', color=self.covid_line_color)
         for text in self.axes_covid.get_xticklabels():
             text.set_rotation(40.0)
 
@@ -108,7 +114,7 @@ class PlotCanvas(FigureCanvas):
         self.closure_x_data = x_axis
         self.closure_y_data = y_axis
         self.axes_closure.clear()
-        self.axes_closure.plot(x_axis, y_axis, marker='.', color='green')
+        self.axes_closure.plot(x_axis, y_axis, marker='.', color=self.closure_line_color)
         self.axes_closure.set_yticks(ticks=[0, 1, 2, 3], minor=False)
         self.axes_closure.set_yticklabels(
                 labels=['Academic Break', 'Fully Open', 'Partially Open', 'Closed'],
@@ -531,8 +537,10 @@ class MainWindow(MainWindowUI):
         self.settings_menu.setDisabled(True)
 
         # Different color settings, idk how you can mash them into one for loop
-        covid_color_menu = self.settings_menu.addMenu('COVID-19 Line Color')
-        closure_color_menu = self.settings_menu.addMenu('Closure Line Color')
+        line_color_menu = self.settings_menu.addMenu('Line color')
+
+        covid_color_menu = line_color_menu.addMenu('COVID-19 Line Color')
+        closure_color_menu = line_color_menu.addMenu('Closure Line Color')
 
         # COVID Colors
         red_color_covid = QAction('Red', self)
@@ -843,9 +851,11 @@ class MainWindow(MainWindowUI):
     def change_color_red(self, plot: str) -> None:
         """Changes the line color in plot to red"""
         if plot == 'COVID':
+            self.plot_canvas.covid_line_color = 'red'
             self.plot_canvas.axes_covid.get_lines()[0].set_color('red')
 
         else:
+            self.plot_canvas.closure_line_color = 'green'
             self.plot_canvas.axes_closure.get_lines()[0].set_color('red')
 
         self.plot_canvas.draw()
@@ -853,9 +863,11 @@ class MainWindow(MainWindowUI):
     def change_color_green(self, plot: str) -> None:
         """Changes the line color in plot to green"""
         if plot == 'COVID':
+            self.plot_canvas.covid_line_color = 'green'
             self.plot_canvas.axes_covid.get_lines()[0].set_color('green')
 
         else:
+            self.plot_canvas.closure_line_color = 'green'
             self.plot_canvas.axes_closure.get_lines()[0].set_color('green')
 
         self.plot_canvas.draw()
@@ -863,9 +875,11 @@ class MainWindow(MainWindowUI):
     def change_color_blue(self, plot: str) -> None:
         """Changes the line color in plot to blue"""
         if plot == 'COVID':
+            self.plot_canvas.covid_line_color = 'blue'
             self.plot_canvas.axes_covid.get_lines()[0].set_color('blue')
 
         else:
+            self.plot_canvas.closure_line_color = 'blue'
             self.plot_canvas.axes_closure.get_lines()[0].set_color('blue')
 
         self.plot_canvas.draw()
