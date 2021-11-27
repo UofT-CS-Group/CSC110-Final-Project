@@ -41,11 +41,14 @@ class PlotCanvas(FigureCanvas):
     axes_covid: pyplot.Axes
     axes_closure: pyplot.Axes
 
-    curr_x: datetime.date
-    curr_y: int
+    curr_x: Optional[datetime.date]
+    curr_y: Optional[int]
 
     covid_line_color: str
     closure_line_color: str
+
+    covid_line_style: str
+    closure_line_style: str
 
     covid_x_data: List[datetime.date]
     covid_y_data: List[int]
@@ -72,6 +75,9 @@ class PlotCanvas(FigureCanvas):
         self.covid_line_color = 'orange'
         self.closure_line_color = 'green'
 
+        # Setting default line style of COVID and Closure to dotted
+        self.covid_line_style = self.closure_line_style = 'solid'
+
         # Formatting the right upper corner of the display
         self.axes_covid.format_coord = lambda _, __: \
             f'Date = {self.curr_x}, Cases = {self.curr_y}'
@@ -96,7 +102,10 @@ class PlotCanvas(FigureCanvas):
         self.covid_x_data = x_axis
         self.covid_y_data = y_axis
         self.axes_covid.clear()
-        self.axes_covid.plot(x_axis, y_axis, marker='.', color=self.covid_line_color)
+        self.axes_covid.plot(x_axis, y_axis,
+                             linestyle=self.covid_line_style,
+                             marker='.',
+                             color=self.covid_line_color)
         for text in self.axes_covid.get_xticklabels():
             text.set_rotation(40.0)
 
@@ -114,7 +123,10 @@ class PlotCanvas(FigureCanvas):
         self.closure_x_data = x_axis
         self.closure_y_data = y_axis
         self.axes_closure.clear()
-        self.axes_closure.plot(x_axis, y_axis, marker='.', color=self.closure_line_color)
+        self.axes_closure.plot(x_axis, y_axis,
+                               linestyle=self.closure_line_style,
+                               marker='.',
+                               color=self.closure_line_color)
         self.axes_closure.set_yticks(ticks=[0, 1, 2, 3], minor=False)
         self.axes_closure.set_yticklabels(
                 labels=['Academic Break', 'Fully Open', 'Partially Open', 'Closed'],
@@ -532,12 +544,12 @@ class MainWindow(MainWindowUI):
         # Currently Empty, I don't know what to add
 
         # Settings menu
-        # Set settings menu to be disabled by default, because it crashes if we try to edit
-        # settings of an empty graph
+        # Set settings menu to be disabled before initialization,
+        # because it crashes if we try to edit the settings of an empty graph
         self.settings_menu.setDisabled(True)
 
         # Different color settings, idk how you can mash them into one for loop
-        line_color_menu = self.settings_menu.addMenu('Line color')
+        line_color_menu = self.settings_menu.addMenu('Line Color')
 
         covid_color_menu = line_color_menu.addMenu('COVID-19 Line Color')
         closure_color_menu = line_color_menu.addMenu('Closure Line Color')
@@ -565,6 +577,36 @@ class MainWindow(MainWindowUI):
         # Adding RGB into the line color option of COVID and Closure menu
         covid_color_menu.addActions([red_color_covid, blue_color_covid, green_color_covid])
         closure_color_menu.addActions([red_color_closure, blue_color_closure, green_color_closure])
+
+        # Different Line style settings
+        line_style_menu = self.settings_menu.addMenu('Line Style')
+
+        covid_style_menu = line_style_menu.addMenu('COVID-19 Line Style')
+        closure_style_menu = line_style_menu.addMenu('Closure Line Style')
+
+        # COVID Styles
+        dashed_covid = QAction('Dashed', self)
+        dashed_covid.triggered.connect(lambda: self.change_style_dashed('COVID'))
+
+        dashdot_covid = QAction('Dash-dot', self)
+        dashdot_covid.triggered.connect(lambda: self.change_style_dashdot('COVID'))
+
+        solid_covid = QAction('Solid', self)
+        solid_covid.triggered.connect(lambda: self.change_style_solid('COVID'))
+
+        # Closure Styles
+        dashed_closure = QAction('Dashed', self)
+        dashed_closure.triggered.connect(lambda: self.change_style_dashed('Closure'))
+
+        dashdot_closure = QAction('Dash-dot', self)
+        dashdot_closure.triggered.connect(lambda: self.change_style_dashdot('Closure'))
+
+        solid_closure = QAction('Solid', self)
+        solid_closure.triggered.connect(lambda: self.change_style_solid('Closure'))
+
+        # Adding RGB into the line color option of COVID and Closure menu
+        covid_style_menu.addActions([dashed_covid, dashdot_covid, solid_covid])
+        closure_style_menu.addActions([dashed_closure, dashdot_closure, solid_closure])
 
     def init_signals(self) -> None:
         """
@@ -884,8 +926,42 @@ class MainWindow(MainWindowUI):
 
         self.plot_canvas.draw()
 
+    def change_style_dashed(self, plot: str) -> None:
+        """Changes the line color in plot to red"""
+        if plot == 'COVID':
+            self.plot_canvas.covid_line_style = 'dashed'
+            self.plot_canvas.axes_covid.get_lines()[0].set_linestyle('dashed')
+
+        else:
+            self.plot_canvas.closure_line_style = 'dashed'
+            self.plot_canvas.axes_closure.get_lines()[0].set_linestyle('dashed')
+
+        self.plot_canvas.draw()
+
+    def change_style_dashdot(self, plot: str) -> None:
+        """Changes the line color in plot to green"""
+        if plot == 'COVID':
+            self.plot_canvas.covid_line_style = 'dashdot'
+            self.plot_canvas.axes_covid.get_lines()[0].set_linestyle('dashdot')
+
+        else:
+            self.plot_canvas.closure_line_style = 'dashdot'
+            self.plot_canvas.axes_closure.get_lines()[0].set_linestyle('dashdot')
+
+        self.plot_canvas.draw()
+
+    def change_style_solid(self, plot: str) -> None:
+        """Changes the line color in plot to blue"""
+        if plot == 'COVID':
+            self.plot_canvas.covid_line_style = 'solid'
+            self.plot_canvas.axes_covid.get_lines()[0].set_linestyle('solid')
+
+        else:
+            self.plot_canvas.closure_line_style = 'solid'
+            self.plot_canvas.axes_closure.get_lines()[0].set_linestyle('solid')
+
+        self.plot_canvas.draw()
+
     def exit(self) -> None:
         """Closes the application the moment when triggered"""
         QApplication.quit()
-
-
