@@ -264,7 +264,7 @@ class MainWindowUI(QMainWindow):
     menu_bar: StandardMenuBar
     file_menu: StandardMenu
     edit_menu: StandardMenu
-    help_menu: StandardMenu
+    settings_menu: StandardMenu
 
     progress_bar: StandardProgressBar
 
@@ -366,7 +366,7 @@ class MainWindowUI(QMainWindow):
         self.menu_bar = StandardMenuBar(self)
         self.file_menu = self.menu_bar.addMenu('File')
         self.edit_menu = self.menu_bar.addMenu('Edit')
-        self.help_menu = self.menu_bar.addMenu('Help')
+        self.settings_menu = self.menu_bar.addMenu('Settings')
 
         self.setMenuBar(self.menu_bar)
 
@@ -504,11 +504,17 @@ class MainWindow(MainWindowUI):
         """
         Initialize the menu bar
         """
+        # File menu
         save_plot = QAction('Save current plot', self)
         save_plot.setShortcut('Ctrl+S')
         save_plot.triggered.connect(self.save_plot)
 
         self.file_menu.addAction(save_plot)
+
+        separator = QAction(self)
+        separator.setSeparator(True)
+
+        self.file_menu.addAction(separator)
 
         exit_action = QAction('Exit App', self)
         exit_action.setShortcut('Ctrl+Q')
@@ -516,6 +522,41 @@ class MainWindow(MainWindowUI):
 
         self.file_menu.addAction(exit_action)
 
+        # Edit Menu
+        # Currently Empty, I don't know what to add
+
+        # Settings menu
+        # Set settings menu to be disabled by default, because it crashes if we try to edit
+        # settings of an empty graph
+        self.settings_menu.setDisabled(True)
+
+        # Different color settings, idk how you can mash them into one for loop
+        covid_color_menu = self.settings_menu.addMenu('COVID-19 Line Color')
+        closure_color_menu = self.settings_menu.addMenu('Closure Line Color')
+
+        # COVID Colors
+        red_color_covid = QAction('Red', self)
+        red_color_covid.triggered.connect(lambda: self.change_color_red('COVID'))
+
+        green_color_covid = QAction('Green', self)
+        green_color_covid.triggered.connect(lambda: self.change_color_green('COVID'))
+
+        blue_color_covid = QAction('Blue', self)
+        blue_color_covid.triggered.connect(lambda: self.change_color_blue('COVID'))
+
+        # Closure Colors
+        red_color_closure = QAction('Red', self)
+        red_color_closure.triggered.connect(lambda: self.change_color_red('Closure'))
+
+        green_color_closure = QAction('Green', self)
+        green_color_closure.triggered.connect(lambda: self.change_color_green('Closure'))
+
+        blue_color_closure = QAction('Blue', self)
+        blue_color_closure.triggered.connect(lambda: self.change_color_blue('Closure'))
+
+        # Adding RGB into the line color option of COVID and Closure menu
+        covid_color_menu.addActions([red_color_covid, blue_color_covid, green_color_covid])
+        closure_color_menu.addActions([red_color_closure, blue_color_closure, green_color_closure])
 
     def init_signals(self) -> None:
         """
@@ -652,6 +693,7 @@ class MainWindow(MainWindowUI):
             self.progress_bar.setVisible(False)
             self.update_plot()
             self.initialization_helper_label.setText('Please click the button below \nto reinitialize our data!')
+            self.settings_menu.setDisabled(False)
 
     @pyqtSlot()
     def on_init_button_clicked(self) -> None:
@@ -797,6 +839,36 @@ class MainWindow(MainWindowUI):
 
         # Saving canvas at desired path
         self.plot_canvas.print_png(path)
+
+    def change_color_red(self, plot: str) -> None:
+        """Changes the line color in plot to red"""
+        if plot == 'COVID':
+            self.plot_canvas.axes_covid.get_lines()[0].set_color('red')
+
+        else:
+            self.plot_canvas.axes_closure.get_lines()[0].set_color('red')
+
+        self.plot_canvas.draw()
+
+    def change_color_green(self, plot: str) -> None:
+        """Changes the line color in plot to green"""
+        if plot == 'COVID':
+            self.plot_canvas.axes_covid.get_lines()[0].set_color('green')
+
+        else:
+            self.plot_canvas.axes_closure.get_lines()[0].set_color('green')
+
+        self.plot_canvas.draw()
+
+    def change_color_blue(self, plot: str) -> None:
+        """Changes the line color in plot to blue"""
+        if plot == 'COVID':
+            self.plot_canvas.axes_covid.get_lines()[0].set_color('blue')
+
+        else:
+            self.plot_canvas.axes_closure.get_lines()[0].set_color('blue')
+
+        self.plot_canvas.draw()
 
     def exit(self) -> None:
         """Closes the application the moment when triggered"""
