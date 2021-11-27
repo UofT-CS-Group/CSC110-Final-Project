@@ -50,6 +50,9 @@ class PlotCanvas(FigureCanvas):
     covid_line_style: str
     closure_line_style: str
 
+    covid_data_marker: str
+    closure_data_marker: str
+
     covid_x_data: List[datetime.date]
     covid_y_data: List[int]
 
@@ -78,6 +81,9 @@ class PlotCanvas(FigureCanvas):
         # Setting default line style of COVID and Closure to dotted
         self.covid_line_style = self.closure_line_style = 'solid'
 
+        # Setting default marker to be on
+        self.covid_data_marker = self.closure_data_marker = '.'
+
         # Formatting the right upper corner of the display
         self.axes_covid.format_coord = lambda _, __: \
             f'Date = {self.curr_x}, Cases = {self.curr_y}'
@@ -104,7 +110,7 @@ class PlotCanvas(FigureCanvas):
         self.axes_covid.clear()
         self.axes_covid.plot(x_axis, y_axis,
                              linestyle=self.covid_line_style,
-                             marker='.',
+                             marker=self.covid_data_marker,
                              color=self.covid_line_color)
         for text in self.axes_covid.get_xticklabels():
             text.set_rotation(40.0)
@@ -125,7 +131,7 @@ class PlotCanvas(FigureCanvas):
         self.axes_closure.clear()
         self.axes_closure.plot(x_axis, y_axis,
                                linestyle=self.closure_line_style,
-                               marker='.',
+                               marker=self.closure_data_marker,
                                color=self.closure_line_color)
         self.axes_closure.set_yticks(ticks=[0, 1, 2, 3], minor=False)
         self.axes_closure.set_yticklabels(
@@ -608,6 +614,23 @@ class MainWindow(MainWindowUI):
         covid_style_menu.addActions([dashed_covid, dashdot_covid, solid_covid])
         closure_style_menu.addActions([dashed_closure, dashdot_closure, solid_closure])
 
+        # Show marker toggle menu
+        marker_menu = self.settings_menu.addMenu('Show Marker')
+
+        covid_marker = QAction('COVID Plot', self)
+        closure_marker = QAction('Closure Plot', self)
+
+        covid_marker.setCheckable(True)
+        closure_marker.setCheckable(True)
+
+        covid_marker.setChecked(True)
+        closure_marker.setChecked(True)
+
+        covid_marker.triggered.connect(self.toggle_marker_covid)
+        closure_marker.triggered.connect(self.toggle_marker_closure)
+
+        marker_menu.addActions([covid_marker, closure_marker])
+
     def init_signals(self) -> None:
         """
         Init the signals.
@@ -927,7 +950,7 @@ class MainWindow(MainWindowUI):
         self.plot_canvas.draw()
 
     def change_style_dashed(self, plot: str) -> None:
-        """Changes the line color in plot to red"""
+        """Changes the line style in plot to dashed"""
         if plot == 'COVID':
             self.plot_canvas.covid_line_style = 'dashed'
             self.plot_canvas.axes_covid.get_lines()[0].set_linestyle('dashed')
@@ -939,7 +962,7 @@ class MainWindow(MainWindowUI):
         self.plot_canvas.draw()
 
     def change_style_dashdot(self, plot: str) -> None:
-        """Changes the line color in plot to green"""
+        """Changes the line style in plot to dashdot"""
         if plot == 'COVID':
             self.plot_canvas.covid_line_style = 'dashdot'
             self.plot_canvas.axes_covid.get_lines()[0].set_linestyle('dashdot')
@@ -951,7 +974,7 @@ class MainWindow(MainWindowUI):
         self.plot_canvas.draw()
 
     def change_style_solid(self, plot: str) -> None:
-        """Changes the line color in plot to blue"""
+        """Changes the line style in plot to solid"""
         if plot == 'COVID':
             self.plot_canvas.covid_line_style = 'solid'
             self.plot_canvas.axes_covid.get_lines()[0].set_linestyle('solid')
@@ -959,6 +982,30 @@ class MainWindow(MainWindowUI):
         else:
             self.plot_canvas.closure_line_style = 'solid'
             self.plot_canvas.axes_closure.get_lines()[0].set_linestyle('solid')
+
+        self.plot_canvas.draw()
+
+    def toggle_marker_covid(self, state: bool) -> None:
+        """Toggles the marker in covid plot on and off"""
+        if state:
+            self.plot_canvas.covid_data_marker = '.'
+            self.plot_canvas.axes_covid.get_lines()[0].set_marker('.')
+
+        else:
+            self.plot_canvas.covid_data_marker = ''
+            self.plot_canvas.axes_covid.get_lines()[0].set_marker('')
+
+        self.plot_canvas.draw()
+
+    def toggle_marker_closure(self, state: bool) -> None:
+        """Toggles the marker in closure plot on and off"""
+        if state:
+            self.plot_canvas.closure_data_marker = '.'
+            self.plot_canvas.axes_closure.get_lines()[0].set_marker('.')
+
+        else:
+            self.plot_canvas.closure_data_marker = ''
+            self.plot_canvas.axes_closure.get_lines()[0].set_marker('')
 
         self.plot_canvas.draw()
 
