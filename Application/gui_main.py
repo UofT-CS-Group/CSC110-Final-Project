@@ -57,12 +57,27 @@ class PlotCanvas(FigureCanvas):
         # Initialize curr_x and curr_y to None and updated from the on_mouse_move function
         self.curr_x = None
         self.curr_y = None
+        # Initialize below variables to None and updated from the pan_factory function
+        self.press = None
+        self.x0 = None
+        self.y0 = None
+        self.x1 = None
+        self.y1 = None
+        self.xpress = None
+        self.ypress = None
         # Formatting the right upper corner of the display
         self.axes_covid.format_coord = lambda _, __: \
             f'Date = {self.curr_x}, Cases = {self.curr_y}'
         self.axes_closure.format_coord = lambda _, __: \
             f'Date = {self.curr_x}, Status = ' \
             f'{data.ENUM_TO_STATUS_DICT[data.ClosureStatus(self.curr_y)]}'
+
+        # Zoom in/out and drag plot functionality
+        self.zoom_factory(self.axes_covid, base_scale=1.05)
+        self.pan_factory(self.axes_covid)
+
+        self.zoom_factory(self.axes_closure, base_scale=1.05)
+        self.pan_factory(self.axes_closure)
 
         self.draw()
 
@@ -170,6 +185,80 @@ class PlotCanvas(FigureCanvas):
 
         self.blit(self.figure.bbox)
         self.flush_events()
+
+    def zoom_factory(self, ax, base_scale=2.) -> Any:
+        """Zoom in/out functionality"""
+
+        def zoom(event) -> None:
+            cur_xlim = ax.get_xlim()
+            cur_ylim = ax.get_ylim()
+
+            xdata = event.xdata
+            ydata = event.ydata
+
+            if event.button == 'down':
+                # deal with zoom in
+                scale_factor = 1 / base_scale
+            elif event.button == 'up':
+                # deal with zoom out
+                scale_factor = base_scale
+            else:
+                # deal with something that should never happen
+                scale_factor = 1
+                print(event.button)
+
+            new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+            new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+
+            relx = (cur_xlim[1] - xdata) / (cur_xlim[1] - cur_xlim[0])
+            rely = (cur_ylim[1] - ydata) / (cur_ylim[1] - cur_ylim[0])
+
+            ax.set_xlim([xdata - new_width * (1 - relx), xdata + new_width * (relx)])
+            ax.set_ylim([ydata - new_height * (1 - rely), ydata + new_height * (rely)])
+            ax.figure.canvas.draw()
+
+        # get the figure of interest
+        fig = ax.get_figure()
+        fig.canvas.mpl_connect('scroll_event', zoom)
+
+        return zoom
+
+    def pan_factory(self, ax) -> Any:
+        """Dragging plot functionality"""
+
+        def onPress(event) -> None:
+            if event.inaxes != ax: return
+            self.cur_xlim = ax.get_xlim()
+            self.cur_ylim = ax.get_ylim()
+            self.press = self.x0, self.y0, event.xdata, event.ydata
+            self.x0, self.y0, self.xpress, self.ypress = self.press
+
+        def onRelease(event) -> None:
+            self.press = None
+            ax.figure.canvas.draw()
+
+        def onMotion(event) -> None:
+            if self.press is None: return
+            if event.inaxes != ax: return
+            dx = event.xdata - self.xpress
+            dy = event.ydata - self.ypress
+            self.cur_xlim -= dx
+            self.cur_ylim -= dy
+            ax.set_xlim(self.cur_xlim)
+            ax.set_ylim(self.cur_ylim)
+
+            ax.figure.canvas.draw()
+
+        # get the figure of interest
+        fig = ax.get_figure()
+
+        # attach the call back
+        fig.canvas.mpl_connect('button_press_event', onPress)
+        fig.canvas.mpl_connect('button_release_event', onRelease)
+        fig.canvas.mpl_connect('motion_notify_event', onMotion)
+
+        # return the function
+        return onMotion
 
 
 class MainWindowUI(QMainWindow):
