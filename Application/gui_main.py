@@ -550,6 +550,7 @@ class MainWindow(MainWindowUI):
 
         # Edit Menu
         rename_window = QAction('Rename Main Window', self)
+        rename_window.setShortcut('Ctrl+R')
         rename_window.triggered.connect(self.rename_main_window)
 
         self.edit_menu.addAction(rename_window)
