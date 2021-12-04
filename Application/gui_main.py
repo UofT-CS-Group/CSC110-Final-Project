@@ -289,6 +289,7 @@ class MainWindowUI(QMainWindow):
     file_menu: StandardMenu
     edit_menu: StandardMenu
     settings_menu: StandardMenu
+    view_menu: StandardMenu
 
     progress_bar: StandardProgressBar
 
@@ -391,6 +392,7 @@ class MainWindowUI(QMainWindow):
         self.file_menu = self.menu_bar.addMenu('File')
         self.edit_menu = self.menu_bar.addMenu('Edit')
         self.settings_menu = self.menu_bar.addMenu('Settings')
+        self.view_menu = self.menu_bar.addMenu('View')
 
         self.setMenuBar(self.menu_bar)
 
@@ -547,7 +549,10 @@ class MainWindow(MainWindowUI):
         self.file_menu.addAction(exit_action)
 
         # Edit Menu
-        # Currently Empty, I don't know what to add
+        rename_window = QAction('Rename Main Window', self)
+        rename_window.triggered.connect(self.rename_main_window)
+
+        self.edit_menu.addAction(rename_window)
 
         # Settings menu
         # Set settings menu to be disabled before initialization,
@@ -630,6 +635,9 @@ class MainWindow(MainWindowUI):
         closure_marker.triggered.connect(self.toggle_marker_closure)
 
         marker_menu.addActions([covid_marker, closure_marker])
+
+        # View Menu
+        # Maybe this is useless, I just added it in case.
 
     def init_signals(self) -> None:
         """
@@ -1012,3 +1020,10 @@ class MainWindow(MainWindowUI):
     def exit(self) -> None:
         """Closes the application the moment when triggered"""
         QApplication.quit()
+
+    def rename_main_window(self) -> None:
+        """Rename the main window depends on what users typed in."""
+        new_name, ok = QInputDialog.getText(self, 'Rename Main Window',
+                                            'Enter new window\'s name:')
+        if ok:
+            self.setWindowTitle(str(new_name))
