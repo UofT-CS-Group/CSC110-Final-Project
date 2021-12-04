@@ -568,23 +568,23 @@ class MainWindow(MainWindowUI):
 
         # COVID Colors
         red_color_covid = QAction('Red', self)
-        red_color_covid.triggered.connect(lambda: self.change_color_red('COVID'))
+        red_color_covid.triggered.connect(lambda: self.change_color('COVID', 'red'))
 
         green_color_covid = QAction('Green', self)
-        green_color_covid.triggered.connect(lambda: self.change_color_green('COVID'))
+        green_color_covid.triggered.connect(lambda: self.change_color('COVID', 'green'))
 
         blue_color_covid = QAction('Blue', self)
-        blue_color_covid.triggered.connect(lambda: self.change_color_blue('COVID'))
+        blue_color_covid.triggered.connect(lambda: self.change_color('COVID', 'blue'))
 
         # Closure Colors
         red_color_closure = QAction('Red', self)
-        red_color_closure.triggered.connect(lambda: self.change_color_red('Closure'))
+        red_color_closure.triggered.connect(lambda: self.change_color('Closure', 'red'))
 
         green_color_closure = QAction('Green', self)
-        green_color_closure.triggered.connect(lambda: self.change_color_green('Closure'))
+        green_color_closure.triggered.connect(lambda: self.change_color('Closure', 'green'))
 
         blue_color_closure = QAction('Blue', self)
-        blue_color_closure.triggered.connect(lambda: self.change_color_blue('Closure'))
+        blue_color_closure.triggered.connect(lambda: self.change_color('Closure', 'blue'))
 
         # Adding RGB into the line color option of COVID and Closure menu
         covid_color_menu.addActions([red_color_covid, blue_color_covid, green_color_covid])
@@ -598,23 +598,23 @@ class MainWindow(MainWindowUI):
 
         # COVID Styles
         dashed_covid = QAction('Dashed', self)
-        dashed_covid.triggered.connect(lambda: self.change_style_dashed('COVID'))
+        dashed_covid.triggered.connect(lambda: self.change_style('COVID', 'dashed'))
 
         dashdot_covid = QAction('Dash-dot', self)
-        dashdot_covid.triggered.connect(lambda: self.change_style_dashdot('COVID'))
+        dashdot_covid.triggered.connect(lambda: self.change_style('COVID', 'dashdot'))
 
         solid_covid = QAction('Solid', self)
-        solid_covid.triggered.connect(lambda: self.change_style_solid('COVID'))
+        solid_covid.triggered.connect(lambda: self.change_style('COVID', 'solid'))
 
         # Closure Styles
         dashed_closure = QAction('Dashed', self)
-        dashed_closure.triggered.connect(lambda: self.change_style_dashed('Closure'))
+        dashed_closure.triggered.connect(lambda: self.change_style('Closure', 'dashed'))
 
         dashdot_closure = QAction('Dash-dot', self)
-        dashdot_closure.triggered.connect(lambda: self.change_style_dashdot('Closure'))
+        dashdot_closure.triggered.connect(lambda: self.change_style('Closure', 'dashdot'))
 
         solid_closure = QAction('Solid', self)
-        solid_closure.triggered.connect(lambda: self.change_style_solid('Closure'))
+        solid_closure.triggered.connect(lambda: self.change_style('Closure', 'solid'))
 
         # Adding RGB into the line color option of COVID and Closure menu
         covid_style_menu.addActions([dashed_covid, dashdot_covid, solid_covid])
@@ -922,75 +922,27 @@ class MainWindow(MainWindowUI):
         # Saving canvas at desired path
         self.plot_canvas.print_png(path)
 
-    def change_color_red(self, plot: str) -> None:
-        """Changes the line color in plot to red"""
+    def change_color(self, plot: str, color: str) -> None:
+        """Changes the line color in the plot to a specific color as given."""
         if plot == 'COVID':
-            self.plot_canvas.covid_line_color = 'red'
-            self.plot_canvas.axes_covid.get_lines()[0].set_color('red')
+            self.plot_canvas.covid_line_color = color
+            self.plot_canvas.axes_covid.get_lines()[0].set_color(color)
 
         else:
-            self.plot_canvas.closure_line_color = 'green'
-            self.plot_canvas.axes_closure.get_lines()[0].set_color('red')
+            self.plot_canvas.closure_line_color = color
+            self.plot_canvas.axes_closure.get_lines()[0].set_color(color)
 
         self.plot_canvas.draw()
 
-    def change_color_green(self, plot: str) -> None:
-        """Changes the line color in plot to green"""
+    def change_style(self, plot: str, style: str) -> None:
+        """Changes the line to a specific style in the plot as given."""
         if plot == 'COVID':
-            self.plot_canvas.covid_line_color = 'green'
-            self.plot_canvas.axes_covid.get_lines()[0].set_color('green')
+            self.plot_canvas.covid_line_style = style
+            self.plot_canvas.axes_covid.get_lines()[0].set_linestyle(style)
 
         else:
-            self.plot_canvas.closure_line_color = 'green'
-            self.plot_canvas.axes_closure.get_lines()[0].set_color('green')
-
-        self.plot_canvas.draw()
-
-    def change_color_blue(self, plot: str) -> None:
-        """Changes the line color in plot to blue"""
-        if plot == 'COVID':
-            self.plot_canvas.covid_line_color = 'blue'
-            self.plot_canvas.axes_covid.get_lines()[0].set_color('blue')
-
-        else:
-            self.plot_canvas.closure_line_color = 'blue'
-            self.plot_canvas.axes_closure.get_lines()[0].set_color('blue')
-
-        self.plot_canvas.draw()
-
-    def change_style_dashed(self, plot: str) -> None:
-        """Changes the line style in plot to dashed"""
-        if plot == 'COVID':
-            self.plot_canvas.covid_line_style = 'dashed'
-            self.plot_canvas.axes_covid.get_lines()[0].set_linestyle('dashed')
-
-        else:
-            self.plot_canvas.closure_line_style = 'dashed'
-            self.plot_canvas.axes_closure.get_lines()[0].set_linestyle('dashed')
-
-        self.plot_canvas.draw()
-
-    def change_style_dashdot(self, plot: str) -> None:
-        """Changes the line style in plot to dashdot"""
-        if plot == 'COVID':
-            self.plot_canvas.covid_line_style = 'dashdot'
-            self.plot_canvas.axes_covid.get_lines()[0].set_linestyle('dashdot')
-
-        else:
-            self.plot_canvas.closure_line_style = 'dashdot'
-            self.plot_canvas.axes_closure.get_lines()[0].set_linestyle('dashdot')
-
-        self.plot_canvas.draw()
-
-    def change_style_solid(self, plot: str) -> None:
-        """Changes the line style in plot to solid"""
-        if plot == 'COVID':
-            self.plot_canvas.covid_line_style = 'solid'
-            self.plot_canvas.axes_covid.get_lines()[0].set_linestyle('solid')
-
-        else:
-            self.plot_canvas.closure_line_style = 'solid'
-            self.plot_canvas.axes_closure.get_lines()[0].set_linestyle('solid')
+            self.plot_canvas.closure_line_style = style
+            self.plot_canvas.axes_closure.get_lines()[0].set_linestyle(style)
 
         self.plot_canvas.draw()
 
