@@ -560,35 +560,18 @@ class MainWindow(MainWindowUI):
         # because it crashes if we try to edit the settings of an empty graph
         self.settings_menu.setDisabled(True)
 
-        # Different color settings, idk how you can mash them into one for loop
+        # Different color settings
         line_color_menu = self.settings_menu.addMenu('Line Color')
 
-        covid_color_menu = line_color_menu.addMenu('COVID-19 Line Color')
-        closure_color_menu = line_color_menu.addMenu('Closure Line Color')
-
         # COVID Colors
-        red_color_covid = QAction('Red', self)
-        red_color_covid.triggered.connect(lambda: self.change_color('COVID', 'red'))
-
-        green_color_covid = QAction('Green', self)
-        green_color_covid.triggered.connect(lambda: self.change_color('COVID', 'green'))
-
-        blue_color_covid = QAction('Blue', self)
-        blue_color_covid.triggered.connect(lambda: self.change_color('COVID', 'blue'))
+        color_covid = QAction('COVID-19 Line Color', self)
+        color_covid.triggered.connect(lambda: self.change_color('COVID'))
 
         # Closure Colors
-        red_color_closure = QAction('Red', self)
-        red_color_closure.triggered.connect(lambda: self.change_color('Closure', 'red'))
+        color_closure = QAction('Closure Line Color', self)
+        color_closure.triggered.connect(lambda: self.change_color('Closure'))
 
-        green_color_closure = QAction('Green', self)
-        green_color_closure.triggered.connect(lambda: self.change_color('Closure', 'green'))
-
-        blue_color_closure = QAction('Blue', self)
-        blue_color_closure.triggered.connect(lambda: self.change_color('Closure', 'blue'))
-
-        # Adding RGB into the line color option of COVID and Closure menu
-        covid_color_menu.addActions([red_color_covid, blue_color_covid, green_color_covid])
-        closure_color_menu.addActions([red_color_closure, blue_color_closure, green_color_closure])
+        line_color_menu.addActions([color_covid, color_closure])
 
         # Different Line style settings
         line_style_menu = self.settings_menu.addMenu('Line Style')
@@ -922,8 +905,10 @@ class MainWindow(MainWindowUI):
         # Saving canvas at desired path
         self.plot_canvas.print_png(path)
 
-    def change_color(self, plot: str, color: str) -> None:
+    def change_color(self, plot: str) -> None:
         """Changes the line color in the plot to a specific color as given."""
+        color = QColorDialog.getColor().name()
+
         if plot == 'COVID':
             self.plot_canvas.covid_line_color = color
             self.plot_canvas.axes_covid.get_lines()[0].set_color(color)
