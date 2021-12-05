@@ -532,6 +532,7 @@ class MainWindow(MainWindowUI):
         """
         # File menu
         save_plot = QAction('Save Current Plot', self)
+        save_plot.setStatusTip('Save current plot')
         save_plot.setShortcut('Ctrl+S')
         save_plot.triggered.connect(self.save_plot)
 
@@ -543,6 +544,7 @@ class MainWindow(MainWindowUI):
         self.file_menu.addAction(separator)
 
         exit_action = QAction('Exit App', self)
+        exit_action.setStatusTip('Exit app')
         exit_action.setShortcut('Ctrl+Q')
         exit_action.triggered.connect(self.exit)
 
@@ -550,6 +552,7 @@ class MainWindow(MainWindowUI):
 
         # Edit Menu
         rename_window = QAction('Rename Main Window', self)
+        rename_window.setStatusTip('Rename the main window')
         rename_window.setShortcut('Ctrl+R')
         rename_window.triggered.connect(self.rename_main_window)
 
@@ -565,10 +568,12 @@ class MainWindow(MainWindowUI):
 
         # COVID Colors
         color_covid = QAction('COVID-19 Line Color', self)
+        color_covid.setStatusTip('Choose line color for COVID-19 plot')
         color_covid.triggered.connect(lambda: self.change_color('COVID'))
 
         # Closure Colors
         color_closure = QAction('Closure Line Color', self)
+        color_closure.setStatusTip('Choose line color for Closure plot')
         color_closure.triggered.connect(lambda: self.change_color('Closure'))
 
         line_color_menu.addActions([color_covid, color_closure])
@@ -581,22 +586,28 @@ class MainWindow(MainWindowUI):
 
         # COVID Styles
         dashed_covid = QAction('Dashed', self)
+        dashed_covid.setStatusTip('Dashed line')
         dashed_covid.triggered.connect(lambda: self.change_style('COVID', 'dashed'))
 
         dashdot_covid = QAction('Dash-dot', self)
+        dashdot_covid.setStatusTip('Dash-dot line')
         dashdot_covid.triggered.connect(lambda: self.change_style('COVID', 'dashdot'))
 
         solid_covid = QAction('Solid', self)
+        solid_covid.setStatusTip('Solid line')
         solid_covid.triggered.connect(lambda: self.change_style('COVID', 'solid'))
 
         # Closure Styles
         dashed_closure = QAction('Dashed', self)
+        dashed_closure.setStatusTip('Dashed line')
         dashed_closure.triggered.connect(lambda: self.change_style('Closure', 'dashed'))
 
         dashdot_closure = QAction('Dash-dot', self)
+        dashdot_closure.setStatusTip('Dash-dot line')
         dashdot_closure.triggered.connect(lambda: self.change_style('Closure', 'dashdot'))
 
         solid_closure = QAction('Solid', self)
+        solid_closure.setStatusTip('Solid line')
         solid_closure.triggered.connect(lambda: self.change_style('Closure', 'solid'))
 
         # Adding RGB into the line color option of COVID and Closure menu
@@ -615,13 +626,22 @@ class MainWindow(MainWindowUI):
         covid_marker.setChecked(True)
         closure_marker.setChecked(True)
 
+        covid_marker.setStatusTip('Show marker in COVID - 19 plot')
+        closure_marker.setStatusTip('Show marker in Closure plot')
+
         covid_marker.triggered.connect(self.toggle_marker_covid)
         closure_marker.triggered.connect(self.toggle_marker_closure)
 
         marker_menu.addActions([covid_marker, closure_marker])
 
         # View Menu
-        # Maybe this is useless, I just added it in case.
+        view_statusbar = QAction('View statusbar', self, checkable=True)
+        view_statusbar.setStatusTip('View statusbar')
+        view_statusbar.setChecked(True)
+        view_statusbar.setShortcut('Ctrl+V')
+        view_statusbar.triggered.connect(self.toggle_statusbar)
+
+        self.view_menu.addAction(view_statusbar)
 
     def init_signals(self) -> None:
         """
@@ -631,26 +651,35 @@ class MainWindow(MainWindowUI):
         self.progress_bar_update_thread.on_updated.connect(self.update_progress_bar)
         # Init button
         self.initialization_button.clicked.connect(self.on_init_button_clicked)
+        self.initialization_button.setStatusTip('Initialize/Re-initialize the data')
         # Country selection
         self.country_search_bar.textEdited.connect(self.on_country_search_bar_edited)
+        self.country_search_bar.setStatusTip('Type in the country you would like to search')
         self.country_selection_combo_box.currentTextChanged.connect(
                 self.on_country_selection_combo_box_changed)
         # Global radio button
         self.global_radio_button.toggled.connect(self.on_global_radio_button_toggled)
+        self.global_radio_button.setStatusTip('Global')
         for button in self.country_shortcut_buttons:
             button.clicked.connect(self.on_country_shortcut_buttons_clicked)
+            button.setStatusTip(button.text())
         # Location reset button
         self.location_reset_button.clicked.connect(self.on_location_reset_button_clicked)
+        self.location_reset_button.setStatusTip('Reset the location')
         # Date confirm button
         self.date_confirm_button.clicked.connect(self.on_date_confirm_button_clicked)
+        self.date_confirm_button.setStatusTip('Confirm to see the plot')
         # Date reset button
         self.date_reset_button.clicked.connect(self.on_date_reset_button_clicked)
+        self.date_reset_button.setStatusTip('Reset the date')
         # Date edit
         self.start_date_edit.dateChanged.connect(self.on_start_date_edit_changed)
         self.end_date_edit.dateChanged.connect(self.on_end_date_edit_changed)
         # Date slider
         self.start_date_slider.sliderMoved.connect(self.on_start_date_slider_moved)
+        self.start_date_slider.setStatusTip('Use the slider to set the start date')
         self.end_date_slider.sliderMoved.connect(self.on_end_date_slider_moved)
+        self.end_date_slider.setStatusTip('Use the slider to set the end date')
 
     def update_plot(self) -> None:
         """
@@ -965,3 +994,10 @@ class MainWindow(MainWindowUI):
                                             'Enter new window\'s name:')
         if ok:
             self.setWindowTitle(str(new_name))
+
+    def toggle_statusbar(self, state) -> None:
+
+        if state:
+            self.statusBar().setVisible(True)
+        else:
+            self.statusBar().setVisible(False)
