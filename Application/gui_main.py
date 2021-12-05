@@ -283,6 +283,7 @@ class MainWindowUI(QMainWindow):
     # Plot
     plot_navigation_tool_bar: NavigationToolbar
     plot_canvas: PlotCanvas
+    plot_color: StandardColorDialog
 
     # Menu bar
     menu_bar: StandardMenuBar
@@ -351,6 +352,8 @@ class MainWindowUI(QMainWindow):
                 'Please click the button below \nto initialize our data!'
         )
         self.initialization_button = StandardPushButton('Initialize', self.initialization_group)
+        # Set tool tip for initialization_button
+        self.initialization_button.setToolTip('Initialize/Re-initialize the data')
 
         # Location Group
         self.location_group = StandardGroupBox('Location', self)
@@ -363,6 +366,13 @@ class MainWindowUI(QMainWindow):
         self.country_shortcut_buttons = [StandardPushButton(c.name, self.location_group)
                                          for c in data.KEY_COUNTRIES]
         self.location_reset_button = StandardPushButton('Reset', self.location_group)
+        # Set tool tips for country_search_bar, global_radio_button,
+        # location_reset_button, and each country shortcut button.
+        self.country_search_bar.setToolTip('Type in the country you would like to search')
+        self.global_radio_button.setToolTip('Global')
+        self.location_reset_button.setToolTip('Reset the location')
+        for button in self.country_shortcut_buttons:
+            button.setToolTip(button.text())
 
         # Date Group
         self.date_group = StandardGroupBox('Date', self)
@@ -374,6 +384,12 @@ class MainWindowUI(QMainWindow):
         self.end_date_slider = StandardSlider(parent=self.date_group)
         self.date_reset_button = StandardPushButton('Reset', self.date_group)
         self.date_confirm_button = StandardPushButton('Confirm', self.date_group)
+        # Set tool tips for date_confirm_button, date_reset_button,
+        # start_date_slider, and end_date_slider
+        self.date_confirm_button.setToolTip('Confirm to see the plot')
+        self.date_reset_button.setToolTip('Reset the date')
+        self.start_date_slider.setToolTip('Use the slider to set the start date')
+        self.end_date_slider.setToolTip('Use the slider to set the end date')
 
         # Plot
         self.plot_canvas = PlotCanvas()
@@ -517,6 +533,9 @@ class MainWindow(MainWindowUI):
         # Please ignore the warning here.
         self.progress_bar_update_thread = ProgressUpdateThread(self)
 
+        # Initialize the plot_color for future changes
+        self.plot_color = StandardColorDialog(self)
+
         # Initialize menu
         self.init_menu()
 
@@ -569,12 +588,12 @@ class MainWindow(MainWindowUI):
         # COVID Colors
         color_covid = QAction('COVID-19 Line Color', self)
         color_covid.setStatusTip('Choose line color for COVID-19 plot')
-        color_covid.triggered.connect(lambda: self.change_color('COVID'))
+        color_covid.triggered.connect(lambda: self.change_color('COVID', self.plot_color))
 
         # Closure Colors
         color_closure = QAction('Closure Line Color', self)
         color_closure.setStatusTip('Choose line color for Closure plot')
-        color_closure.triggered.connect(lambda: self.change_color('Closure'))
+        color_closure.triggered.connect(lambda: self.change_color('Closure', self.plot_color))
 
         line_color_menu.addActions([color_covid, color_closure])
 
@@ -651,35 +670,26 @@ class MainWindow(MainWindowUI):
         self.progress_bar_update_thread.on_updated.connect(self.update_progress_bar)
         # Init button
         self.initialization_button.clicked.connect(self.on_init_button_clicked)
-        self.initialization_button.setStatusTip('Initialize/Re-initialize the data')
         # Country selection
         self.country_search_bar.textEdited.connect(self.on_country_search_bar_edited)
-        self.country_search_bar.setStatusTip('Type in the country you would like to search')
         self.country_selection_combo_box.currentTextChanged.connect(
                 self.on_country_selection_combo_box_changed)
         # Global radio button
         self.global_radio_button.toggled.connect(self.on_global_radio_button_toggled)
-        self.global_radio_button.setStatusTip('Global')
         for button in self.country_shortcut_buttons:
             button.clicked.connect(self.on_country_shortcut_buttons_clicked)
-            button.setStatusTip(button.text())
         # Location reset button
         self.location_reset_button.clicked.connect(self.on_location_reset_button_clicked)
-        self.location_reset_button.setStatusTip('Reset the location')
         # Date confirm button
         self.date_confirm_button.clicked.connect(self.on_date_confirm_button_clicked)
-        self.date_confirm_button.setStatusTip('Confirm to see the plot')
         # Date reset button
         self.date_reset_button.clicked.connect(self.on_date_reset_button_clicked)
-        self.date_reset_button.setStatusTip('Reset the date')
         # Date edit
         self.start_date_edit.dateChanged.connect(self.on_start_date_edit_changed)
         self.end_date_edit.dateChanged.connect(self.on_end_date_edit_changed)
         # Date slider
         self.start_date_slider.sliderMoved.connect(self.on_start_date_slider_moved)
-        self.start_date_slider.setStatusTip('Use the slider to set the start date')
         self.end_date_slider.sliderMoved.connect(self.on_end_date_slider_moved)
-        self.end_date_slider.setStatusTip('Use the slider to set the end date')
 
     def update_plot(self) -> None:
         """
@@ -934,9 +944,9 @@ class MainWindow(MainWindowUI):
         # Saving canvas at desired path
         self.plot_canvas.print_png(path)
 
-    def change_color(self, plot: str) -> None:
+    def change_color(self, plot: str, color: StandardColorDialog) -> None:
         """Changes the line color in the plot to a specific color as given."""
-        color = QColorDialog.getColor().name()
+        color = color.getColor().name()
 
         if plot == 'COVID':
             self.plot_canvas.covid_line_color = color

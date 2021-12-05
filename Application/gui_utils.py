@@ -224,3 +224,14 @@ class StandardNavigationToolbar(NavigationToolbar):
     When needed, we could add more attributes and methods.
     """
     toolitems = [t for t in NavigationToolbar.toolitems if t[0] in ('Home', 'Pan', 'Zoom')]
+
+class StandardColorDialog(QColorDialog):
+    """
+    A standard color dialog for our project.
+
+    When needed, we could add more attributes and methods.
+    """
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super(StandardColorDialog, self).__init__(parent)
+        set_font(self, font_size=12)
