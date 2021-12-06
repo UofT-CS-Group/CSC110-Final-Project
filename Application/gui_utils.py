@@ -205,18 +205,6 @@ class StandardMenuBar(QMenuBar):
         set_font(self, font_size=12)
 
 
-class StandardMenu(QMenu):
-    """
-    A standard menu for our project.
-
-    When needed, we could add more attributes and methods.
-    """
-
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
-        super(StandardMenu, self).__init__(parent)
-        set_font(self, font_size=12)
-
-
 class StandardNavigationToolbar(NavigationToolbar):
     """
     A standard menu for our project.
