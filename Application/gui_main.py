@@ -283,7 +283,6 @@ class MainWindowUI(QMainWindow):
     # Plot
     plot_navigation_tool_bar: NavigationToolbar
     plot_canvas: PlotCanvas
-    plot_color: StandardColorDialog
 
     # Menu bar
     menu_bar: StandardMenuBar
@@ -533,9 +532,6 @@ class MainWindow(MainWindowUI):
         # Please ignore the warning here.
         self.progress_bar_update_thread = ProgressUpdateThread(self)
 
-        # Initialize the plot_color for future changes
-        self.plot_color = StandardColorDialog(self)
-
         # Initialize menu
         self.init_menu()
 
@@ -588,12 +584,12 @@ class MainWindow(MainWindowUI):
         # COVID Colors
         color_covid = QAction('COVID-19 Line Color', self)
         color_covid.setStatusTip('Choose line color for COVID-19 plot')
-        color_covid.triggered.connect(lambda: self.change_color('COVID', self.plot_color))
+        color_covid.triggered.connect(lambda: self.change_color('COVID'))
 
         # Closure Colors
         color_closure = QAction('Closure Line Color', self)
         color_closure.setStatusTip('Choose line color for Closure plot')
-        color_closure.triggered.connect(lambda: self.change_color('Closure', self.plot_color))
+        color_closure.triggered.connect(lambda: self.change_color('Closure'))
 
         line_color_menu.addActions([color_covid, color_closure])
 
@@ -934,8 +930,10 @@ class MainWindow(MainWindowUI):
 
     def save_plot(self) -> None:
         """Saves the current plots at the specified location"""
+        file_dialog = StandardFileDialog()
+
         # The second return value is "Selected filter", which is useless
-        path, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG(*.png)")
+        path, _ = file_dialog.getSaveFileName(self, "Save Image", "", "PNG(*.png)")
 
         if path == '':
             # This is because the user may press cancel
@@ -944,9 +942,10 @@ class MainWindow(MainWindowUI):
         # Saving canvas at desired path
         self.plot_canvas.print_png(path)
 
-    def change_color(self, plot: str, color: StandardColorDialog) -> None:
+    def change_color(self, plot: str) -> None:
         """Changes the line color in the plot to a specific color as given."""
-        color = color.getColor().name()
+        color_dialog = StandardColorDialog()
+        color = color_dialog.getColor().name()
 
         if plot == 'COVID':
             self.plot_canvas.covid_line_color = color
@@ -1000,13 +999,14 @@ class MainWindow(MainWindowUI):
 
     def rename_main_window(self) -> None:
         """Rename the main window depends on what users typed in."""
-        new_name, ok = QInputDialog.getText(self, 'Rename Main Window',
-                                            'Enter new window\'s name:')
+        rename_dialog = StandardInputDialog()
+        new_name, ok = rename_dialog.getText(self, 'Rename Main Window',
+                                             'Enter new window\'s name:')
         if ok:
             self.setWindowTitle(str(new_name))
 
     def toggle_statusbar(self, state) -> None:
-
+        """Toggles the statusbar (visible or invisible)."""
         if state:
             self.statusBar().setVisible(True)
         else:
