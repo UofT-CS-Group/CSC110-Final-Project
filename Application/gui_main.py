@@ -16,11 +16,18 @@ from matplotlib import pyplot
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
+# Ctype
+import ctypes
+
 # Our modules
 import algorithms
 import data
 import resource_manager
 from gui_utils import *
+
+app_id = 'CSC110.covid_school_plot'  # Random identifier
+# Letting Windows display the Icon in the taskbar as well
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
 matplotlib.style.use('fast')
 
@@ -57,6 +64,18 @@ class PlotCanvas(FigureCanvas):
     covid_axes: pyplot.Axes
     closure_axes: pyplot.Axes
     background: Any
+
+    curr_x: Optional[datetime.date]
+    curr_y: Optional[int]
+
+    covid_line_color: str = 'orange'
+    closure_line_color: str = 'green'
+
+    covid_line_style: str = 'solid'
+    closure_line_style: str = 'solid'
+
+    covid_data_marker: str = '.'
+    closure_data_marker: str = '.'
 
     covid_x_data: List[datetime.date]
     covid_y_data: List[int]
@@ -135,7 +154,10 @@ class PlotCanvas(FigureCanvas):
 
         self.covid_axes.clear()
         self.init_figures()
-        self.covid_axes.plot(self.covid_x_data, self.covid_y_data, marker='.', color='orange')
+        self.covid_axes.plot(self.covid_x_data, self.covid_y_data,
+                             linestyle=self.covid_line_style,
+                             marker=self.covid_data_marker,
+                             color=self.covid_line_color)
 
         self.draw()
         self.update_background()
@@ -147,7 +169,10 @@ class PlotCanvas(FigureCanvas):
 
         self.closure_axes.clear()
         self.init_figures()
-        self.closure_axes.plot(self.closure_x_data, self.closure_y_data, marker='.', color='green')
+        self.closure_axes.plot(self.closure_x_data, self.closure_y_data,
+                               linestyle=self.closure_line_style,
+                               marker=self.closure_data_marker,
+                               color=self.closure_line_color)
 
         self.draw()
         self.update_background()
@@ -371,6 +396,13 @@ class MainWindowUI(QMainWindow):
     plot_tool_bar: PlotToolbar
     plot_canvas: PlotCanvas
 
+    # Menu bar
+    menu_bar: StandardMenuBar
+    file_menu: QMenu
+    edit_menu: QMenu
+    settings_menu: QMenu
+    view_menu: QMenu
+
     progress_bar: StandardProgressBar
 
     def __init__(self, *args, **kwargs) -> None:
@@ -423,37 +455,47 @@ class MainWindowUI(QMainWindow):
 
         # Initialization Group
         self.initialization_group = StandardGroupBox('Initialization', self)
-        self.algorithms_selection_label = StandardLabel('Select a sorting algorithms:',
+        self.algorithms_selection_label = StandardLabel('Select a sorting algorithm',
                                                         self.initialization_group)
         self.algorithms_selection_combo_box = \
             StandardComboBox(self.initialization_group, algorithms.SORTING_ALGORITHMS.keys())
         self.initialization_helper_label = StandardLabel(
-                'Please click the button \nto start initializing our data!'
+                'Please click the button below \nto initialize our data!'
         )
         self.initialization_button = StandardPushButton('Initialize', self.initialization_group)
+        self.initialization_button.setToolTip('Initialize/Re-initialize the data')
 
         # Location Group
         self.location_group = StandardGroupBox('Location', self)
         self.country_search_label = StandardLabel('Search', self.location_group)
         self.country_search_bar = StandardLineEdit(parent=self.location_group)
+        self.country_search_bar.setToolTip('Type in the country you would like to search')
         self.country_selection_label = StandardLabel('Country', self.location_group)
         self.country_selection_combo_box = StandardComboBox(self.location_group)
         self.global_helper_label = StandardLabel('Global View')
         self.global_radio_button = StandardRadioButton('Global', self.location_group)
+        self.global_radio_button.setToolTip('Use global data')
         self.country_shortcut_buttons = [StandardPushButton(c.name, self.location_group)
                                          for c in data.KEY_COUNTRIES]
+        for button in self.country_shortcut_buttons:
+            button.setToolTip(button.text())
         self.location_reset_button = StandardPushButton('Reset', self.location_group)
+        self.location_reset_button.setToolTip('Reset the location selection')
 
         # Date Group
         self.date_group = StandardGroupBox('Date', self)
         self.start_date_label = StandardLabel('Start Date: ', self.date_group)
-        self.end_date_label = StandardLabel('End Date: ', self.date_group)
         self.start_date_edit = StandardDateEdit(self.date_group)
-        self.end_date_edit = StandardDateEdit(self.date_group)
         self.start_date_slider = StandardSlider(parent=self.date_group)
+        self.start_date_slider.setToolTip('Use the slider to set the start date')
+        self.end_date_label = StandardLabel('End Date: ', self.date_group)
+        self.end_date_edit = StandardDateEdit(self.date_group)
         self.end_date_slider = StandardSlider(parent=self.date_group)
+        self.end_date_slider.setToolTip('Use the slider to set the end date')
         self.date_reset_button = StandardPushButton('Reset', self.date_group)
+        self.date_reset_button.setToolTip('Reset the date')
         self.date_confirm_button = StandardPushButton('Confirm', self.date_group)
+        self.date_confirm_button.setToolTip('Confirm the date selection and update the plot')
 
         # Plot
         self.plot_canvas = PlotCanvas()
@@ -466,6 +508,15 @@ class MainWindowUI(QMainWindow):
         self.statusBar().addPermanentWidget(self.progress_bar)
         self.progress_bar.setVisible(False)
 
+        # Menu bar
+        self.menu_bar = StandardMenuBar(self)
+        self.file_menu = self.menu_bar.addMenu('File')
+        self.edit_menu = self.menu_bar.addMenu('Edit')
+        self.settings_menu = self.menu_bar.addMenu('Settings')
+        self.view_menu = self.menu_bar.addMenu('View')
+
+        self.setMenuBar(self.menu_bar)
+
     def init_layout(self) -> None:
         """
         Init the layout for all widgets.
@@ -475,6 +526,8 @@ class MainWindowUI(QMainWindow):
         main_layout = QVBoxLayout(widget)
 
         controller_layout = QHBoxLayout(widget)
+
+        # Controller Layout Group
         main_layout.addLayout(controller_layout, 382)
 
         # Introduction Group
@@ -585,11 +638,123 @@ class MainWindow(MainWindowUI):
         # Please ignore the warning here.
         self.progress_bar_update_thread = ProgressUpdateThread(self)
 
+        # Initialize menu
+        self.init_menu()
+
         # Initialize signals
         self.init_signals()
 
         # Now, our data haven't initialized yet, so we disable all functional widgets for safety.
         self.set_enabled_functional_widgets(False)
+
+    def init_menu(self) -> None:
+        """
+        Initialize the menu bar
+        """
+        # File menu
+        save_plot = QAction('Save Current Plot', self)
+        save_plot.setStatusTip('Save the current plot into a file')
+        save_plot.setShortcut('Ctrl+S')
+        save_plot.triggered.connect(self.save_plot)
+        self.file_menu.addAction(save_plot)
+
+        separator = QAction(self)
+        separator.setSeparator(True)
+        self.file_menu.addAction(separator)
+
+        exit_action = QAction('Exit Application', self)
+        exit_action.setStatusTip('Exit application')
+        # Ctrl+W is the close shortcut for most programs. (Also Alt+F4)
+        exit_action.setShortcut('Ctrl+W')
+        exit_action.triggered.connect(self.exit)
+        self.file_menu.addAction(exit_action)
+
+        # Edit Menu
+        rename_window = QAction('Rename Main Window', self)
+        rename_window.setStatusTip('Rename the main window')
+        rename_window.setShortcut('Ctrl+R')
+        rename_window.triggered.connect(self.rename_main_window)
+        self.edit_menu.addAction(rename_window)
+
+        # Settings menu
+        # Set settings menu to be disabled before initialization,
+        # because it crashes if we try to edit the settings of an empty graph
+        self.settings_menu.setDisabled(True)
+
+        # Different color settings
+        line_color_menu = self.settings_menu.addMenu('Line Color')
+
+        # COVID Colors
+        color_covid = QAction('COVID-19 Cases Line Color', self)
+        color_covid.setStatusTip('Select the line color of the COVID-19 Cases plot')
+        color_covid.triggered.connect(lambda: self.change_color('COVID'))
+        # Closure Colors
+        color_closure = QAction('School Closure Status Line Color', self)
+        color_closure.setStatusTip('Select the line color of the School Closure Status plot')
+        color_closure.triggered.connect(lambda: self.change_color('Closure'))
+
+        line_color_menu.addActions([color_covid, color_closure])
+
+        # Different Line style settings
+        line_style_menu = self.settings_menu.addMenu('Line Style')
+
+        covid_style_menu = line_style_menu.addMenu('COVID-19 Cases Line Style')
+        closure_style_menu = line_style_menu.addMenu('School Closure Status Line Style')
+
+        # COVID Styles
+        dashed_covid = QAction('Dashed', self)
+        dashed_covid.setStatusTip('Dashed line')
+        dashed_covid.triggered.connect(lambda: self.change_style('COVID', 'dashed'))
+
+        dashdot_covid = QAction('Dash-dot', self)
+        dashdot_covid.setStatusTip('Dash-dot line')
+        dashdot_covid.triggered.connect(lambda: self.change_style('COVID', 'dashdot'))
+
+        solid_covid = QAction('Solid', self)
+        solid_covid.setStatusTip('Solid line')
+        solid_covid.triggered.connect(lambda: self.change_style('COVID', 'solid'))
+
+        covid_style_menu.addActions([dashed_covid, dashdot_covid, solid_covid])
+
+        # Closure Styles
+        dashed_closure = QAction('Dashed', self)
+        dashed_closure.setStatusTip('Dashed line')
+        dashed_closure.triggered.connect(lambda: self.change_style('Closure', 'dashed'))
+
+        dashdot_closure = QAction('Dash-dot', self)
+        dashdot_closure.setStatusTip('Dash-dot line')
+        dashdot_closure.triggered.connect(lambda: self.change_style('Closure', 'dashdot'))
+
+        solid_closure = QAction('Solid', self)
+        solid_closure.setStatusTip('Solid line')
+        solid_closure.triggered.connect(lambda: self.change_style('Closure', 'solid'))
+
+        closure_style_menu.addActions([dashed_closure, dashdot_closure, solid_closure])
+
+        # Show marker toggle menu
+        marker_menu = self.settings_menu.addMenu('Show Marker')
+
+        covid_marker = QAction('COVID-19 Plot', self)
+        covid_marker.setCheckable(True)
+        covid_marker.setChecked(True)
+        covid_marker.setStatusTip('Show/Hide markers in the COVID-19 Cases plot')
+        covid_marker.triggered.connect(self.toggle_marker_covid)
+
+        closure_marker = QAction('Closure Plot', self)
+        closure_marker.setCheckable(True)
+        closure_marker.setChecked(True)
+        closure_marker.setStatusTip('Show/Hide markers in the School Closure Status plot')
+        closure_marker.triggered.connect(self.toggle_marker_closure)
+
+        marker_menu.addActions([covid_marker, closure_marker])
+
+        # View Menu
+        view_statusbar = QAction('Display Statusbar', self)
+        view_statusbar.setCheckable(True)
+        view_statusbar.setChecked(True)
+        view_statusbar.setStatusTip('Turn on/off the statusbar')
+        view_statusbar.triggered.connect(self.toggle_statusbar)
+        self.view_menu.addAction(view_statusbar)
 
     def init_signals(self) -> None:
         """
@@ -725,6 +890,9 @@ class MainWindow(MainWindowUI):
             self.set_enabled_functional_widgets(True)
             self.progress_bar.setVisible(False)
             self.update_plot()
+            self.initialization_helper_label.setText(
+                    'Please click the button below \nto reinitialize our data!')
+            self.settings_menu.setDisabled(False)
 
     @pyqtSlot()
     def on_init_button_clicked(self) -> None:
@@ -858,3 +1026,103 @@ class MainWindow(MainWindowUI):
             return
         percentage = new_value / self.end_date_slider.maximum()
         self.on_slider_moved(percentage, self.end_date_edit)
+
+    @pyqtSlot()
+    def save_plot(self) -> None:
+        """Saves the current plots at the specified location"""
+        file_dialog = StandardFileDialog()
+
+        # The second return value is "Selected filter", which is useless
+        path, _ = file_dialog.getSaveFileName(self, "Save Plot Image", "", "PNG(*.png)")
+
+        if path == '':
+            # This is because the user may press cancel
+            return
+
+        # Saving canvas at desired path
+        self.plot_canvas.print_png(path)
+
+    def change_color(self, plot: str) -> None:
+        """Changes the line color in the plot to a specific color as given."""
+        color_dialog = StandardColorDialog()
+        color_dialog.exec()
+        color = color_dialog.currentColor().name()
+
+        if plot == 'COVID':
+            self.plot_canvas.covid_line_color = color
+            self.plot_canvas.covid_axes.get_lines()[0].set_color(color)
+
+        else:
+            self.plot_canvas.closure_line_color = color
+            self.plot_canvas.closure_axes.get_lines()[0].set_color(color)
+
+        self.plot_canvas.draw()
+        self.plot_canvas.update_background()
+
+    def change_style(self, plot: str, style: str) -> None:
+        """Changes the line to a specific style in the plot as given."""
+        if plot == 'COVID':
+            self.plot_canvas.covid_line_style = style
+            self.plot_canvas.covid_axes.get_lines()[0].set_linestyle(style)
+
+        else:
+            self.plot_canvas.closure_line_style = style
+            self.plot_canvas.closure_axes.get_lines()[0].set_linestyle(style)
+
+        self.plot_canvas.draw()
+        self.plot_canvas.update_background()
+
+    @pyqtSlot(bool)
+    def toggle_marker_covid(self, state: bool) -> None:
+        """Toggles the marker in covid plot on and off"""
+        if state:
+            self.plot_canvas.covid_data_marker = '.'
+            self.plot_canvas.covid_axes.get_lines()[0].set_marker('.')
+
+        else:
+            self.plot_canvas.covid_data_marker = ''
+            self.plot_canvas.covid_axes.get_lines()[0].set_marker('')
+
+        self.plot_canvas.draw()
+        self.plot_canvas.update_background()
+
+    @pyqtSlot(bool)
+    def toggle_marker_closure(self, state: bool) -> None:
+        """Toggles the marker in closure plot on and off"""
+        if state:
+            self.plot_canvas.closure_data_marker = '.'
+            self.plot_canvas.closure_axes.get_lines()[0].set_marker('.')
+
+        else:
+            self.plot_canvas.closure_data_marker = ''
+            self.plot_canvas.closure_axes.get_lines()[0].set_marker('')
+
+        self.plot_canvas.draw()
+        self.plot_canvas.update_background()
+
+    @pyqtSlot()
+    def exit(self) -> None:
+        """Closes the application the moment when triggered"""
+        QApplication.quit()
+
+    @pyqtSlot()
+    def rename_main_window(self) -> None:
+        """Rename the main window depends on what users typed in."""
+        rename_dialog = StandardInputDialog(self)
+        rename_dialog.setWindowTitle('Rename the Main Window')
+        rename_dialog.setLabelText('Please enter the new window title: ')
+        rename_dialog.resize(400, 100)
+        rename_dialog.show()
+        ok = rename_dialog.exec()
+        new_name = rename_dialog.textValue()
+
+        if ok and new_name != '':
+            self.setWindowTitle(new_name)
+
+    @pyqtSlot(bool)
+    def toggle_statusbar(self, state: bool) -> None:
+        """Toggles the statusbar (visible or invisible)."""
+        if state:
+            self.statusBar().setVisible(True)
+        else:
+            self.statusBar().setVisible(False)

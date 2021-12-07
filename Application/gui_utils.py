@@ -189,3 +189,51 @@ class StandardLineEdit(QLineEdit):
     def __init__(self, contents: str = '', parent: Optional[QWidget] = None) -> None:
         super().__init__(contents, parent)
         set_font(self)
+
+
+class StandardMenuBar(QMenuBar):
+    """
+    A standard menu bar for our project.
+
+    When needed, we could add more attributes and methods.
+    """
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super(StandardMenuBar, self).__init__(parent)
+        set_font(self, font_size=12)
+
+
+class StandardColorDialog(QColorDialog):
+    """
+    A standard color dialog for our project.
+
+    When needed, we could add more attributes and methods.
+    """
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super(StandardColorDialog, self).__init__(parent)
+        set_font(self, font_size=12)
+
+
+class StandardInputDialog(QInputDialog):
+    """
+    A standard input dialog for our project.
+
+    When needed, we could add more attributes and methods.
+    """
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super(StandardInputDialog, self).__init__(parent)
+        set_font(self, font_size=12)
+
+
+class StandardFileDialog(QFileDialog):
+    """
+    A standard file dialog for our project.
+
+    When needed, we could add more attributes and methods.
+    """
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super(StandardFileDialog, self).__init__(parent)
+        set_font(self, font_size=12)
