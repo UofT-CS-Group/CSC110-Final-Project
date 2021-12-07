@@ -14,6 +14,7 @@ import matplotlib.lines
 import matplotlib.style
 from matplotlib import pyplot
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 # Ctype
 import ctypes
@@ -153,7 +154,10 @@ class PlotCanvas(FigureCanvas):
 
         self.covid_axes.clear()
         self.init_figures()
-        self.covid_axes.plot(self.covid_x_data, self.covid_y_data, marker='.', color='orange')
+        self.covid_axes.plot(self.covid_x_data, self.covid_y_data,
+                             linestyle=self.covid_line_style,
+                             marker=self.covid_data_marker,
+                             color=self.covid_line_color)
 
         self.draw()
         self.update_background()
@@ -165,7 +169,10 @@ class PlotCanvas(FigureCanvas):
 
         self.closure_axes.clear()
         self.init_figures()
-        self.closure_axes.plot(self.closure_x_data, self.closure_y_data, marker='.', color='green')
+        self.closure_axes.plot(self.closure_x_data, self.closure_y_data,
+                               linestyle=self.closure_line_style,
+                               marker=self.closure_data_marker,
+                               color=self.closure_line_color)
 
         self.draw()
         self.update_background()
@@ -884,7 +891,7 @@ class MainWindow(MainWindowUI):
             self.progress_bar.setVisible(False)
             self.update_plot()
             self.initialization_helper_label.setText(
-                'Please click the button below \nto reinitialize our data!')
+                    'Please click the button below \nto reinitialize our data!')
             self.settings_menu.setDisabled(False)
 
     @pyqtSlot()
@@ -1043,51 +1050,55 @@ class MainWindow(MainWindowUI):
 
         if plot == 'COVID':
             self.plot_canvas.covid_line_color = color
-            self.plot_canvas.axes_covid.get_lines()[0].set_color(color)
+            self.plot_canvas.covid_axes.get_lines()[0].set_color(color)
 
         else:
             self.plot_canvas.closure_line_color = color
-            self.plot_canvas.axes_closure.get_lines()[0].set_color(color)
+            self.plot_canvas.closure_axes.get_lines()[0].set_color(color)
 
         self.plot_canvas.draw()
+        self.plot_canvas.update_background()
 
     def change_style(self, plot: str, style: str) -> None:
         """Changes the line to a specific style in the plot as given."""
         if plot == 'COVID':
             self.plot_canvas.covid_line_style = style
-            self.plot_canvas.axes_covid.get_lines()[0].set_linestyle(style)
+            self.plot_canvas.covid_axes.get_lines()[0].set_linestyle(style)
 
         else:
             self.plot_canvas.closure_line_style = style
-            self.plot_canvas.axes_closure.get_lines()[0].set_linestyle(style)
+            self.plot_canvas.closure_axes.get_lines()[0].set_linestyle(style)
 
         self.plot_canvas.draw()
+        self.plot_canvas.update_background()
 
     @pyqtSlot(bool)
     def toggle_marker_covid(self, state: bool) -> None:
         """Toggles the marker in covid plot on and off"""
         if state:
             self.plot_canvas.covid_data_marker = '.'
-            self.plot_canvas.axes_covid.get_lines()[0].set_marker('.')
+            self.plot_canvas.covid_axes.get_lines()[0].set_marker('.')
 
         else:
             self.plot_canvas.covid_data_marker = ''
-            self.plot_canvas.axes_covid.get_lines()[0].set_marker('')
+            self.plot_canvas.covid_axes.get_lines()[0].set_marker('')
 
         self.plot_canvas.draw()
+        self.plot_canvas.update_background()
 
     @pyqtSlot(bool)
     def toggle_marker_closure(self, state: bool) -> None:
         """Toggles the marker in closure plot on and off"""
         if state:
             self.plot_canvas.closure_data_marker = '.'
-            self.plot_canvas.axes_closure.get_lines()[0].set_marker('.')
+            self.plot_canvas.closure_axes.get_lines()[0].set_marker('.')
 
         else:
             self.plot_canvas.closure_data_marker = ''
-            self.plot_canvas.axes_closure.get_lines()[0].set_marker('')
+            self.plot_canvas.closure_axes.get_lines()[0].set_marker('')
 
         self.plot_canvas.draw()
+        self.plot_canvas.update_background()
 
     @pyqtSlot()
     def exit(self) -> None:
