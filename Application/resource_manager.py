@@ -184,15 +184,13 @@ def register_resources() -> None:
     """
     Register all resources needed.
     """
-    covid19_url = 'https://raw.githubusercontent.com/UofT-CS-Group/.github/main/' \
-                  'CSC110-Final-Project_resources/covid_cases_datasets/' \
+    covid19_url = 'https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/' \
+                  'Application/resources/covid_cases_datasets/' \
                   'time_series_covid19_confirmed_global.csv'
-    closure_url = 'https://raw.githubusercontent.com/UofT-CS-Group/.github/main/' \
-                  'CSC110-Final-Project_resources/school_closures_datasets/' \
-                  'full_dataset_31_oct.csv'
-    icon_url = 'https://raw.githubusercontent.com/UofT-CS-Group/.github/' \
-               '507feb27456791ee121c8237512841cbdd4e96d9/CSC110-Final-Project_resources/assets/' \
-               'icon.png'
+    closure_url = 'https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/' \
+                  'Application/resources/school_closures_datasets/full_dataset_31_oct.csv'
+    icon_url = 'https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/' \
+               'Application/resources/assets/icon.png'
 
     RESOURCES_DICT[COVID19_RESOURCE_NAME] = \
         Resource(COVID19_RESOURCE_NAME,
@@ -208,7 +206,7 @@ def register_resources() -> None:
         Resource(ICON_RESOURCE_NAME,
                  'resources/assets/icon.png',
                  icon_url,
-                 '60cfb9b976b80b855858122be272eb7d')
+                 'fe7c8b3bb7ee7dccea8372da9250e414')
 
 
 def md5_hash(local_path: str) -> str:

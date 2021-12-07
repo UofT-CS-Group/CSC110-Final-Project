@@ -6,7 +6,7 @@ If you are seeing many warnings, that's normal and that's not our fault.
 # Python built-ins
 import math
 import time
-from typing import List
+from typing import Any, List, Tuple
 
 # Matplotlib
 import matplotlib.backend_bases
@@ -31,13 +31,38 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 matplotlib.style.use('fast')
 
 
+class PlotToolbar(NavigationToolbar):
+    """
+    A standard menu for our project.
+    When needed, we could add more attributes and methods.
+    """
+
+    toolitems = [t for t in NavigationToolbar.toolitems if t[0] in {'Home'}]
+    window: Any
+
+    def __init__(self, canvas, parent, coordinates=True):
+        super().__init__(canvas, parent, coordinates)
+        self.window = parent
+        set_font(self)
+
+    def _init_toolbar(self):
+        """
+        Just leave it as blank.
+        """
+        pass
+
+    def home(self, *args):
+        self.window.update_plot()
+
+
 class PlotCanvas(FigureCanvas):
     """
     Figure widget from matplotlib with a cross-hair.
     """
     figure: pyplot.Figure
-    axes_covid: pyplot.Axes
-    axes_closure: pyplot.Axes
+    covid_axes: pyplot.Axes
+    closure_axes: pyplot.Axes
+    background: Any
 
     curr_x: Optional[datetime.date]
     curr_y: Optional[int]
@@ -57,156 +82,248 @@ class PlotCanvas(FigureCanvas):
     closure_x_data: List[datetime.date]
     closure_y_data: List[int]
 
-    is_covid_cross_hair_init: bool = False
     covid_horizontal_cross_hair: matplotlib.lines.Line2D
     covid_vertical_cross_hair: matplotlib.lines.Line2D
-
-    is_closure_cross_hair_init: bool = False
     closure_horizontal_cross_hair: matplotlib.lines.Line2D
     closure_vertical_cross_hair: matplotlib.lines.Line2D
 
+    covid_prev_x: float = 0
+    covid_prev_y: float = 0
+    closure_prev_x: float = 0
+    closure_prev_y: float = 0
+
     def __init__(self) -> None:
         self.figure = pyplot.Figure(tight_layout=True, linewidth=1)
-        self.axes_covid, self.axes_closure = self.figure.subplots(1, 2)
-
         super(PlotCanvas, self).__init__(self.figure)
-        self.mpl_connect("motion_notify_event", self.on_mouse_move)
 
+        self.covid_axes, self.closure_axes = self.figure.subplots(1, 2)
+        self.mpl_connect('motion_notify_event', self.on_mouse_move)
+        self.mpl_connect('scroll_event', self.on_scroll)
+        self.mpl_connect('button_press_event', self.on_mouse_button_press)
+        self.mpl_connect('button_release_event', self.on_mouse_button_release)
+
+        self.init_figures()
+        # Initialize curr_x and curr_y to None and updated from the on_mouse_move function
+        self.curr_x = None
+        self.curr_y = None
         # Formatting the right upper corner of the display
-        self.axes_covid.format_coord = lambda _, __: \
+        self.covid_axes.format_coord = lambda _, __: \
             f'Date = {self.curr_x}, Cases = {self.curr_y}'
-        self.axes_closure.format_coord = lambda _, __: \
+        self.closure_axes.format_coord = lambda _, __: \
             f'Date = {self.curr_x}, Status = ' \
             f'{data.ENUM_TO_STATUS_DICT[data.ClosureStatus(self.curr_y)]}'
+
         self.draw()
 
-        # Setting labels and title for COVID Plot
-        self.axes_covid.set_title('COVID-19 Cases')
-        self.axes_covid.set_xlabel('Dates')
-        self.axes_covid.set_ylabel('Cumulative cases')
+        self.covid_horizontal_cross_hair = self.covid_axes.axhline(
+                y=0, color='black', linewidth=0.8, linestyle='--', animated=True)
+        self.covid_vertical_cross_hair = self.covid_axes.axvline(
+                x=0, color='black', linewidth=0.8, linestyle='--', animated=True)
+        self.closure_horizontal_cross_hair = self.closure_axes.axhline(
+                y=0, color='black', linewidth=0.8, linestyle='--', animated=True)
+        self.closure_vertical_cross_hair = self.closure_axes.axvline(
+                x=0, color='black', linewidth=0.8, linestyle='--', animated=True)
 
-        # Setting labels and title for Closure Plot
-        self.axes_closure.set_title('School Closure Status')
-        self.axes_closure.set_xlabel('Dates')
+    def init_figures(self) -> None:
+        # Setting labels and title
+        self.covid_axes.set_title('COVID-19 Cases')
+        self.covid_axes.set_xlabel('Dates')
+        self.covid_axes.set_ylabel('Cumulative cases')
+
+        self.closure_axes.set_yticks(ticks=[0, 1, 2, 3], minor=False)
+        self.closure_axes.set_yticklabels(
+                labels=['Academic Break', 'Fully Open', 'Partially Open', 'Closed'],
+                minor=False)
+
+        for text in self.covid_axes.get_xticklabels():
+            text.set_rotation(40.0)
+        for text in self.closure_axes.get_xticklabels():
+            text.set_rotation(40.0)
+
+        self.closure_axes.set_title('School Closure Status')
+        self.closure_axes.set_xlabel('Dates')
+
+    def update_background(self):
+        self.background = self.copy_from_bbox(self.figure.bbox)
 
     def plot_covid_cases(self, covid_cases: List[data.CovidCaseData]) -> None:
         """Plots the COVID Data in self.axes_covid"""
-        x_axis = [c.date for c in covid_cases]
-        y_axis = [c.cases for c in covid_cases]
-        self.covid_x_data = x_axis
-        self.covid_y_data = y_axis
-        self.axes_covid.clear()
-        self.axes_covid.plot(x_axis, y_axis,
-                             linestyle=self.covid_line_style,
-                             marker=self.covid_data_marker,
-                             color=self.covid_line_color)
-        for text in self.axes_covid.get_xticklabels():
-            text.set_rotation(40.0)
+        self.covid_x_data = [c.date for c in covid_cases]
+        self.covid_y_data = [c.cases for c in covid_cases]
 
-        self.axes_covid.set_title('COVID-19 Cases')
-        self.axes_covid.set_xlabel('Dates')
-        self.axes_covid.set_ylabel('Cumulative cases')
+        self.covid_axes.clear()
+        self.init_figures()
+        self.covid_axes.plot(self.covid_x_data, self.covid_y_data, marker='.', color='orange')
 
         self.draw()
-        self.is_covid_cross_hair_init = False
+        self.update_background()
 
     def plot_school_closures(self, school_closures: List[data.SchoolClosureData]) -> None:
         """Plots the Closure Data in self.axes_closure"""
-        x_axis = [c.date for c in school_closures]
-        y_axis = [c.status.value for c in school_closures]
-        self.closure_x_data = x_axis
-        self.closure_y_data = y_axis
-        self.axes_closure.clear()
-        self.axes_closure.plot(x_axis, y_axis,
-                               linestyle=self.closure_line_style,
-                               marker=self.closure_data_marker,
-                               color=self.closure_line_color)
-        self.axes_closure.set_yticks(ticks=[0, 1, 2, 3], minor=False)
-        self.axes_closure.set_yticklabels(
-                labels=['Academic Break', 'Fully Open', 'Partially Open', 'Closed'],
-                minor=False)
-        for text in self.axes_closure.get_xticklabels():
-            text.set_rotation(40.0)
+        self.closure_x_data = [c.date for c in school_closures]
+        self.closure_y_data = [c.status.value for c in school_closures]
 
-        self.axes_closure.set_title('School Closure Status')
-        self.axes_closure.set_xlabel('Dates')
+        self.closure_axes.clear()
+        self.init_figures()
+        self.closure_axes.plot(self.closure_x_data, self.closure_y_data, marker='.', color='green')
 
         self.draw()
-        self.is_closure_cross_hair_init = False
+        self.update_background()
+
+    def get_closet_coordinates_from_x(self, x: int, x_data: List, y_data: List) -> Tuple[int, int]:
+        x_date = datetime.date.fromtimestamp(0) + datetime.timedelta(days=x)
+        index = algorithms.binary_search(x_data, x_date)
+        x = (x_data[index] - datetime.date.fromtimestamp(0)).days
+        y = y_data[min(index + 1, len(y_data) - 1)]
+        self.curr_x = x_date
+        self.curr_y = y
+        return x, y
+
+    def pan(self, axes: pyplot.Axes, event: matplotlib.backend_bases.MouseEvent) -> None:
+        """
+        Pan the axes based on the given mouse event.
+        """
+        min_x, max_x = axes.get_xlim()
+        min_y, max_y = axes.get_ylim()
+        display_to_data = axes.transData.inverted()
+        prev_data = (0, 0)
+
+        if axes is self.covid_axes:
+            prev_data = display_to_data.transform_point((self.covid_prev_x, self.covid_prev_y))
+            self.covid_prev_x = event.x
+            self.covid_prev_y = event.y
+        elif axes is self.closure_axes:
+            prev_data = display_to_data.transform_point((self.closure_prev_x, self.closure_prev_y))
+            self.closure_prev_x = event.x
+            self.closure_prev_y = event.y
+
+        dx = (event.xdata - prev_data[0])
+        dy = (event.ydata - prev_data[1])
+
+        axes.set_xlim(min_x - dx, max_x - dx)
+        axes.set_ylim(min_y - dy, max_y - dy)
+
+        self.draw()
+        self.update_background()
 
     def on_mouse_move(self, event: matplotlib.backend_bases.MouseEvent) -> None:
-        """The handler of on_mouse_move event, renders the cross hair"""
-        # The reason why the cross-hair is laggy is because self.draw()
-        # takes a very long time to draw.
-        # This code is a little bit shitty, but we could fix it later.
-        if event.inaxes:
-            x = event.xdata
-            x = datetime.timedelta(days=x)
-            x_date = datetime.date.fromtimestamp(0) + x
-            if event.inaxes == self.axes_covid:
-                index = algorithms.binary_search(self.covid_x_data, x_date)
-                x = self.covid_x_data[index]
-                # I don't know why it works, but it works.
-                y = self.covid_y_data[min(index + 1, len(self.covid_y_data) - 1)]
-                real_x = (x - datetime.date.fromtimestamp(0)).days
+        """
+        The handler of on_mouse_move event, which renders the cross-hair and mouse drag (pan).
+        Optimized with blit, so now the FPS is very high.
+        """
+        self.restore_region(self.background)
+        if not event.inaxes:
+            self.covid_horizontal_cross_hair.set_visible(False)
+            self.covid_vertical_cross_hair.set_visible(False)
+            self.closure_horizontal_cross_hair.set_visible(False)
+            self.closure_vertical_cross_hair.set_visible(False)
+            self.curr_x = None
+            self.curr_y = None
+            return
 
-                if not self.is_covid_cross_hair_init:
-                    self.covid_horizontal_cross_hair = self.axes_covid.axhline(
-                            y=y, color='black', linewidth=0.8, linestyle='--')
-                    self.covid_vertical_cross_hair = self.axes_covid.axvline(
-                            x=real_x, color='black', linewidth=0.8, linestyle='--')
-                    self.is_covid_cross_hair_init = True
+        x = event.xdata
+        y = event.ydata
 
-                self.covid_horizontal_cross_hair.set_visible(True)
-                self.covid_vertical_cross_hair.set_visible(True)
+        if event.inaxes is self.covid_axes:
+            if event.button == matplotlib.backend_bases.MouseButton.LEFT:
+                self.pan(self.covid_axes, event)
 
-                self.covid_horizontal_cross_hair.set_ydata(y)
-                self.covid_vertical_cross_hair.set_xdata(real_x)
+            x, y = self.get_closet_coordinates_from_x(
+                    x, self.covid_x_data, self.covid_y_data)
 
-                self.curr_x = x
-                self.curr_y = y
+            self.covid_horizontal_cross_hair.set_visible(True)
+            self.covid_vertical_cross_hair.set_visible(True)
+            self.covid_horizontal_cross_hair.set_ydata(y)
+            self.covid_vertical_cross_hair.set_xdata(x)
+            self.covid_axes.draw_artist(self.covid_horizontal_cross_hair)
+            self.covid_axes.draw_artist(self.covid_vertical_cross_hair)
 
-                self.draw()
-            elif event.inaxes == self.axes_closure:
-                index = algorithms.binary_search(self.closure_x_data, x_date)
-                x = self.closure_x_data[index]
-                y = self.closure_y_data[min(index + 1, len(self.closure_y_data) - 1)]
-                real_x = (x - datetime.date.fromtimestamp(0)).days
+        elif event.inaxes is self.closure_axes:
+            if event.button == matplotlib.backend_bases.MouseButton.LEFT:
+                self.pan(self.closure_axes, event)
 
-                if not self.is_closure_cross_hair_init:
-                    self.closure_horizontal_cross_hair = self.axes_closure.axhline(
-                            y=y, color='black', linewidth=0.8, linestyle='--')
-                    self.closure_vertical_cross_hair = self.axes_closure.axvline(
-                            x=real_x, color='black', linewidth=0.8, linestyle='--')
-                    self.is_closure_cross_hair_init = True
+            x, y = self.get_closet_coordinates_from_x(
+                    x, self.closure_x_data, self.closure_y_data)
 
-                self.closure_horizontal_cross_hair.set_visible(True)
-                self.closure_vertical_cross_hair.set_visible(True)
+            self.closure_horizontal_cross_hair.set_visible(True)
+            self.closure_vertical_cross_hair.set_visible(True)
+            self.closure_horizontal_cross_hair.set_ydata(y)
+            self.closure_vertical_cross_hair.set_xdata(x)
+            self.closure_axes.draw_artist(self.closure_horizontal_cross_hair)
+            self.closure_axes.draw_artist(self.closure_vertical_cross_hair)
 
-                self.closure_horizontal_cross_hair.set_ydata(y)
-                self.closure_vertical_cross_hair.set_xdata(real_x)
+        self.blit(self.figure.bbox)
+        self.flush_events()
 
-                self.curr_x = x
-                self.curr_y = y
+    @staticmethod
+    def zoom(is_zoom_in: bool, zoom_factor: float, x: float,
+             original_min: float, original_max: float) -> Tuple[float, float]:
+        length = original_max - original_min
+        zoom_length = length * zoom_factor
+        left_ratio = (x - original_min) / length
+        right_ratio = 1 - left_ratio
+        left_zoom_length = zoom_length * left_ratio
+        right_zoom_length = zoom_length * right_ratio
 
-                self.draw()
+        if is_zoom_in:
+            return original_min + left_zoom_length, original_max - right_zoom_length
         else:
-            if self.is_covid_cross_hair_init:
-                if self.covid_horizontal_cross_hair.get_visible() and \
-                        self.covid_vertical_cross_hair.get_visible():
-                    self.covid_horizontal_cross_hair.set_visible(False)
-                    self.covid_vertical_cross_hair.set_visible(False)
-                    self.curr_x = None
-                    self.curr_y = None
-                    self.draw()
-            if self.is_closure_cross_hair_init:
-                if self.closure_horizontal_cross_hair.get_visible() and \
-                        self.closure_vertical_cross_hair.get_visible():
-                    self.closure_horizontal_cross_hair.set_visible(False)
-                    self.closure_vertical_cross_hair.set_visible(False)
-                    self.curr_x = None
-                    self.curr_y = None
-                    self.draw()
+            return original_min - left_zoom_length, original_max + right_zoom_length
+
+    def on_scroll(self, event: matplotlib.backend_bases.MouseEvent) -> None:
+        """
+        Zoom in or zoom out.
+        """
+        if not event.inaxes:
+            return
+
+        zoom_factor = 0.2
+        x = event.xdata
+        y = event.ydata
+        min_x, max_x = 0, 0
+        min_y, max_y = 0, 0
+
+        if event.inaxes is self.covid_axes:
+            min_x, max_x = self.covid_axes.get_xlim()
+            min_y, max_y = self.covid_axes.get_ylim()
+        elif event.inaxes is self.closure_axes:
+            min_x, max_x = self.closure_axes.get_xlim()
+            min_y, max_y = self.closure_axes.get_ylim()
+
+        if event.button == 'up':
+            min_x, max_x = self.zoom(True, zoom_factor, x, min_x, max_x)
+            min_y, max_y = self.zoom(True, zoom_factor, y, min_y, max_y)
+        elif event.button == 'down':
+            min_x, max_x = self.zoom(False, zoom_factor, x, min_x, max_x)
+            min_y, max_y = self.zoom(False, zoom_factor, y, min_y, max_y)
+
+        if event.inaxes is self.covid_axes:
+            self.covid_axes.set_xlim(min_x, max_x)
+            self.covid_axes.set_ylim(min_y, max_y)
+        elif event.inaxes is self.closure_axes:
+            self.closure_axes.set_xlim(min_x, max_x)
+
+        self.draw()
+        self.update_background()
+
+    def on_mouse_button_press(self, event: matplotlib.backend_bases.MouseEvent):
+        if event.button == matplotlib.backend_bases.MouseButton.LEFT:
+            if event.inaxes is self.covid_axes:
+                self.covid_prev_x = event.x
+                self.covid_prev_y = event.y
+                self.closure_prev_x = 0
+                self.closure_prev_y = 0
+            elif event.inaxes is self.closure_axes:
+                self.covid_prev_x = 0
+                self.covid_prev_y = 0
+                self.closure_prev_x = event.x
+                self.closure_prev_y = event.y
+
+    def on_mouse_button_release(self, event: matplotlib.backend_bases.MouseEvent):
+        self.covid_prev_x = 0
+        self.covid_prev_y = 0
+        self.closure_prev_x = 0
+        self.closure_prev_y = 0
 
 
 class MainWindowUI(QMainWindow):
@@ -220,12 +337,12 @@ class MainWindowUI(QMainWindow):
         - width: The default width of our window.
         - height: The default height of our window.
         - about_group: The group of widgets decorating and signing our project.
-            - big_icon: A big icon on the top left corner of our window, designed by Charlotte.
+            - big_icon: A big icon in the top left corner of our window, designed by Charlotte.
             - about_label: A label contains our names.
         - initialization_group: A group of widgets who are responsible for initializing our data.
         - location_group: A group of widgets who are responsible for selecting location.
         - date_group: A group of widgets who are responsible for selecting date range.
-        - plot_navigation_tool_bar: The matplotlib plot tool bar.
+        - plot_navigation_tool_bar: The matplotlib plot toolbar.
         - plot_canvas: Our customized matplotlib canvas, holding our figures.
         - progress_bar: A progress bar displayed at the right corner of the status bar.
             - It's only responsible for displaying the progress of our data loading process.
@@ -269,7 +386,7 @@ class MainWindowUI(QMainWindow):
     date_confirm_button: StandardPushButton
 
     # Plot
-    plot_navigation_tool_bar: NavigationToolbar
+    plot_tool_bar: PlotToolbar
     plot_canvas: PlotCanvas
 
     # Menu bar
@@ -375,8 +492,7 @@ class MainWindowUI(QMainWindow):
 
         # Plot
         self.plot_canvas = PlotCanvas()
-        self.plot_navigation_tool_bar = StandardNavigationToolbar(self.plot_canvas, self)
-        set_font(self.plot_navigation_tool_bar)
+        self.plot_tool_bar = PlotToolbar(self.plot_canvas, self)
 
         # Progress bar on status bar
         self.progress_bar = StandardProgressBar(self.statusBar())
@@ -451,7 +567,7 @@ class MainWindowUI(QMainWindow):
 
         plot_layout = QVBoxLayout()
         main_layout.addLayout(plot_layout, 618)
-        plot_layout.addWidget(self.plot_navigation_tool_bar)
+        plot_layout.addWidget(self.plot_tool_bar)
         plot_layout.addWidget(self.plot_canvas)
 
         widget.setLayout(main_layout)
@@ -487,7 +603,7 @@ class ProgressUpdateThread(QThread):
             progress, description = data.get_progress()
             self.on_updated.emit(math.floor(progress * 100), description)
             # If the description contains Failed to, meaning that some critical errors happened.
-            # This could be improved but it's not worthy for our purposes.
+            # This could be improved, but it's not worthy for our purposes.
             if progress >= 1 or 'Failed to' in description:
                 self.exit()
                 return
@@ -751,7 +867,7 @@ class MainWindow(MainWindowUI):
     def update_progress_bar(self, progress: int, description: str) -> None:
         """
         Update the progress bar and progress description (on status bar).
-        If data are initialized (progress >= 100), then we init our contents and hide the
+        If data are initialized (progress >= 100), then we initialize our contents and hide the
         progress bar.
         """
         if 'Failed to' in description:
