@@ -7,6 +7,7 @@ import sys
 
 # PyQt5
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QIcon
 
 # Our modules
 import gui_main
@@ -38,6 +39,8 @@ if __name__ == '__main__':
 
     # Create the QApplication instance.
     app = QApplication(sys.argv)
+
+    app.setWindowIcon(QIcon('resources/assets/icon.png'))
 
     # If failed to download the icon, then let user know and continue running the program
     logging.info('Initializing icons...')
