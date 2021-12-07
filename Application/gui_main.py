@@ -6,6 +6,7 @@ If you are seeing many warnings, that's normal and that's not our fault.
 # Python built-ins
 import math
 import time
+import platform
 from typing import Any, List, Tuple
 
 # Matplotlib
@@ -16,18 +17,18 @@ from matplotlib import pyplot
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-# Ctype
-import ctypes
-
 # Our modules
 import algorithms
 import data
 import resource_manager
 from gui_utils import *
 
-app_id = 'CSC110.covid_school_plot'  # Random identifier
-# Letting Windows display the Icon in the taskbar as well
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+if platform.system() == 'Windows':
+    # Ctype
+    import ctypes
+    app_id = 'CSC110.covid_school_plot'  # Random identifier
+    # Letting Windows display the Icon in the taskbar as well
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
 matplotlib.style.use('fast')
 

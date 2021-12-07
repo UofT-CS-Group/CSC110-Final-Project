@@ -196,12 +196,12 @@ def register_resources() -> None:
         Resource(COVID19_RESOURCE_NAME,
                  'resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv',
                  covid19_url,
-                 '419b05a9037277630c600d0edc0a13fc')
+                 '6a7680ffa0200328bdd2823dd998c62e')
     RESOURCES_DICT[SCHOOL_CLOSURE_RESOURCE_NAME] = \
         Resource(SCHOOL_CLOSURE_RESOURCE_NAME,
                  'resources/school_closures_datasets/full_dataset_31_oct.csv',
                  closure_url,
-                 '4b52c71024412d4297d820ee78dbf7c1')
+                 '9426167fdc1b664da627e74d84328c35')
     RESOURCES_DICT[ICON_RESOURCE_NAME] = \
         Resource(ICON_RESOURCE_NAME,
                  'resources/assets/icon.png',
