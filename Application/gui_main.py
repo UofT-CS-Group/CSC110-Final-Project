@@ -624,13 +624,13 @@ class MainWindow(MainWindowUI):
         covid_marker = QAction('COVID-19 Plot', self)
         covid_marker.setCheckable(True)
         covid_marker.setChecked(True)
-        covid_marker.setStatusTip('Show markers in the COVID-19 Cases plot')
+        covid_marker.setStatusTip('Show/Hide markers in the COVID-19 Cases plot')
         covid_marker.triggered.connect(self.toggle_marker_covid)
 
         closure_marker = QAction('Closure Plot', self)
         closure_marker.setCheckable(True)
         closure_marker.setChecked(True)
-        closure_marker.setStatusTip('Show markers in the School Closure Status plot')
+        closure_marker.setStatusTip('Show/Hide markers in the School Closure Status plot')
         closure_marker.triggered.connect(self.toggle_marker_closure)
 
         marker_menu.addActions([covid_marker, closure_marker])
