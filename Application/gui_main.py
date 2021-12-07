@@ -424,7 +424,8 @@ class MainWindowUI(QMainWindow):
         self.move(frame_geometry.topLeft())
 
         # Set window title
-        self.setWindowTitle('Main Window')
+        self.setWindowTitle('Educational Crisis - A Closer Examination on the Correlations Between '
+                            'Covid-19 and School Closures Around the Globe')
 
         # Set window icon
         icon = QIcon('resources/assets/icon.png')
