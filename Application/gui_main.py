@@ -42,14 +42,14 @@ class PlotCanvas(FigureCanvas):
     curr_x: Optional[datetime.date]
     curr_y: Optional[int]
 
-    covid_line_color: str
-    closure_line_color: str
+    covid_line_color: str = 'orange'
+    closure_line_color: str = 'green'
 
-    covid_line_style: str
-    closure_line_style: str
+    covid_line_style: str = 'solid'
+    closure_line_style: str = 'solid'
 
-    covid_data_marker: str
-    closure_data_marker: str
+    covid_data_marker: str = '.'
+    closure_data_marker: str = '.'
 
     covid_x_data: List[datetime.date]
     covid_y_data: List[int]
@@ -71,16 +71,6 @@ class PlotCanvas(FigureCanvas):
 
         super(PlotCanvas, self).__init__(self.figure)
         self.mpl_connect("motion_notify_event", self.on_mouse_move)
-
-        # Setting default line color of COVID to Yellow and school Closure to green
-        self.covid_line_color = 'orange'
-        self.closure_line_color = 'green'
-
-        # Setting default line style of COVID and Closure to dotted
-        self.covid_line_style = self.closure_line_style = 'solid'
-
-        # Setting default marker to be on
-        self.covid_data_marker = self.closure_data_marker = '.'
 
         # Formatting the right upper corner of the display
         self.axes_covid.format_coord = lambda _, __: \
