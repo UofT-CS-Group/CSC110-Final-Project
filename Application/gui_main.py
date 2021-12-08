@@ -13,6 +13,7 @@ from typing import Any, List, Tuple
 import matplotlib.backend_bases
 import matplotlib.lines
 import matplotlib.style
+import matplotlib.axes
 from matplotlib import pyplot
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -147,6 +148,41 @@ class PlotCanvas(FigureCanvas):
 
     def update_background(self):
         self.background = self.copy_from_bbox(self.figure.bbox)
+
+    def update_lines(self, axes: matplotlib.axes.Axes,
+                     color: Optional[str] = None,
+                     style: Optional[str] = None,
+                     marker: Optional[str] = None):
+        if axes is self.covid_axes:
+            if color is not None:
+                self.covid_line_color = color
+            if style is not None:
+                self.covid_line_style = style
+            if marker is not None:
+                self.covid_data_marker = marker
+        elif axes is self.closure_axes:
+            if color is not None:
+                self.closure_line_color = color
+            if style is not None:
+                self.closure_line_style = style
+            if marker is not None:
+                self.closure_data_marker = marker
+        else:
+            raise ValueError('Illegal Axes!')
+
+        for line in axes.get_lines():
+            line: matplotlib.lines.Line2D
+
+            if color is not None:
+                line.set_color(color)
+            if style is not None:
+                line.set_linestyle(style)
+            if marker is not None:
+                line.set_marker(marker)
+
+        self.draw()
+        self.update_background()
+
 
     def plot_covid_cases(self, covid_cases: List[data.CovidCaseData]) -> None:
         """Plots the COVID Data in self.axes_covid"""
@@ -689,11 +725,11 @@ class MainWindow(MainWindowUI):
         # COVID Colors
         color_covid = QAction('COVID-19 Cases Line Color', self)
         color_covid.setStatusTip('Select the line color of the COVID-19 Cases plot')
-        color_covid.triggered.connect(lambda: self.change_color('COVID'))
+        color_covid.triggered.connect(lambda: self.change_color(self.plot_canvas.covid_axes))
         # Closure Colors
         color_closure = QAction('School Closure Status Line Color', self)
         color_closure.setStatusTip('Select the line color of the School Closure Status plot')
-        color_closure.triggered.connect(lambda: self.change_color('Closure'))
+        color_closure.triggered.connect(lambda: self.change_color(self.plot_canvas.closure_axes))
 
         line_color_menu.addActions([color_covid, color_closure])
 
@@ -704,51 +740,43 @@ class MainWindow(MainWindowUI):
         closure_style_menu = line_style_menu.addMenu('School Closure Status Line Style')
 
         # COVID Styles
-        dashed_covid = QAction('Dashed', self)
-        dashed_covid.setStatusTip('Dashed line')
-        dashed_covid.triggered.connect(lambda: self.change_style('COVID', 'dashed'))
+        for style, description in LINE_STYLES.items():
+            action = QAction(description, covid_style_menu)
+            action.setStatusTip(description)
+            action.triggered.connect(make_function(self.plot_canvas.update_lines,
+                                                   self.plot_canvas.covid_axes, style=style))
+            covid_style_menu.addAction(action)
 
-        dashdot_covid = QAction('Dash-dot', self)
-        dashdot_covid.setStatusTip('Dash-dot line')
-        dashdot_covid.triggered.connect(lambda: self.change_style('COVID', 'dashdot'))
-
-        solid_covid = QAction('Solid', self)
-        solid_covid.setStatusTip('Solid line')
-        solid_covid.triggered.connect(lambda: self.change_style('COVID', 'solid'))
-
-        covid_style_menu.addActions([dashed_covid, dashdot_covid, solid_covid])
-
-        # Closure Styles
-        dashed_closure = QAction('Dashed', self)
-        dashed_closure.setStatusTip('Dashed line')
-        dashed_closure.triggered.connect(lambda: self.change_style('Closure', 'dashed'))
-
-        dashdot_closure = QAction('Dash-dot', self)
-        dashdot_closure.setStatusTip('Dash-dot line')
-        dashdot_closure.triggered.connect(lambda: self.change_style('Closure', 'dashdot'))
-
-        solid_closure = QAction('Solid', self)
-        solid_closure.setStatusTip('Solid line')
-        solid_closure.triggered.connect(lambda: self.change_style('Closure', 'solid'))
-
-        closure_style_menu.addActions([dashed_closure, dashdot_closure, solid_closure])
+        for style, description in LINE_STYLES.items():
+            action = QAction(description, closure_style_menu)
+            action.setStatusTip(description)
+            action.triggered.connect(make_function(self.plot_canvas.update_lines,
+                                                   self.plot_canvas.closure_axes, style=style))
+            closure_style_menu.addAction(action)
 
         # Show marker toggle menu
-        marker_menu = self.settings_menu.addMenu('Show Marker')
+        marker_menu = self.settings_menu.addMenu('Markers')
 
-        covid_marker = QAction('COVID-19 Plot', self)
-        covid_marker.setCheckable(True)
-        covid_marker.setChecked(True)
-        covid_marker.setStatusTip('Show/Hide markers in the COVID-19 Cases plot')
-        covid_marker.triggered.connect(self.toggle_marker_covid)
+        covid_marker_menu = marker_menu.addMenu('COVID-19 Cases Line Marker')
+        closure_marker_menu = marker_menu.addMenu('School Closure Status Line Marker')
 
-        closure_marker = QAction('Closure Plot', self)
-        closure_marker.setCheckable(True)
-        closure_marker.setChecked(True)
-        closure_marker.setStatusTip('Show/Hide markers in the School Closure Status plot')
-        closure_marker.triggered.connect(self.toggle_marker_closure)
+        for marker, info in LINE_MARKERS.items():
+            description, icon_name = info
+            action = QAction(description, covid_marker_menu)
+            action.setIcon(QIcon(f'resources/assets/markers/{icon_name}'))
+            action.setStatusTip(description)
+            action.triggered.connect(make_function(self.plot_canvas.update_lines,
+                                                   self.plot_canvas.covid_axes, marker=marker))
+            covid_marker_menu.addAction(action)
 
-        marker_menu.addActions([covid_marker, closure_marker])
+        for marker, info in LINE_MARKERS.items():
+            description, icon_name = info
+            action = QAction(description, closure_marker_menu)
+            action.setIcon(QIcon(f'resources/assets/markers/{icon_name}'))
+            action.setStatusTip(description)
+            action.triggered.connect(make_function(self.plot_canvas.update_lines,
+                                                   self.plot_canvas.closure_axes, marker=marker))
+            closure_marker_menu.addAction(action)
 
         # View Menu
         view_statusbar = QAction('Display Statusbar', self)
@@ -1044,63 +1072,13 @@ class MainWindow(MainWindowUI):
         # Saving canvas at desired path
         self.plot_canvas.print_png(path)
 
-    def change_color(self, plot: str) -> None:
+    def change_color(self, axes: matplotlib.axes.Axes) -> None:
         """Changes the line color in the plot to a specific color as given."""
         color_dialog = StandardColorDialog()
         color_dialog.exec()
         color = color_dialog.currentColor().name()
 
-        if plot == 'COVID':
-            self.plot_canvas.covid_line_color = color
-            self.plot_canvas.covid_axes.get_lines()[0].set_color(color)
-
-        else:
-            self.plot_canvas.closure_line_color = color
-            self.plot_canvas.closure_axes.get_lines()[0].set_color(color)
-
-        self.plot_canvas.draw()
-        self.plot_canvas.update_background()
-
-    def change_style(self, plot: str, style: str) -> None:
-        """Changes the line to a specific style in the plot as given."""
-        if plot == 'COVID':
-            self.plot_canvas.covid_line_style = style
-            self.plot_canvas.covid_axes.get_lines()[0].set_linestyle(style)
-
-        else:
-            self.plot_canvas.closure_line_style = style
-            self.plot_canvas.closure_axes.get_lines()[0].set_linestyle(style)
-
-        self.plot_canvas.draw()
-        self.plot_canvas.update_background()
-
-    @pyqtSlot(bool)
-    def toggle_marker_covid(self, state: bool) -> None:
-        """Toggles the marker in covid plot on and off"""
-        if state:
-            self.plot_canvas.covid_data_marker = '.'
-            self.plot_canvas.covid_axes.get_lines()[0].set_marker('.')
-
-        else:
-            self.plot_canvas.covid_data_marker = ''
-            self.plot_canvas.covid_axes.get_lines()[0].set_marker('')
-
-        self.plot_canvas.draw()
-        self.plot_canvas.update_background()
-
-    @pyqtSlot(bool)
-    def toggle_marker_closure(self, state: bool) -> None:
-        """Toggles the marker in closure plot on and off"""
-        if state:
-            self.plot_canvas.closure_data_marker = '.'
-            self.plot_canvas.closure_axes.get_lines()[0].set_marker('.')
-
-        else:
-            self.plot_canvas.closure_data_marker = ''
-            self.plot_canvas.closure_axes.get_lines()[0].set_marker('')
-
-        self.plot_canvas.draw()
-        self.plot_canvas.update_background()
+        self.plot_canvas.update_lines(axes, color)
 
     @pyqtSlot()
     def exit(self) -> None:

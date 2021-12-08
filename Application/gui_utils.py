@@ -3,7 +3,7 @@ This module contains some GUI utilities like classes and helper methods for our 
 """
 # Python built-ins
 import datetime
-from typing import Iterable, Optional
+from typing import Callable, Iterable, Optional
 
 # PyQt5
 from PyQt5.QtCore import *
@@ -12,6 +12,62 @@ from PyQt5.QtWidgets import *
 
 # Our modules
 import settings
+
+# =================================================================================================
+# Constants
+# =================================================================================================
+
+LINE_STYLES = {
+    'solid'  : 'Solid',
+    'dashed' : 'Dashed',
+    'dashdot': 'Dash-dot',
+    'dotted' : 'Dotted'
+}
+
+(TICKLEFT, TICKRIGHT, TICKUP, TICKDOWN,
+ CARETLEFT, CARETRIGHT, CARETUP, CARETDOWN,
+ CARETLEFTBASE, CARETRIGHTBASE, CARETUPBASE, CARETDOWNBASE) = range(12)
+
+LINE_MARKERS = {
+    '.'           : ('Point', 'm00.webp',),
+    ','           : ('Pixel', 'm01.webp',),
+    'o'           : ('Circle', 'm02.webp',),
+    'v'           : ('Triangle Down', 'm03.webp',),
+    '^'           : ('Triangle Up', 'm04.webp',),
+    '<'           : ('Triangle Left', 'm05.webp',),
+    '>'           : ('Triangle Right', 'm06.webp',),
+    '1'           : ('tri_down', 'm07.webp',),
+    '2'           : ('tri_up', 'm08.webp',),
+    '3'           : ('tri_left', 'm09.webp',),
+    '4'           : ('tri_right', 'm10.webp',),
+    '8'           : ('Octagon', 'm11.webp',),
+    's'           : ('Square', 'm12.webp',),
+    'p'           : ('Pentagon', 'm13.webp',),
+    '*'           : ('Star', 'm14.webp',),
+    'h'           : ('Hexagon1', 'm15.webp',),
+    'H'           : ('Hexagon2', 'm16.webp',),
+    '+'           : ('Plus', 'm17.webp',),
+    'x'           : ('x', 'm18.webp',),
+    'D'           : ('Diamond', 'm19.webp',),
+    'd'           : ('Thin Diamond', 'm20.webp',),
+    '|'           : ('Vertical Line', 'm21.webp',),
+    '_'           : ('Horizontal Line', 'm22.webp',),
+    'P'           : ('Plus Filled', 'm23.webp',),
+    'X'           : ('X Filled', 'm24.webp',),
+    TICKLEFT      : ('Tick Left', 'm25.webp',),
+    TICKRIGHT     : ('Tick Right', 'm26.webp',),
+    TICKUP        : ('Tick Up', 'm27.webp',),
+    TICKDOWN      : ('Tick Down', 'm28.webp',),
+    CARETLEFT     : ('Caret Left', 'm29.webp',),
+    CARETRIGHT    : ('Caret Right', 'm30.webp',),
+    CARETUP       : ('Caret Up', 'm31.webp',),
+    CARETDOWN     : ('Caret Down', 'm32.webp',),
+    CARETLEFTBASE : ('Caret Left Base', 'm33.webp',),
+    CARETRIGHTBASE: ('Caret Right Base', 'm34.webp',),
+    CARETUPBASE   : ('Caret Up Base', 'm35.webp',),
+    CARETDOWNBASE : ('Caret Down Base', 'm36.webp'),
+    "None"        : ('No Marker', ''),
+}
 
 
 # =================================================================================================
@@ -33,6 +89,13 @@ def set_font(widget: QWidget,
     font.setFamily(font_family)
     font.setPointSize(font_size)
     widget.setFont(font)
+
+
+def make_function(target: Callable, *args, **kwargs):
+    def function():
+        target(*args, **kwargs)
+
+    return function
 
 
 # =================================================================================================

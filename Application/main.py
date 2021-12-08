@@ -11,8 +11,8 @@ from PyQt5.QtGui import QIcon
 
 # Our modules
 import gui_main
-import resource_manager
 import settings
+from resource_manager import *
 
 # =================================================================================================
 # Initialize logger
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     logging.info('Starting application...')
 
     logging.info('Registering resources...')
-    resource_manager.register_resources()
+    register_resources()
     logging.info('Resources registered!')
 
     # Create the QApplication instance.
@@ -42,14 +42,14 @@ if __name__ == '__main__':
 
     app.setWindowIcon(QIcon('resources/assets/icon.png'))
 
-    # If failed to download the icon, then let user know and continue running the program
+    # If failed to download the icons, then let user know and continue running the program
     logging.info('Initializing icons...')
-    if not resource_manager.init_resource(
-            resource_manager.RESOURCES_DICT[resource_manager.ICON_RESOURCE_NAME]):
+    if not init_resource(RESOURCES_DICT[ICON_RESOURCE_NAME]) or \
+            any(not init_resource(RESOURCES_DICT[name]) for name in MARKERS_ICON_RESOURCE_NAMES):
         logging.critical('Failed to download icons!')
         # Pls ignore the warning of the None, this is good.
         QMessageBox.critical(None, 'Critical', 'Failed to download icons! \n'
-                                               'You will not see our icons of our program. :<',
+                                               'You will not see some of the icons of our program.',
                              QMessageBox.Ok, QMessageBox.Ok)
     else:
         logging.info('Icon initialized!')
