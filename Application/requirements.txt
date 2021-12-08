@@ -1,3 +1,12 @@
+===================================================================================================
+Required Libraries to run the application
+===================================================================================================
+
+# Plotting related library
 matplotlib==3.5.0
+
+# GUI related library
 PyQt5==5.15.6
+
+# Miscellaneous libraries
 requests==2.26.0
