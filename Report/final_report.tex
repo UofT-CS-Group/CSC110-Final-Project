@@ -70,8 +70,6 @@
 
     Starting from column 5 and onwards (for the Global COVID-19 Dataset) contains the amount of cumulative cases for the specified country in the date shown in the header row.
 
-    The US Data set for COVID-19 (Time series) will have a little bit of variation, but it is generally the same.
-
     The School Closure Dataset has the following structure:
     \begin{center}
         \begin{tabular}{ |c|c|c|c|c| }
@@ -122,7 +120,9 @@
 
     For the files that are being downloaded, the application will compare it with the specified MD5 Checksum value we ran on our machines to ensure that the files downloaded are the same as the ones we are working with.
 
-    The purpose of this sub-sub-section is to ensure that our application will run on any machine.
+    In our resource\_manager.py, we have created a class to store all of our different files. These resource objects will contain a remote path, the MD5 identifier, and the local path so we can download and verify the files.
+
+    The purpose of this sub-sub-section is to ensure that our application will run on any machine with our predetermined datasets.
 
     \subsubsection{Data Manipulation Algorithms}
 
@@ -130,7 +130,9 @@
 
     The purpose of this part of the implementation is to demonstrate the impact on running time if we utilized another sorting algorithm instead of the original one.
 
-    On default, our application will choose Merge Sort as the default sorting algorithm, which is the sorting algorithm that has the fastest running time.
+    Upon initialization of the application, the User will be prevented to do any operations on the application until the users selects a sorting algorithm and initialize the data with it.
+
+    The data can be initialized multiple times for the user to notice a difference in different sorting algorithms.
 
     The different searching algorithms will be utilized with our GUI application to display the covid case results that are linked to the country that the user selected.
 
@@ -138,11 +140,11 @@
 
     We read the data into Python with help of the Python \emph{csv} library.
 
-    For our COVID-19 Datasets, we only used the columns with the headers "Country" and "Dates", as they provide information for us to plot in the application.
+    For our COVID-19 Dataset, we only used the columns with the headers "Country" and "Dates", as they provide information for us to plot in the application.
 
     For our School Closure Dataset, we used all of the columns aside from the "Note" column, as it provides information in a way that is hard to process.
 
-    Then, by using the data we have loaded into Python, we performed multiple filtrations to the loaded data so that we can obtain GLOBAL CONSTANTS that will be used by the other Python files.
+    Then, by using the data we have loaded into Python, we performed multiple filtration to the loaded data so that we can obtain GLOBAL CONSTANTS that will be used by the other Python files.
 
     Our program created the following data classes:
 
@@ -163,7 +165,7 @@
         \item COUNTRIES\_TO\_COVID\_CASES - A dictionary mapping from a country name to all of its respective CovidCaseData
         \item GLOBAL\_COVID\_CASES - A list of all CovidCaseData that contains cases summed across all countries on a certain date
         \item ALL\_SCHOOL\_CLOSURES - A list of all SchoolClosureData that is read from the csv file
-        \item COUNTRIES\_TO\_ALL\_SCHOOL\_CLOSURES - A dictionary mapping from a country name to all of its respective SchoolClosureData
+        \item COUNTRIES\_TO\_SCHOOL\_CLOSURES - A dictionary mapping from a country name to its respective SchoolClosureData
         \item GLOBAL\_SCHOOL\_CLOSURES - A list of SchoolClosureData with only dates and the status of the majority of the schools in that date
         \item COUNTRIES - A list of Country objects that are read from the CSV Files
         \item SORTED\_COUNTRIES - A list of sorted Country objects from COUNTRIES
@@ -183,10 +185,12 @@
 
     \begin{itemize}
         \item A fully functional Graphical User Interface with menu bar, multiple buttons, input date edits, and sliders
-        \item A loading progress bar in the main UI Window when data is not fully initialized yet
-        \item Navigation bar that can allow user to interact with the graph plotted in various ways (Panning, zooming, customizing, etc.)
+        \item A loading progress bar in the main UI Window when the user clicked "Initialize"
+        \item Panning and Zooming functionalities on the graph by left click \& drag and scrolling
+        \item Navigation bar that allows the user to return the plot to the original state
         \item Scatter plot COVID-19 cases and school closures visualizations supporting filtering by country names
-        \item Different plot types to display the correlation between COVID-19 cases and school closure visualizations
+        \item Customizable color and marker types for plots
+        \item An application with icon
     \end{itemize}
 
     \subsubsection{Main Window}
@@ -202,20 +206,23 @@
         \item Standard Date Edit - The class we use to select the start date and end date
         \item Standard Checkbox - The class we use to select options
         \item Standard Progress Bar - The class used to display the progress
+        \item Standard Menu Bar - The class used to setup the menu bar on the top left corner of the application
         \item Plot Canvas - The class that is used to plot figures on the Main Window
     \end{itemize}
 
-    The PyQt Main Window that we display will use a combination of the classes above to output the desired window.
+    The PyQt Main Window that we displayed will use a combination of the classes above to output the desired window.
 
     \subsection{Misc}
 
-    Aside from the main window and data manipulation libraries, we also included the libraries sys, logging, time, and typing.
+    Aside from the main window and data manipulation libraries, we also included the libraries sys, logging, time, typing, and ctypes.
 
     The libraries sys and logging are used to generate a log in the console to inform the users of the different actions that our application is doing.
 
     The time library is used to evaluate the time that it takes for us to initialize the data and to output the time in the console log.
 
-    Lastly, we used typing to specify the types of inputs that our functions will be taking, in algorithms.py, data.py, and gui.py.
+    We used typing to specify the types of inputs that our functions will be taking, in algorithms.py, data.py, and gui.py.
+
+    Lastly, we used ctypes to specifically set an identifier for our application, so the icon will be displayed normally when the application window is active.
 
     \newpage
 
@@ -223,21 +230,35 @@
 
     \begin{enumerate}
         \item [1]
-            Open PyCharm and navigate to the directory where requirements.txt is located. Open requirements.txt.
+            Download the zipped file we provided on MarkUs. The zipped file should contain "algorithms.py, data.py, gui\_main.py, gui\_utils.py, main.py, resource\_manager.py, settings.py, requirements.txt"
 
         \item [2]
-            Install all libraries mentioned in the notification of PyCharm
+            Unzip the file in a directory with \emph{ONLY} English characters (i.e. Do not place it in a directory that contains non-English characters)
 
         \item [3]
-            Run main.py and wait for the application to finish downloading and initializing the data
+            Boot up PyCharm and open "requirements.txt" in the directory you just unzipped the files in. Click "Install requirements" to automatically download all the libraries needed
 
         \item [4]
-            After initialization of the application, you should be able to see a Window that popped out. At this point, you are free to explore our application.
+            Either use PyCharm or a terminal to run "main.py" and you should be able to see a window popup
 
         \item [5]
-            You should be able to set start and end dates for the plot, pan and zoom on the plot, select countries and plot the result again, and utilize the menu bar for more configurations.
+            Select a "Sorting algorithm" and click initialize. After a short amount of time, the application should be ready
+
+        \item [6]
+            You should be able to set start and end dates for the plot, pan and zoom on the plot, select countries and plot the result again, and utilize the menu bar for more customizable configurations.
+
+        \item [7]
+            Feel free to explore the application from this point onwards!
 
     \end{enumerate}
+
+    Side Notes:
+
+    \begin{itemize}
+        \item The application we've created is only fully compatible with the Windows operating system.
+        \item It can run on a M1 Mac with very extensive setup, but it will be too difficult to set it up. (You need to run Terminal on Rosetta and install the x86\_64 version of all libraries used through pip)
+        \item We are unsure of the performance of our application in an Intel Mac
+    \end{itemize}
 
     \section{Changes from the Proposal}
 
@@ -247,6 +268,7 @@
         \item Added features to download dataset and write in working directories
         \item Added features to hash a file in MD5 to ensure its completeness
         \item Removed some unused references and added new ones
+        \item Removed the US Covid Dataset as it is unnecessary for our analysis purposes
     \end{itemize}
 
     \section{Discussion}
