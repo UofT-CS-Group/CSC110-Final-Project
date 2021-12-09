@@ -1189,7 +1189,7 @@ class MainWindow(MainWindowUI):
         """Changes the line color in the plot to a specific color as given."""
         color_dialog = StandardColorDialog()
         ok = color_dialog.exec()
-        if not ok:
+        if ok:
             color = color_dialog.currentColor().name()
             self.plot_canvas.update_lines(axes, color)
 
