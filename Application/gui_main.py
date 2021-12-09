@@ -71,8 +71,8 @@ class PlotCanvas(FigureCanvas):
     curr_x: Optional[datetime.date]
     curr_y: Optional[int]
 
-    covid_line_color: str = 'orange'
-    closure_line_color: str = 'green'
+    covid_line_color: str = '#ff557f'
+    closure_line_color: str = '#55ff7f'
 
     covid_line_style: str = 'solid'
     closure_line_style: str = 'solid'
@@ -263,6 +263,8 @@ class PlotCanvas(FigureCanvas):
             self.closure_vertical_cross_hair.set_visible(False)
             self.curr_x = None
             self.curr_y = None
+            self.blit(self.figure.bbox)
+            self.flush_events()
             return
 
         x = event.xdata
@@ -405,6 +407,7 @@ class MainWindowUI(QMainWindow):
     algorithms_selection_combo_box: StandardComboBox
     initialization_helper_label: StandardLabel
     initialization_button: StandardPushButton
+    github_label: StandardLabel
 
     # Location Group
     location_group: StandardGroupBox
@@ -452,6 +455,7 @@ class MainWindowUI(QMainWindow):
     def init_window(self) -> None:
         """Init the main window UI"""
         self.resize(self.width, self.height)
+        self.setFixedSize(self.size())
 
         # Center the window
         frame_geometry = self.frameGeometry()
@@ -502,6 +506,12 @@ class MainWindowUI(QMainWindow):
         )
         self.initialization_button = StandardPushButton('Initialize', self.initialization_group)
         self.initialization_button.setToolTip('Initialize/Re-initialize the data')
+        self.github_label = StandardLabel('<a href="https://github.com/UofT-CS-Group/'
+                                          'CSC110-Final-Project"> Our GitHub Repository </a>',
+                                          self.initialization_group)
+        self.github_label.setOpenExternalLinks(True)
+        self.github_label.setAlignment(Qt.AlignCenter)
+        self.github_label.setToolTip('Click to open our GitHub repository page')
 
         # Location Group
         self.location_group = StandardGroupBox('Location', self)
@@ -581,6 +591,7 @@ class MainWindowUI(QMainWindow):
         initialization_group_layout.addWidget(self.algorithms_selection_combo_box, 2)
         initialization_group_layout.addWidget(self.initialization_helper_label, 2)
         initialization_group_layout.addWidget(self.initialization_button, 2)
+        initialization_group_layout.addWidget(self.github_label, 1)
 
         # Location Group
         controller_layout.addWidget(self.location_group)
