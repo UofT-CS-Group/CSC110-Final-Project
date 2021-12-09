@@ -249,7 +249,7 @@ def register_resources() -> None:
 
 def md5_hash(local_path: str) -> str:
     """
-    Return the MD5 hash of the specified filename
+    Return the MD5 hash of the specified filename.
     This is a helper function.
     """
     md5 = hashlib.md5()
