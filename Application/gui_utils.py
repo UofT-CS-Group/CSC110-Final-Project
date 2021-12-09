@@ -17,6 +17,7 @@ import settings
 # Constants
 # =================================================================================================
 
+# A dict that maps line styles to their descriptions.
 LINE_STYLES = {
     'solid'  : 'Solid',
     'dashed' : 'Dashed',
@@ -24,10 +25,13 @@ LINE_STYLES = {
     'dotted' : 'Dotted'
 }
 
+# Special markers copied from matplotlib.markers.py.
 (TICKLEFT, TICKRIGHT, TICKUP, TICKDOWN,
  CARETLEFT, CARETRIGHT, CARETUP, CARETDOWN,
  CARETLEFTBASE, CARETRIGHTBASE, CARETUPBASE, CARETDOWNBASE) = range(12)
 
+# A dict that maps the line markers to tuples representing the description of the marker and the
+# icon resource name.
 LINE_MARKERS = {
     '.'           : ('Point', 'm00.webp',),
     ','           : ('Pixel', 'm01.webp',),
@@ -91,7 +95,11 @@ def set_font(widget: QWidget,
     widget.setFont(font)
 
 
-def make_function(target: Callable, *args, **kwargs):
+def make_function(target: Callable, *args, **kwargs) -> Callable:
+    """
+    Return a wrapper function without any parameters that calls the target with args and kwargs.
+    The returned function could avoid Python late binding features.
+    """
     def function():
         target(*args, **kwargs)
 

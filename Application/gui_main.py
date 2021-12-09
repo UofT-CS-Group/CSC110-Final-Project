@@ -5,15 +5,15 @@ If you are seeing many warnings, that's normal and that's not our fault.
 """
 # Python built-ins
 import math
-import time
 import platform
+import time
 from typing import Any, List, Tuple
 
 # Matplotlib
+import matplotlib.axes
 import matplotlib.backend_bases
 import matplotlib.lines
 import matplotlib.style
-import matplotlib.axes
 from matplotlib import pyplot
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -37,8 +37,13 @@ matplotlib.style.use('fast')
 
 class PlotToolbar(NavigationToolbar):
     """
-    A standard menu for our project.
+    A customized toolbar from matplotlib.
+
     When needed, we could add more attributes and methods.
+
+    Instance Attributes:
+        - toolitems: Override the super toolitems for our purpose.
+        - window: A MainWindow instance that is the parent window of this toolbar.
     """
 
     toolitems = [t for t in NavigationToolbar.toolitems if t[0] in {'Home'}]
@@ -56,12 +61,37 @@ class PlotToolbar(NavigationToolbar):
         pass
 
     def home(self, *args):
+        """
+        Override the super home function.
+
+        This function is executed when user clicks the home button on this toolbar.
+        If user clicked it, then we replot our plots to its original states.
+        """
         self.window.update_plot()
 
 
 class PlotCanvas(FigureCanvas):
     """
-    Figure widget from matplotlib with a cross-hair.
+    Figure widget from matplotlib with many customizations like cross-hair, customized zoom,
+    and pan.
+
+    We used blit to optimize the frame rates of the figure.
+
+    Instance Attributes:
+        - figure: The actual matplotlib figure instance.
+        - covid_axes: The axes of covid cases plot.
+        - closure_axes: The axes of closure status plot.
+        - background: The background of the figure, and it's used for blitting.
+        - curr_x: Current x value that should always be a date.
+        - curr_y: Current y value that should always be an int.
+            - Note: curr_x and curr_y may be None if the cursor is not on the axes.
+        - covid_line_color and closure_line_color: The line color of covid_axes and closure_axes.
+        - covid_line_style and closure_line_style: The line style of covid_axes and closure_axes.
+        - covid_data_marker and closure_data_marker: The line marker of covid_axes and closure_axes.
+        - covid_x_data and closure_x_data: The current data of the x-axis.
+        - covid_y_data and closure_y_data: The current data of the y-axis.
+        - covid_horizontal_cross_hair and ...: The cross-hairs.
+        - covid_prev_x and ...: The previous cursor positions (in pixel, not real data).
     """
     figure: pyplot.Figure
     covid_axes: pyplot.Axes
@@ -97,6 +127,10 @@ class PlotCanvas(FigureCanvas):
     closure_prev_y: float = 0
 
     def __init__(self) -> None:
+        """
+        Initialize a PlotCanvas instance.
+        It will create figures and axes, connect events, and other necessary works.
+        """
         self.figure = pyplot.Figure(tight_layout=True, linewidth=1)
         super(PlotCanvas, self).__init__(self.figure)
 
@@ -129,6 +163,9 @@ class PlotCanvas(FigureCanvas):
                 x=0, color='black', linewidth=0.8, linestyle='--', animated=True)
 
     def init_figures(self) -> None:
+        """
+        Initialize the matplotlib figure, including titles and labels.
+        """
         # Setting labels and title
         self.covid_axes.set_title('COVID-19 Cases')
         self.covid_axes.set_xlabel('Dates')
@@ -148,12 +185,21 @@ class PlotCanvas(FigureCanvas):
         self.closure_axes.set_xlabel('Dates')
 
     def update_background(self):
+        """
+        Update self.background.
+        Note:
+            - This function should be called everytime after a call to self.draw().
+            - Because we need to update any changes of the background of the plot after redrawing.
+        """
         self.background = self.copy_from_bbox(self.figure.bbox)
 
     def update_lines(self, axes: matplotlib.axes.Axes,
                      color: Optional[str] = None,
                      style: Optional[str] = None,
                      marker: Optional[str] = None):
+        """
+        Update the color, style, and marker of lines in the given axes.
+        """
         if axes is self.covid_axes:
             if color is not None:
                 self.covid_line_color = color
@@ -185,7 +231,7 @@ class PlotCanvas(FigureCanvas):
         self.update_background()
 
     def plot_covid_cases(self, covid_cases: List[data.CovidCaseData]) -> None:
-        """Plots the COVID Data in self.axes_covid"""
+        """Plots covid_cases in self.axes_covid"""
         self.covid_x_data = [c.date for c in covid_cases]
         self.covid_y_data = [c.cases for c in covid_cases]
 
@@ -200,7 +246,7 @@ class PlotCanvas(FigureCanvas):
         self.update_background()
 
     def plot_school_closures(self, school_closures: List[data.SchoolClosureData]) -> None:
-        """Plots the Closure Data in self.axes_closure"""
+        """Plots school_closures in self.axes_closure"""
         self.closure_x_data = [c.date for c in school_closures]
         self.closure_y_data = [c.status.value for c in school_closures]
 
@@ -215,6 +261,10 @@ class PlotCanvas(FigureCanvas):
         self.update_background()
 
     def get_closet_coordinates_from_x(self, x: int, x_data: List, y_data: List) -> Tuple[int, int]:
+        """
+        Return a tuple representing the closet point in the given x_data and y_data
+        based on the given x value.
+        """
         x_date = datetime.date.fromtimestamp(0) + datetime.timedelta(days=x)
         index = algorithms.binary_search(x_data, x_date)
         x = (x_data[index] - datetime.date.fromtimestamp(0)).days
@@ -254,6 +304,8 @@ class PlotCanvas(FigureCanvas):
         """
         The handler of on_mouse_move event, which renders the cross-hair and mouse drag (pan).
         Optimized with blit, so now the FPS is very high.
+
+        If the user is dragging the plot, then we pan the plot.
         """
         self.restore_region(self.background)
         if not event.inaxes:
@@ -304,6 +356,9 @@ class PlotCanvas(FigureCanvas):
     @staticmethod
     def zoom(is_zoom_in: bool, zoom_factor: float, x: float,
              original_min: float, original_max: float) -> Tuple[float, float]:
+        """
+        Return the new limit(minimum and maximum) based on several zooming factors centered on x.
+        """
         length = original_max - original_min
         zoom_length = length * zoom_factor
         left_ratio = (x - original_min) / length
@@ -318,7 +373,7 @@ class PlotCanvas(FigureCanvas):
 
     def on_scroll(self, event: matplotlib.backend_bases.MouseEvent) -> None:
         """
-        Zoom in or zoom out.
+        Zoom in or zoom out as the user scroll up or down.
         """
         if not event.inaxes:
             return
@@ -353,6 +408,10 @@ class PlotCanvas(FigureCanvas):
         self.update_background()
 
     def on_mouse_button_press(self, event: matplotlib.backend_bases.MouseEvent):
+        """
+        If the left button is pressed, we start pan the plot as the mouse move.
+        This function serve as the start of the pan operation.
+        """
         if event.button == matplotlib.backend_bases.MouseButton.LEFT:
             if event.inaxes is self.covid_axes:
                 self.covid_prev_x = event.x
@@ -366,10 +425,14 @@ class PlotCanvas(FigureCanvas):
                 self.closure_prev_y = event.y
 
     def on_mouse_button_release(self, event: matplotlib.backend_bases.MouseEvent):
-        self.covid_prev_x = 0
-        self.covid_prev_y = 0
-        self.closure_prev_x = 0
-        self.closure_prev_y = 0
+        """
+        If the left button is released, we end the pan.
+        """
+        if event.button == matplotlib.backend_bases.MouseButton.LEFT:
+            self.covid_prev_x = 0
+            self.covid_prev_y = 0
+            self.closure_prev_x = 0
+            self.closure_prev_y = 0
 
 
 class MainWindowUI(QMainWindow):
@@ -658,7 +721,7 @@ class ProgressUpdateThread(QThread):
         while True:
             progress, description = data.get_progress()
             self.on_updated.emit(math.floor(progress * 100), description)
-            # If the description contains Failed to, meaning that some critical errors happened.
+            # If the description contains "Failed to", meaning that some critical errors happened.
             # This could be improved, but it's not worthy for our purposes.
             if progress >= 1 or 'Failed to' in description:
                 self.exit()
@@ -776,7 +839,8 @@ class MainWindow(MainWindowUI):
             covid_action.setIcon(QIcon(f'resources/assets/markers/{icon_name}'))
             covid_action.setStatusTip(description)
             covid_action.triggered.connect(make_function(self.plot_canvas.update_lines,
-                                                   self.plot_canvas.covid_axes, marker=marker))
+                                                         self.plot_canvas.covid_axes,
+                                                         marker=marker))
             covid_marker_menu.addAction(covid_action)
 
             closure_action = QAction(description, closure_marker_menu)
@@ -952,7 +1016,7 @@ class MainWindow(MainWindowUI):
     @pyqtSlot(str)
     def on_country_search_bar_edited(self, new_text: str) -> None:
         """
-        When the texts in the search bar are edited by users, then we update the current country
+        When the texts in the search bar are edited by the user, then we update the current country
         respectively.
         """
         if self.global_radio_button.isChecked():
@@ -977,10 +1041,17 @@ class MainWindow(MainWindowUI):
 
     @pyqtSlot()
     def on_country_selection_combo_box_changed(self) -> None:
+        """
+        When the user selects a new country, we update the plot correspondingly.
+        """
         self.update_plot()
 
     @pyqtSlot()
     def on_country_shortcut_buttons_clicked(self) -> None:
+        """
+        When the user clicks a country shortcut button,
+        we update the plot and other widgets correspondingly.
+        """
         # This could actually get the sender button.
         button = self.sender()
         country_name = button.text()
@@ -989,21 +1060,34 @@ class MainWindow(MainWindowUI):
 
     @pyqtSlot()
     def on_location_reset_button_clicked(self) -> None:
+        """
+        When the user clicks the location reset button, then we set the locations to the default
+        values and update the plot.
+        """
         self.set_default_location()
         self.update_plot()
 
     @pyqtSlot()
     def on_date_confirm_button_clicked(self) -> None:
+        """
+        When the user clicks the date confirm button, then we update the plot according to the
+        selected dates.
+        """
         self.update_plot()
 
     @pyqtSlot()
     def on_date_reset_button_clicked(self) -> None:
+        """
+        When the user clicks the date reset button, then we set the date to the default
+        values and update the plot.
+        """
         self.set_default_date()
         self.update_plot()
 
     def on_date_edit_changed(self, new_date: QDate, date_slider: StandardSlider) -> None:
         """
-        When the date is edited by users, we update the tick of the slider to the correct position.
+        When the date is edited by the user,
+        we update the tick of the slider to the correct position.
         """
         if not self.is_user_operation:
             return
@@ -1016,6 +1100,12 @@ class MainWindow(MainWindowUI):
 
     @pyqtSlot(QDate)
     def on_start_date_edit_changed(self, new_date: QDate) -> None:
+        """
+        When the user changes the start date edit, then we first validate the date and then update
+        other widgets.
+        If the date is not valid (start > end), then we will intimidate the user by popping a
+        warning messagebox.
+        """
         max_qdate = self.end_date_edit.date()
         max_date = max_qdate.toPyDate()
         if new_date.toPyDate() > max_date:
@@ -1028,6 +1118,12 @@ class MainWindow(MainWindowUI):
 
     @pyqtSlot(QDate)
     def on_end_date_edit_changed(self, new_date: QDate) -> None:
+        """
+        When the user changes the end date edit, then we first validate the date and then update
+        other widgets.
+        If the date is not valid (start > end), then we will intimidate the user by popping a
+        warning messagebox.
+        """
         min_qdate = self.start_date_edit.date()
         min_date = min_qdate.toPyDate()
         if new_date.toPyDate() < min_date:
@@ -1040,7 +1136,7 @@ class MainWindow(MainWindowUI):
 
     def on_slider_moved(self, percentage: float, date_edit: StandardDateEdit) -> None:
         """
-        When users move the slider, we update the date_edit to display the correct date.
+        When the user moves the slider, we update the date_edit to display the correct date.
         """
         min_date = self.start_date_edit.minimumDate().toPyDate()
         max_date = self.end_date_edit.maximumDate().toPyDate()
@@ -1052,6 +1148,10 @@ class MainWindow(MainWindowUI):
 
     @pyqtSlot(int)
     def on_start_date_slider_moved(self, new_value: int) -> None:
+        """
+        When the user moves the start date slider, then we firstly prevent invalid changes and
+        update other widgets.
+        """
         if new_value > self.end_date_slider.value():
             self.start_date_slider.setValue(new_value - 1)
             return
@@ -1060,6 +1160,10 @@ class MainWindow(MainWindowUI):
 
     @pyqtSlot(int)
     def on_end_date_slider_moved(self, new_value: int) -> None:
+        """
+        When the user moves the end date slider, then we firstly prevent invalid changes and
+        update other widgets.
+        """
         if new_value < self.start_date_slider.value():
             self.end_date_slider.setValue(new_value + 1)
             return
@@ -1084,10 +1188,10 @@ class MainWindow(MainWindowUI):
     def change_color(self, axes: matplotlib.axes.Axes) -> None:
         """Changes the line color in the plot to a specific color as given."""
         color_dialog = StandardColorDialog()
-        color_dialog.exec()
-        color = color_dialog.currentColor().name()
-
-        self.plot_canvas.update_lines(axes, color)
+        ok = color_dialog.exec()
+        if not ok:
+            color = color_dialog.currentColor().name()
+            self.plot_canvas.update_lines(axes, color)
 
     @pyqtSlot()
     def exit(self) -> None:
