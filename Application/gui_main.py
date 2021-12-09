@@ -27,6 +27,7 @@ from gui_utils import *
 if platform.system() == 'Windows':
     # Ctype
     import ctypes
+
     app_id = 'CSC110.covid_school_plot'  # Random identifier
     # Letting Windows display the Icon in the taskbar as well
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
@@ -182,7 +183,6 @@ class PlotCanvas(FigureCanvas):
 
         self.draw()
         self.update_background()
-
 
     def plot_covid_cases(self, covid_cases: List[data.CovidCaseData]) -> None:
         """Plots the COVID Data in self.axes_covid"""
@@ -735,48 +735,46 @@ class MainWindow(MainWindowUI):
 
         # Different Line style settings
         line_style_menu = self.settings_menu.addMenu('Line Style')
-
         covid_style_menu = line_style_menu.addMenu('COVID-19 Cases Line Style')
         closure_style_menu = line_style_menu.addMenu('School Closure Status Line Style')
 
         # COVID Styles
         for style, description in LINE_STYLES.items():
-            action = QAction(description, covid_style_menu)
-            action.setStatusTip(description)
-            action.triggered.connect(make_function(self.plot_canvas.update_lines,
-                                                   self.plot_canvas.covid_axes, style=style))
-            covid_style_menu.addAction(action)
+            covid_action = QAction(description, covid_style_menu)
+            covid_action.setStatusTip(description)
+            covid_action.triggered.connect(make_function(self.plot_canvas.update_lines,
+                                                         self.plot_canvas.covid_axes,
+                                                         style=style))
+            covid_style_menu.addAction(covid_action)
 
-        for style, description in LINE_STYLES.items():
-            action = QAction(description, closure_style_menu)
-            action.setStatusTip(description)
-            action.triggered.connect(make_function(self.plot_canvas.update_lines,
-                                                   self.plot_canvas.closure_axes, style=style))
-            closure_style_menu.addAction(action)
+            closure_action = QAction(description, closure_style_menu)
+            closure_action.setStatusTip(description)
+            closure_action.triggered.connect(make_function(self.plot_canvas.update_lines,
+                                                           self.plot_canvas.closure_axes,
+                                                           style=style))
+            closure_style_menu.addAction(closure_action)
 
         # Show marker toggle menu
         marker_menu = self.settings_menu.addMenu('Markers')
-
         covid_marker_menu = marker_menu.addMenu('COVID-19 Cases Line Marker')
         closure_marker_menu = marker_menu.addMenu('School Closure Status Line Marker')
 
         for marker, info in LINE_MARKERS.items():
             description, icon_name = info
-            action = QAction(description, covid_marker_menu)
-            action.setIcon(QIcon(f'resources/assets/markers/{icon_name}'))
-            action.setStatusTip(description)
-            action.triggered.connect(make_function(self.plot_canvas.update_lines,
+            covid_action = QAction(description, covid_marker_menu)
+            covid_action.setIcon(QIcon(f'resources/assets/markers/{icon_name}'))
+            covid_action.setStatusTip(description)
+            covid_action.triggered.connect(make_function(self.plot_canvas.update_lines,
                                                    self.plot_canvas.covid_axes, marker=marker))
-            covid_marker_menu.addAction(action)
+            covid_marker_menu.addAction(covid_action)
 
-        for marker, info in LINE_MARKERS.items():
-            description, icon_name = info
-            action = QAction(description, closure_marker_menu)
-            action.setIcon(QIcon(f'resources/assets/markers/{icon_name}'))
-            action.setStatusTip(description)
-            action.triggered.connect(make_function(self.plot_canvas.update_lines,
-                                                   self.plot_canvas.closure_axes, marker=marker))
-            closure_marker_menu.addAction(action)
+            closure_action = QAction(description, closure_marker_menu)
+            closure_action.setIcon(QIcon(f'resources/assets/markers/{icon_name}'))
+            closure_action.setStatusTip(description)
+            closure_action.triggered.connect(make_function(self.plot_canvas.update_lines,
+                                                           self.plot_canvas.closure_axes,
+                                                           marker=marker))
+            closure_marker_menu.addAction(closure_action)
 
         # View Menu
         view_statusbar = QAction('Display Statusbar', self)
