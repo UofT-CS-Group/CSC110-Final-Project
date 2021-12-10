@@ -16,19 +16,19 @@ from config_manager import ConfigManager
 # Constants
 # =================================================================================================
 
-conf_manager = ConfigManager("resources/config.json")
-conf = conf_manager.data
+config_manager = ConfigManager("resources/resource.json")
+config=config_manager.data
 
-COVID19_RESOURCE_NAME = conf["resource"]["covid_resource_name"]
-SCHOOL_CLOSURE_RESOURCE_NAME = conf["resource"]["school_closure_resource_name"]
-ICON_RESOURCE_NAME = conf["resource"]["icon_resource_name"]
-MARKERS_ICON_RESOURCE_NAMES = conf["resource"]["marker_resource_icon"]["name"]
-MARKERS_ICON_RESOURCE_MD5S = conf["resource"]["marker_resource_icon"]["md5"]
+COVID19_RESOURCE_NAME = config["covid_resource_name"]
+SCHOOL_CLOSURE_RESOURCE_NAME = config["school_closure_resource_name"]
+ICON_RESOURCE_NAME = config["icon_resource_name"]
+MARKERS_ICON_RESOURCE_NAMES = config["marker_resource_icon"]["name"]
+MARKERS_ICON_RESOURCE_MD5S = config["marker_resource_icon"]["md5"]
 
 # MD5 Checksum Settings
-BUFFER_SIZE = conf["resource"]["buffer_size"]
+BUFFER_SIZE = config["buffer_size"]
 # Number of attempts to re-download file if failed
-RETRY_COUNT = conf["resource"]["retry_count"]
+RETRY_COUNT = config["retry_count"]
 
 
 # =================================================================================================
@@ -191,13 +191,9 @@ def register_resources() -> None:
     """
     Register all resources needed.
     """
-    covid19_url = 'https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/' \
-                  'Application/resources/covid_cases_datasets/' \
-                  'time_series_covid19_confirmed_global.csv'
-    closure_url = 'https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/' \
-                  'Application/resources/school_closures_datasets/full_dataset_31_oct.csv'
-    icon_url = 'https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/' \
-               'Application/resources/assets/icon.png'
+    covid19_url = config["covid19_url"]
+    closure_url = config["closure_url"]
+    icon_url = config["icon_url"]
 
     RESOURCES_DICT[COVID19_RESOURCE_NAME] = \
         Resource(COVID19_RESOURCE_NAME,

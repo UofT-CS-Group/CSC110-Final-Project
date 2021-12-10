@@ -1,0 +1,10 @@
+{
+    "font": {
+        "family": "Calibri",
+        "size": "14"
+    },
+    "log": {
+        "level": "info",
+        "format": "[%(asctime)s] - %(levelname)s - %(message)s"
+    }
+}

@@ -17,8 +17,8 @@ from algorithms import T
 
 from config_manager import ConfigManager
 
-conf_manager = ConfigManager("resources/config.json")
-conf = conf_manager.data
+config_manager = ConfigManager("resources/setting.json")
+config=config_manager.data
 
 
 # Project sorting algorithm
@@ -29,13 +29,13 @@ def sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool = False) ->
 # =================================================================================================
 # Font
 # =================================================================================================
-FONT_FAMILY = conf["setting"]["font"]["family"]
-FONT_SIZE = int(conf["setting"]["font"]["size"])
+FONT_FAMILY = config["font"]["family"]
+FONT_SIZE = int(config["font"]["size"])
 
 # =================================================================================================
 # Logger
 # =================================================================================================
-conf_level = conf["setting"]["log"]["level"]
+conf_level = config["log"]["level"]
 if conf_level in ["critical", "error", "warning", "info", "debug", "notset"]:
     if conf_level == "critical":
         LOG_LEVEL = logging.CRITICAL
@@ -49,4 +49,4 @@ if conf_level in ["critical", "error", "warning", "info", "debug", "notset"]:
         LOG_LEVEL = logging.DEBUG
     if conf_level == "notset":
         LOG_LEVEL = logging.NOTSET
-LOG_FORMAT = conf["setting"]["log"]["format"]
+LOG_FORMAT = config["log"]["format"]
