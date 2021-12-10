@@ -4,6 +4,7 @@ The main entry of our program.
 # Python built-ins
 import logging
 import sys
+import platform
 
 # PyQt5
 from PyQt5.QtWidgets import *
@@ -54,7 +55,18 @@ if __name__ == '__main__':
     else:
         logging.info('Icon initialized!')
 
-    main_window = gui_main.MainWindow()
+    # Obtaining screen size and setting window size
+    screen = app.primaryScreen()
+    if platform.system() == 'Windows':
+        height = int(0.7 * screen.size().width())
+
+    else:
+        height = int(0.5 * screen.size().width())
+
+    width = int(1.618 * height)
+
+    main_window = gui_main.MainWindow(width, height)
+
     main_window.show()
 
     # Start the event loop with app.exec
