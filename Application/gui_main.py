@@ -464,8 +464,8 @@ class MainWindowUI(QMainWindow):
             - It's only responsible for displaying the progress of our data loading process.
     """
     # Window sizes
-    width: int
-    height: int
+    width: int = 1135
+    height: int = 700
 
     # Introduction Group (Decoration)
     about_group: StandardGroupBox
@@ -516,13 +516,11 @@ class MainWindowUI(QMainWindow):
 
     progress_bar: StandardProgressBar
 
-    def __init__(self, width, height, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         """
         Init the whole UI.
         """
         super(MainWindowUI, self).__init__(*args, **kwargs)
-        self.width = width
-        self.height = height
         self.init_window()
 
     def init_window(self) -> None:
