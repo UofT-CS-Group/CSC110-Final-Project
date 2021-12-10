@@ -5,7 +5,9 @@
 \usepackage{parskip}
 \setlength\parindent{0pt}
 
-\title{CSC110 Project Report\\ Educational Crisis - A Closer Examination on the Correlations Between Covid-19 and School Closures Around the Globe}
+\newcommand{\bigO}{\mathcal{O}}
+
+\title{CSC110 Project Report\\ Educational Crisis - A Closer Examination on the Correlations Between COVID-19 and School Closures Around the Globe}
 \author{Shouyi (Ray) Hung, Yuhan (Charlotte) Chen, Mengyuan (Alyssa) Li, and Fuyang (Scott) Cui}
 \date{\today}
 
@@ -38,7 +40,7 @@
 
     \begin{enumerate}
         \item
-        Global School Closures for COVID-19\footnote{School Closure survey report, www.kaggle.com/salehahmedrony/global-school-closures-covid19} – Obtained from Kaggle, compiled by Saleh Ahmed Rony, sourced from UNESCO
+        Global School Closures for COVID-19\footnote{Global School Closures COVID-19, https://data.humdata.org/dataset/global-school-closures-covid19} – Obtained from The Humanitarian Data Exchange, compiled by Saleh Ahmed Rony, sourced from UNESCO.
 
         \item
         COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University\footnote{One of the most used COVID-19 Cases Database, github.com/CSSEGISandData/COVID-19} – Obtained from GitHub, compiled by JHU, sourced from WHO, ECDC, DXY, US CDC, etc.
@@ -89,186 +91,200 @@
 
     Some of the country names in our datasets contain characters that are not part of the standard ASCII table. An example would be "Cura\c{c}ao", where "\c{c}" is a French (Latin script) letter.
 
-    Since these letters are not in the standard ASCII Table, displaying and encoding issues may arise. So for convenience, we will ignore them.
+    Since these letters are not in the standard ASCII Table, displaying and encoding issues may arise. So for convenience, we will filter them out.
 
     For the purpose of this project, we will simplify the standard ASCII Table to only contain characters from "a-z", "A-Z", "0-9", "!-\~{}".
 
-    These letters also correspond to "string.ascii\_lowercase", "string.ascii\_uppercase", "string.digits", and "string.punctutation" respectively, from the Python string library.
-
     \newpage
-
 
     \section{Computational Overview}
 
-    Our project will be separated into 3 main parts of implementations: Data Processing, Graphical User Interface (GUI) implementation, and Misc.
+    We divide our project into 3 main parts: data pre-processing, Graphical User Interface (GUI) implementation, and interactive data manipulations (filtering, aggregation, searching, etc).
 
-    \subsection{Data Processing}
+    \subsection{Data Pre-Processing}
 
-    \subsubsection{Downloading Data}
+    \subsubsection{Resource Initialization}
 
-    In this part of the implementation, we have utilized the libaries requests, os, and hashlib to download and verify files downloaded respectively.
+    In this part of the implementation, we have utilized \verb|requests|, \verb|os|, and \verb|hashlib| to download required resources (data sets, icons, etc) and verify their completeness.
 
-    The requests library allows the application to reach out to a certain URL and get the contents that are contained in that URL. We will use this library in combination with os to download and save the file in the user's working directory, so our application can run with the specified data.
+    The \verb|requests| library allows our application to get the contents of certain URLs. We used this library in combination with \verb|os| to download and save those resources into the working directory, so our application can run with the specified data. Specifically, we used requests.get, which allows us to retrieve the information contained in the specified URL, and \verb|os.makedirs|, which allows us to create directories to store our files in. Also, we set up a public GitHub repository to hold all of our codes and resources, so our application can visit those permanent raw links and download all of the resources.
 
-    Specifically, we used requests.get, which allows us to retrieve the information contained in the specified URL, and os.makedirs, which allows us to create directories to store our files in.
+    We also implemented a MD5 Hash function\footnote{Implementation referenced from StackOverFlow, https://stackoverflow.com/questions/3431825/generating-an-md5-checksum-of-a-file} to calculate the unique identifiers of our resources. For those newly downloaded resources, our application will compare their hash values with the predefined valid hash values to ensure that the files downloaded are what we expected.
 
-    We utilized a Public GitHub repository to upload all assets, so the application can visit the specified URL and obtain all the assets needed without needing any Verification Token.
+    To put all of these together, we implement a module \verb|resource_manager.py|, containing a \verb|Resource| class and a bunch of other helper functions and constants. An instance of the \verb|Resource| class represents a resource file of our application. Each resource instance contains a remote path, a unique identifier, and a local path so we can download and verify the files. Also, we build the whole resource manager in an extendable way: By maintaining a \verb|dict| that maps resource name to the \verb|Resource| instance, we could simply register, or add, a new resource to the \verb|dict| if needed. Then, our application will automatically handle all downloading and file manipulating tasks without any further modifications.
 
-    We also implemented a MD5 Hash function\footnote{Implementation referenced from StackOverFlow, https://stackoverflow.com/questions/3431825/generating-an-md5-checksum-of-a-file} that uses the hashlib library.
+    \subsubsection{Algorithms}
 
-    Specifically, we used hashlib.md5 to create the MD5 value of a certain file, and hashlib.md5.hexdigest to return the result in a string.
+    To simplify our data manipulations, we abstract out few generic algorithms such as sorting, grouping, searching, etc. in a new module: \verb|algorithms.py|.
 
-    For the files that are being downloaded, the application will compare it with the specified MD5 Checksum value we ran on our machines to ensure that the files downloaded are the same as the ones we are working with.
+    All of the algorithms in \verb|algorithms.py| are generic, meaning they could handle all data types with the help of some callable parameters. To be more specific, we used a generic type \verb|T| to represent any type of arguments passed into our algorithms. However, not all data types support the operations an algorithm needed (such as compare operation in sorting algorithm). Thus, our algorithms need another callable parameter to specify how the operations are performed on the passed data type. 
 
-    In our resource\_manager.py, we have created a class to store all of our different files. These resource objects will contain a remote path, the MD5 identifier, and the local path so we can download and verify the files.
+    Additionally, we implemented multiple sorting algorithms for the purposes of showing the impact of algorithm running time complexity:
+    
+    \begin{itemize}
+        \item Bubble Sort: $\bigO(n^2)$
+        \item Selection Sort: $\bigO(n^2)$
+        \item Insertion Sort: $\bigO(n^2)$
+        \item Merge Sort: $\bigO(n\log(n))$
+    \end{itemize}
 
-    The purpose of this sub-sub-section is to ensure that our application will run on any machine with our predetermined datasets.
+    Upon the initialization of the application, the user should choose a sorting algorithm for the whole application and then initialize the data. This is achieved by assigning a new sorting function reference (defined in \verb|algorithms.py|) to the project sorting function defined in \verb|settings.py|. That is, our project will always call the sorting function defined in \verb|settings.py| instead of the sorting functions in \verb|algorithms.py|.
 
-    \subsubsection{Data Manipulation Algorithms}
-
-    We have written an algorithms.py file to contain most of the sorting algorithms that we know. This includes but not limited to: Merge Sort, Bubble Sort, Selection Sort, Insertion Sort, Linear Search, Binary Search.
-
-    The purpose of this part of the implementation is to demonstrate the impact on running time if we utilized another sorting algorithm instead of the original one.
-
-    Upon initialization of the application, the User will be prevented to do any operations on the application until the users selects a sorting algorithm and initialize the data with it.
-
-    The data can be initialized multiple times for the user to notice a difference in different sorting algorithms.
-
-    The different searching algorithms will be utilized with our GUI application to display the covid case results that are linked to the country that the user selected.
+    Also, we implemented some grouping and searching algorithms for data manipulations like grouping all data by a categorical variable or searching for a date in all the date values we have.
 
     \subsubsection{Data Initialization}
 
-    We read the data into Python with help of the Python \emph{csv} library.
+    We read all the data into Python with help of the \verb|csv| library in the module \verb|data.py|.
 
-    For our COVID-19 Dataset, we only used the columns with the headers "Country" and "Dates", as they provide information for us to plot in the application.
+    For the COVID-19 Dataset, we only used the columns with the headers "Country" and "Dates", as they provide the information for us to visualize.
 
-    For our School Closure Dataset, we used all of the columns aside from the "Note" column, as it provides information in a way that is hard to process.
-
-    Then, by using the data we have loaded into Python, we performed multiple filtration to the loaded data so that we can obtain GLOBAL CONSTANTS that will be used by the other Python files.
+    For the School Closure Dataset, we used all of the columns aside from the "Note" column, as it provides irrelevant and hard-to-process information.
 
     Our program created the following data classes:
 
     \begin{itemize}
-        \item ClosureStatus - An Enum class that maps the different status of school closure to an Enum value
-        \item Location - A class that represents a location
-        \item Country - A class that represents a country, based on its location
-        \item BaseData - A basic class
-        \item TimeBasedData - A data class that is based on time
-        \item CovidCaseData - A class that represents an entry in Covid data based on a Time and Country
-        \item SchoolClosureData - A class that represents an entry in Closure Data based on a Time and Country
+        \item \verb|ClosureStatus| - An \verb|Enum| class that maps the different status of school closure to an int value
+        \item \verb|Location| - A class that represents a location.
+        \item \verb|Country| - A class that represents a country, inherited from \verb|Location|.
+        \item \verb|Province| - A class that represents a province, inherited from \verb|Location|.
+        \item \verb|BaseData| - A basic class that represents a piece of data.
+        \item \verb|TimeBasedData| - A class that represents a time-based data, inherited from \verb|BaseData|.
+        \item \verb|CovidCaseData| - A class that represents an entry in COVID data, inherited from \verb|TimeBasedData|.
+        \item \verb|SchoolClosureData| - A class that represents an entry in Closure Data, inherited from \verb|TimeBasedData|.
     \end{itemize}
 
-    Our program will generate the following GLOBAL CONSTANTS:
+    Our program generates the following GLOBAL CONSTANTS:
 
     \begin{itemize}
-        \item ALL\_COVID\_CASES - A list of all CovidCaseData objects read from the csv file, including Provinces and Cities
-        \item COUNTRIES\_TO\_COVID\_CASES - A dictionary mapping from a country name to all of its respective CovidCaseData
-        \item GLOBAL\_COVID\_CASES - A list of all CovidCaseData that contains cases summed across all countries on a certain date
-        \item ALL\_SCHOOL\_CLOSURES - A list of all SchoolClosureData that is read from the csv file
-        \item COUNTRIES\_TO\_SCHOOL\_CLOSURES - A dictionary mapping from a country name to its respective SchoolClosureData
-        \item GLOBAL\_SCHOOL\_CLOSURES - A list of SchoolClosureData with only dates and the status of the majority of the schools in that date
-        \item COUNTRIES - A list of Country objects that are read from the CSV Files
-        \item SORTED\_COUNTRIES - A list of sorted Country objects from COUNTRIES
+        \item \verb|ALL_COVID_CASES| - A list of all \verb|CovidCaseData| objects read from the data set, including country-wide and provincial data.
+        \item \verb|COUNTRIES_TO_COVID_CASES| - A dictionary mapping from a country name to all of its  respective \verb|CovidCaseData|.
+        \item \verb|GLOBAL_COVID_CASES| - A list of all \verb|CovidCaseData| that contains COVID19 cases summed across all countries on a certain date.
+        \item \verb|ALL_SCHOOL_CLOSURES| - A list of all \verb|SchoolClosureData| that is read from the data set.
+        \item \verb|COUNTRIES_TO_SCHOOL_CLOSURES| - A dictionary mapping from a country name to its respective \verb|SchoolClosureData|.
+        \item \verb|GLOBAL_SCHOOL_CLOSURES| - A list of \verb|SchoolClosureData| with only dates and the status of the majority of the schools in that date.
+        \item \verb|COUNTRIES| - A set of \verb|Country| objects that are read from the data set.
+        \item \verb|SORTED_COUNTRIES| - A list of sorted \verb|Country| objects by country name.
     \end{itemize}
 
-    Then, we converted the raw data read from the csv files into the data classes specified above, so we could easily utilize those data in practice.
+    Then, we converted the raw data read from the data set into the classes specified above, so we could easily utilize them in practice. Also, by filtering, grouping, and sorting the data we have loaded into Python, we obtain the GLOBAL CONSTANTS defined above that could be utilized by other modules (\verb|gui_main.py|, etc).
 
-    We stored all of our data in data.py as GLOBAL CONSTANTS, which will allow the other Python files to import and utilize them directly. We will refer to data.py in our gui.py file to display graphs.
+    This brings us to the next part of our project, which is the GUI Implementation.
 
-    This brings us to the next part of our project, which is GUI Implementation.
+    \subsection{Graphical User Interface}
 
-    \subsection{GUI Implementation}
-
-    We mainly utilized \emph{PyQt5} to generate an interactive user interface and \emph{Matplotlib} to plot graphs.
+    We utilized \verb|PyQt5| to generate an interactive graphical user interface and \verb|Matplotlib| to plot graphs.
 
     We have implemented the following functionalities:
 
     \begin{itemize}
-        \item A fully functional Graphical User Interface with menu bar, multiple buttons, input date edits, and sliders
-        \item A loading progress bar in the main UI Window when the user clicked "Initialize"
-        \item Panning and Zooming functionalities on the graph by left click \& drag and scrolling
-        \item Navigation bar that allows the user to return the plot to the original state
-        \item Scatter plot COVID-19 cases and school closures visualizations supporting filtering by country names
-        \item Customizable color and marker types for plots
-        \item An application with icon
+        \item A fully functional Graphical User Interface with menu bar, multiple buttons, input date edits, sliders, etc.
+        \item A progress bar on the status bar displaying the progress of data initialization.
+        \item Panning and zooming functionalities on the graph by left click, drag, and scrolling.
+        \item COVID-19 cumulative cases scatter plot and school closures visualizations.
+        \item Customizable line color, style, and marker.
+        \item And many more details...
+    \end{itemize}
+
+    \subsubsection{Utilities}
+
+    We create a module \verb|gui_utils.py| that contains many helper functions, classes, and constants.
+
+    Basically, we inherit all PyQt widgets used to extend their functionalities:
+
+    \begin{itemize}
+        \item \verb|StandardLabel|: A standard text label.
+        \item \verb|StandardPushButton|: A standard button.
+        \item \verb|StandardComboBox|: A standard combo box.
+        \item \verb|StandardDateEdit|: A standard date editor.
+        \item \verb|StandardCheckbox|: A standard checkbox.
+        \item \verb|StandardRadioButton|: A standard radio button.
+        \item \verb|StandardProgress Bar|: A standard progress bar.
+        \item \verb|StandardGroupBox|: A standard group box.
+        \item \verb|StandardMenuBar|: A standard menu bar.
+        \item ...
     \end{itemize}
 
     \subsubsection{Main Window}
 
-    We utilized PyQt5.QtCore, PyQt5.QtGui, and PyQt5.QtWidgets to create the main window.
+    Our main window is defined in module \verb|gui_main.py|, which consists of a ``frontend'' and a ``backend''.
 
-    This window consists of the following classes:
+    The ``frontend'' is the \verb|MainWindowUI| class that is responsible for creating widgets, initializing widgets' attributes, and managing the layout of all widgets. Also, it represents the ``true'' window itself and defines all the attributes of the window.
 
-    \begin{itemize}
-        \item Standard Label - The class we use to add a text label
-        \item Standard Push Button - The class we use to add a confirm button
-        \item Standard Combo Box - The class we use to choose which country's data to display
-        \item Standard Date Edit - The class we use to select the start date and end date
-        \item Standard Checkbox - The class we use to select options
-        \item Standard Progress Bar - The class used to display the progress
-        \item Standard Menu Bar - The class used to setup the menu bar on the top left corner of the application
-        \item Plot Canvas - The class that is used to plot figures on the Main Window
-    \end{itemize}
+    The ``backend'' is the combination of multiple classes including \verb|PlotCanvas| and \verb|MainWindow|. Technically, all the codes besides the ``frontend'' part are responsible for running our ``backend''.
 
-    The PyQt Main Window that we displayed will use a combination of the classes above to output the desired window.
+    The \verb|PlotCanvas| class represents our plots and is responsible for handling all user's inputs to the plot such as mouse moving or dragging. We implemented the full zooming and panning functionalities by ourselves because we did not like how \verb|matplotlib| handle them. Also, we constructed a cross-hair that is always centered on the data that are the closet to the cursor position.
+
+    All the user's inputs on the main window, such as clicking a button, selecting a country, or sliding a slider are handled by the \verb|MainWindow| class. We utilized \verb|PyQt5| signals and slots mechanism to achieve most of the functionalities. For example, when a button is clicked, then the button sends a signal to a callback function to perform some actions. The callback functions are the slots, and the signals are the information passed into the callback functions.
+
+    The interaction logics of our GUI is that our visualization (plot) will update as the user update the filters (a country or a data range).
 
     \subsection{Misc}
 
-    Aside from the main window and data manipulation libraries, we also included the libraries sys, logging, time, typing, and ctypes.
+    Aside from the libraries mentioned, we also employed \verb|sys|, \verb|logging|, \verb|time|, \verb|typing|, and \verb|ctypes|.
 
-    The libraries sys and logging are used to generate a log in the console to inform the users of the different actions that our application is doing.
+    The libraries \verb|sys| and \verb|logging| are used to log the information, warnings, or errors in the console to inform the user what our application is doing. 
 
-    The time library is used to evaluate the time that it takes for us to initialize the data and to output the time in the console log.
+    The \verb|time| library is used to evaluate the time that it takes for us to initialize the data and to output the time in the console log.
 
-    We used typing to specify the types of inputs that our functions will be taking, in algorithms.py, data.py, and gui.py.
+    We used \verb|typing| to specify the types of inputs that our functions will be taking and some generic types mentioned earlier.
 
-    Lastly, we used ctypes to specifically set an identifier for our application, so the icon will be displayed normally when the application window is active.
+    Lastly, we used \verb|ctypes| to specifically set an identifier for our application when running in Windows platform, so the icon will be displayed normally on the task bar when the application window is active.
 
     \newpage
 
     \section{Instructions}
 
+    Before everything start, please make sure you have a stable connection with the Internet, specifically, GitHub.
+
     \begin{enumerate}
         \item [1]
-            Download the zipped file we provided on MarkUs. The zipped file should contain "algorithms.py, data.py, gui\_main.py, gui\_utils.py, main.py, resource\_manager.py, settings.py, requirements.txt"
+            Download the zipped file we provided on MarkUs. The zipped file should contain ``''\verb|algorithms.py|, \verb|data.py|, \verb|gui_main.py|, \verb|gui_utils.py|, \verb|main.py|, \verb|resource_manager.py|, \verb|settings.py|, and \verb|requirements.txt|.''
 
         \item [2]
-            Unzip the file in a directory with \emph{ONLY} English characters (i.e. Do not place it in a directory that contains non-English characters)
-
+            Unzip the file in an empty directory (It is better to make sure the path to the directory only contains English letters).
         \item [3]
-            Boot up PyCharm and open "requirements.txt" in the directory you just unzipped the files in. Click "Install requirements" to automatically download all the libraries needed
+            Boot up PyCharm and open "requirements.txt" in the directory you just unzipped the files in. Click "Install requirements" to automatically download all the libraries needed.
+
+            Alternatively, you could open the terminal in the directory and run ``pip install -r requirements.txt.''
 
         \item [4]
-            Either use PyCharm or a terminal to run "main.py" and you should be able to see a window popup
+            Either use PyCharm or a terminal to run "main.py" and you should be able to see a window popup.
 
         \item [5]
-            Select a "Sorting algorithm" and click initialize. After a short amount of time, the application should be ready
+            Select a "Sorting algorithm" and click the initialize button. After few seconds, our application should be ready.
 
         \item [6]
-            You should be able to set start and end dates for the plot, pan and zoom on the plot, select countries and plot the result again, and utilize the menu bar for more customizable configurations.
+            You should be able to set the start and end dates for the plot, pan and zoom on the plot, select countries and plot the result again, and utilize the menu bar for more customizable configurations.
 
         \item [7]
             Feel free to explore the application from this point onwards!
 
     \end{enumerate}
 
-    Side Notes:
+    \subsection{Notes}
 
     \begin{itemize}
-        \item The application we've created is only fully compatible with the Windows operating system.
-        \item It can run on a M1 Mac with very extensive setup, but it will be too difficult to set it up. (You need to run Terminal on Rosetta and install the x86\_64 version of all libraries used through pip)
-        \item We are unsure of the performance of our application in an Intel Mac
+        \item We only tested our application in Windows 10/11 platform with Python 3.10.1. Although we were trying our best to make it compatible with others, we could not guarantee the behaviors under other operating systems.
+        \item It can run on a M1 Mac with an extensive setup. (You need to run Terminal on Rosetta and install the x86\_64 version of all libraries used through pip)
+        \item We are unsure of the performance of our application in an Intel Mac.
+        \item We haven't tested our application on any Linux distributions.
     \end{itemize}
+
+    \subsection{Remedy}
+
+    If our application failed to download all \textbf{required} resources, please download this compressed file and unzip it in the same directory as the \verb|main.py|. Make sure that the \verb|resources| folder is in the same directory as the \verb|main.py|. TODO: Add the link before we submit.
+
+    Or you could clone our repository and everything will be right in the correct place. TODO: Add github.
 
     \section{Changes from the Proposal}
 
     \begin{itemize}
-        \item Added MLA Style Footnote in multiple occasions
-        \item Added more details in Computational Overview
-        \item Added features to download dataset and write in working directories
-        \item Added features to hash a file in MD5 to ensure its completeness
-        \item Removed some unused references and added new ones
-        \item Removed the US Covid Dataset as it is unnecessary for our analysis purposes
+        \item Added MLA Style Footnote in multiple occasions.
+        \item Added more details in Computational Overview.
+        \item Added features to download dataset and write in working directories.
+        \item Added features to hash a file in MD5 to ensure its completeness.
+        \item Removed some unused references and added new ones.
+        \item Removed the US Covid Dataset as it is unnecessary for our analysis purposes.
     \end{itemize}
 
     \section{Discussion}
@@ -277,33 +293,69 @@
 
     Our application can be utilized to visually determine if there are any correlations between COVID-19 Cases of a certain country and School Closure status of the certain country. This would be enough for us to answer the research question, because we can clearly identify a trend between COVID-19 Cases and School Closure statuses.
 
-    Furthermore, we can also utilize this application to generate plots about data around the world that can be shared to raise awareness, which could allow educational sectors to be more prepared for future events like the COVID-19 Pandemic.
+    Furthermore, we can also utilize this application to generate plots about data around the world that can be shared to raise awareness, which could allow educational sectors to be more prepared for future events similar to the COVID-19 Pandemic.
 
     We can also identify some of the "Outliers" from the general trend for some countries. These may exist because their country officials decided for schools to continue operating amidst the severe conditions posed.
 
     \subsection{Limitations}
 
-    \subsubsection{Overall Limitations}
+    \begin{itemize}
+        \item A major limitation of our application is the fact that our data is not a 100\% accurate data from all around the globe. School Closure Data being used is uploaded by an individual. The COVID-19 Data may also contain inaccurate information.
+        \item Furthermore, we recklessly removed some of the country names in our datasets because they contain non-ASCII characters, which limits the amount of data.
+        \item We also removed some country names because they were not present in both datasets, making the actual data presented in our application even more limited.
+        \item We did not introduce the vaccination data and this impacts our scope of analysis. That is, most countries resume in-person learning after most individuals were vaccinated.
+    \end{itemize}
 
-    A major limitation of our application is the fact that our data is not a 100\% accurate data from all around the globe. School Closure Data being used is uploaded by an individual on Kaggle. The COVID-19 Data can also contain inaccurate information.
+    \subsection{Obstacles}
 
-    Furthermore, we recklessly removed some of the country names in our datasets because they contain non-ASCII characters, which limits the amount of data.
+    \begin{itemize}
+        \item Our application crashes all day, all night, 24 * 7, non-stop. Making us want to drop out of CSC110. But nevertheless, we still overcame the difficulties and produced a "Functioning" application.
+        \item One of the most impressive challenges is the implementation of progress bar. 
+        
+        If we want to display a progress bar monitoring the progress of something like initialization, we need three tasks to be performed simultaneously, or asynchronously:
+        \begin{enumerate}
+            \item The initialization process itself.
+            \item Display the current progress (GUI).
+            \item Continuously monitor the current progress and send the progress to the GUI to display.
+        \end{enumerate}
 
-    We also removed some country names because they were not present in both datasets, making the actual data presented in our application even more limited.
+        Therefore, we need 2 more threads, in addition to the main GUI thread, to make the progress bar work as intended. But here comes the problems, we don't know anything about threading and specifically, threading with \verb|PyQt5|. 
 
-    \subsubsection{Obstacles}
+        Then, we searched on the Internet, read the full documentation of \verb|PyQt5| which is in C++, study others' examples, and experiment tons of times. 
+        
+        We firstly used \verb|threading| module to run the progress bar on another window on another thread, but after many crashes without error message, we found that \verb|PyQt5| doesn't like the Python native \verb|threading| module. After running \verb|QApplication|, any operations from \verb|threading| module will block the main thread, which is totally not what we expected.
 
-    Our application crashes all day, all night, 24 * 7, non-stop. Making us want to drop out of CSC110. But nevertheless, we still overcame the difficulties and produced a "Functioning" application.
+        Then, we switched to \verb|QThread| which is preferred by \verb|PyQt5|. However, another problem raised that as we know, \verb|PyQt5| is thread-safe which means that it doesn't allow any modifications from another \verb|QThread|, so we could not simply run initialization on another \verb|QThread| and directly report the progress to the \verb|PyQt5|.
 
-    \subsection{Next steps}
+        When we nearly gave up implementing the progress bar, the angels came. We remembered the \verb|PyQt5| had the signals and slots mechanism (we explained earlier), and we could actually create a new signal in our monitor thread and send this signal to the main gui thread every time the progress updated. In this way, we utilized the built-in mechanism of \verb|PyQt5| and prevented any thread-unsafe operations. 
 
-    We will be carrying the skills we developed in this project into other projects in the future. We have now acquired the ability to download, process, and hash data. These abilities would be necessary to create any automated application in the future.
+        Retrospectively, because we learned many valuable knowledge from this challenge and now we know how to tackle it, the progress bar is not very difficult. However, although the progress bar itself is trivial, the processes involved in overcoming the challenge are pivotal to us. 
 
-    We also acquired one of the most important skills in the Computer Science Industry, which is to design a Graphical User Interface. This is the ultimate version of "Designer to User" contract, which provides a very "Easy to use" interface so that users without any knowledge in Computer Science can also use this application to their advantage.
+        \newpage
 
-    This project will be held public on GitHub repository for anyone to fork and create an updated version of the application. We have included docstrings and comments everywhere around our code for anyone that wishes to fork our Repository.
+        \item The other challenge is about optimizations.
+        
+        In our plot, we implemented a cross-hair that centered on the closet point in the line from the cursor. We successfully implemented it with binary search and many data transformations and calculations. However, the frame rate per second (FPS) was very low when moving the cross-hair.
 
-    We will also claim copyright, specifically MIT License 2.0 in the GitHub repository, so no harm will be done to the University of Toronto's CSC110Y1 Fall's instructing team, specifically Professor Mario Badr, Professor Thomas Fairgrieve, and Professor David Liu.
+        To investigate the root of the problem, we analyzed the running time of our algorithms but it turned out that the running time was good ($\bigO(n)$). 
+        
+        Then, we used \verb|time| module and divided the codes into many piece of codes to calculate the real times each piece took. Finally, we found that the root of the evil is actually the \verb|matplotlib#Canvas.draw()| function call. But here comes the issues, we cannot modify the code from \verb|matplotlib| to make it faster.
+        
+        After many researches, we found out that we could solve this issue with a relatively advanced method: blit. Since we already had many experiences from the previous challenge, by reading through the documentation, experimenting with many small examples, and updating the whole implementation of \verb|PlotCanvas|, we successfully implement blit to fix the issue.
+        
+        We firstly draw the figure, excluding the cross-hair, and save the figure background to cache it. Then, every time the cursor moves, we only draw the cross-hair and restore the figure from cache. In this way, the previous cross-hair disappears because the figure background does not contain the cross-hair - we draw the figure before the cross-hair, and we don't need to redraw the background frequently.
+
+        This largely improve the FPS and now the cross-hair is very smooth.
+    \end{itemize}
+
+    \subsection{The Future}
+
+    \begin{itemize}
+        \item We will be carrying the skills we developed in this project into other projects in the future. We have now acquired the ability to download, process, and hash data. These abilities would be necessary to create many more applications in the future.
+        \item We also acquired one of the most important skills in the Computer Science Industry, which is to design a Graphical User Interface. This is the ultimate version of "Designer to User" contract, which provides a very "Easy to use" interface so that users without any knowledge in Computer Science can also use this application to their advantage.
+        \item This project will be held public on GitHub repository for anyone to fork and create an updated version of the application. We have included docstrings and comments everywhere around our code.
+        \item We will also claim copyright, specifically MIT License 2.0 in the GitHub repository, so no harm will be done to the University of Toronto's CSC110Y1 Fall's instructing team.
+    \end{itemize}
 
     \newpage
 
