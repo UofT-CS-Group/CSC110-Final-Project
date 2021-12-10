@@ -10,46 +10,25 @@ from typing import Dict, Optional
 # Requests library
 import requests
 
+from config_manager import ConfigManager
+
 # =================================================================================================
 # Constants
 # =================================================================================================
 
-COVID19_RESOURCE_NAME = 'time_series_covid19_confirmed_global.csv'
-SCHOOL_CLOSURE_RESOURCE_NAME = 'full_dataset_31_oct.csv'
-ICON_RESOURCE_NAME = 'icon.png'
-MARKERS_ICON_RESOURCE_NAMES = ['m00.webp', 'm01.webp', 'm02.webp', 'm03.webp', 'm04.webp',
-                               'm05.webp', 'm06.webp', 'm07.webp', 'm08.webp', 'm09.webp',
-                               'm10.webp', 'm11.webp', 'm12.webp', 'm13.webp', 'm14.webp',
-                               'm15.webp', 'm16.webp', 'm17.webp', 'm18.webp', 'm19.webp',
-                               'm20.webp', 'm21.webp', 'm22.webp', 'm23.webp', 'm24.webp',
-                               'm25.webp', 'm26.webp', 'm27.webp', 'm28.webp', 'm29.webp',
-                               'm30.webp', 'm31.webp', 'm32.webp', 'm33.webp', 'm34.webp',
-                               'm35.webp', 'm36.webp']
-MARKERS_ICON_RESOURCE_MD5S = \
-    ['2516b9b9478445f0aa2f343b693287d2', '08a671c63e0a486dd66490cd8031c096',
-     '649d76bf9be016809e334c2f0a28051b', '28e5855bbef8d03befcf3e6680aa4fb2',
-     'c4800af014e4781e87925a70e4fef478', 'ca6f7c7784c3657b353d64f8e7e23324',
-     'f1adecca8f29f1023a05385e7dcc674f', '27f512a1b41b405f6bf4d24c160a9a85',
-     '41b09848a24c02bb0e42696fd923cbf3', '55c33bacbf033b5a28c3b88bc340a164',
-     '8a2d1248f6b9650771e53df983f4922a', '3da43c3943e0fd35f2b5e60730ff10ee',
-     '43b13e75eb87111eb8297752b4c8fd5d', 'e63f8d4362a2f9fe375f7241ee590287',
-     '0bafbee3bccc60b539d6cd36d5d291ea', 'c917adeefca067f0dba6d037188af9cc',
-     '4fc4ba80d1b36d0ffb5ed4b1fefa3ff0', '9030d1476cdcc6c2c4c1e61520b2a527',
-     'fb136919c9f332b444086f0612f0bad6', 'd643aa5dec07341a2d5c30897272d123',
-     '365454729acc0a355cba59fba0e1e12b', 'a873cfeee199064b3a851b1c971d02f7',
-     '48fe997cd5f335d7f7d21df13cd811cb', 'e6398c2cc007443ffb4642615b4ee42b',
-     'ce059d192da59e4394327120e9165a51', '10d8dbc0551ad359abb756a3abc5de50',
-     '6dd7de7405c6fcf2b82b83669017c6c0', 'cbf1103fa8626e91afcb2032ea105c35',
-     '89d9475114f803352767d0c91894c8b6', '3cf4679564ed8ed4b3690960685cb8f9',
-     '278edd692efdd27c7ee5ffd731018e73', '2004bb108397a867958b4ca3eaf32f92',
-     'aee8ea41f6f605fb69aeff7cdfc4c87d', '3f54840423cbbfa01b2e7d8160beee5a',
-     '7d6d3496029fa7a87d69a36794193df4', 'fa3439c417d310e28210d9bbc3450a15',
-     '8cdda7e121352625ec963f37bcdd5427']
+conf_manager = ConfigManager("resources/config.json")
+conf = conf_manager.data
+
+COVID19_RESOURCE_NAME = conf["resource"]["covid_resource_name"]
+SCHOOL_CLOSURE_RESOURCE_NAME = conf["resource"]["school_closure_resource_name"]
+ICON_RESOURCE_NAME = conf["resource"]["icon_resource_name"]
+MARKERS_ICON_RESOURCE_NAMES = conf["resource"]["marker_resource_icon"]["name"]
+MARKERS_ICON_RESOURCE_MD5S = conf["resource"]["marker_resource_icon"]["md5"]
 
 # MD5 Checksum Settings
-BUFFER_SIZE = 65536
+BUFFER_SIZE = conf["resource"]["buffer_size"]
 # Number of attempts to re-download file if failed
-RETRY_COUNT = 3
+RETRY_COUNT = conf["resource"]["retry_count"]
 
 
 # =================================================================================================
