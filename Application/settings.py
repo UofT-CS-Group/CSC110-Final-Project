@@ -9,7 +9,7 @@ Settings include:
 """
 # Python built-ins
 import logging
-from typing import Callable, List
+from typing import Callable, Dict, List
 
 # Our modules
 import algorithms
@@ -31,5 +31,16 @@ FONT_SIZE = 14
 # =================================================================================================
 # Logger
 # =================================================================================================
+
 LOG_LEVEL = logging.INFO
 LOG_FORMAT = '[%(asctime)s] - %(levelname)s - %(message)s'
+
+
+def init_setting(setting_config: Dict) -> None:
+    """
+    Init all settings from setting_config.
+    """
+    global FONT_FAMILY
+    FONT_FAMILY = setting_config['font_family']
+    global FONT_SIZE
+    FONT_SIZE = setting_config['font_size']

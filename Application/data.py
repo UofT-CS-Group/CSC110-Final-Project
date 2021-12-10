@@ -4,15 +4,14 @@ This module contains all classes, functions, and constants for our data.
 # Python built-ins
 import csv
 import datetime
-import logging
 import math
 from enum import Enum
-from typing import Dict, List, Set
+from typing import List, Set
 
 # Our modules
 import algorithms
-import resource_manager
 import settings
+from resource_manager import *
 
 
 # =================================================================================================
@@ -331,8 +330,8 @@ def init_data() -> None:
 
     progress_description = 'Checking and downloading resources...'
     try:
-        resource_manager.init_resources()
-    except resource_manager.FailedToDownloadResourceException as e:
+        init_resources()
+    except FailedToDownloadResourceException as e:
         progress_description = str(e)
         return
     progress += math.ceil(TOTAL_NUMBER_DATA * 0.01)
@@ -342,9 +341,8 @@ def init_data() -> None:
     timestamp1 = time.time()
 
     progress_description = 'Reading data...'
-    read_covid_data_global(
-            'resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv')
-    read_closure_data('resources/school_closures_datasets/full_dataset_31_oct.csv')
+    read_covid_data_global(RESOURCES_DICT[COVID19_RESOURCE_NAME].local_path)
+    read_closure_data(RESOURCES_DICT[SCHOOL_CLOSURE_RESOURCE_NAME].local_path)
 
     progress_description = 'Manipulating data...'
     # Init locations
