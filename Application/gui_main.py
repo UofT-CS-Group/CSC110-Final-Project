@@ -49,25 +49,26 @@ class PlotToolbar(NavigationToolbar):
     toolitems = [t for t in NavigationToolbar.toolitems if t[0] in {'Home'}]
     window: Any
 
-    def __init__(self, canvas, parent, coordinates=True):
+    def __init__(self, canvas, parent, coordinates=True) -> None:
         super().__init__(canvas, parent, coordinates)
         self.window = parent
         set_font(self)
 
-    def _init_toolbar(self):
+    def _init_toolbar(self) -> None:
         """
         Just leave it as blank.
         """
         pass
 
-    def home(self, *args):
+    def home(self, *args) -> None:
         """
         Override the super home function.
 
         This function is executed when user clicks the home button on this toolbar.
         If user clicked it, then we replot our plots to its original states.
         """
-        self.window.update_plot()
+        if self.canvas.plotted:
+            self.window.update_plot()
 
 
 class PlotCanvas(FigureCanvas):
@@ -126,6 +127,8 @@ class PlotCanvas(FigureCanvas):
     closure_prev_x: float = 0
     closure_prev_y: float = 0
 
+    plotted: bool
+
     def __init__(self) -> None:
         """
         Initialize a PlotCanvas instance.
@@ -144,6 +147,10 @@ class PlotCanvas(FigureCanvas):
         # Initialize curr_x and curr_y to None and updated from the on_mouse_move function
         self.curr_x = None
         self.curr_y = None
+
+        # Initialize a storage bool to check if the plots are out
+        self.plotted = False
+
         # Formatting the right upper corner of the display
         self.covid_axes.format_coord = lambda _, __: \
             f'Date = {self.curr_x}, Cases = {self.curr_y}'
@@ -456,8 +463,9 @@ class MainWindowUI(QMainWindow):
         - progress_bar: A progress bar displayed at the right corner of the status bar.
             - It's only responsible for displaying the progress of our data loading process.
     """
-    width: int = 1400
-    height: int = 865
+    # Window sizes
+    width: int
+    height: int
 
     # Introduction Group (Decoration)
     about_group: StandardGroupBox
@@ -508,11 +516,13 @@ class MainWindowUI(QMainWindow):
 
     progress_bar: StandardProgressBar
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, width, height, *args, **kwargs) -> None:
         """
         Init the whole UI.
         """
         super(MainWindowUI, self).__init__(*args, **kwargs)
+        self.width = width
+        self.height = height
         self.init_window()
 
     def init_window(self) -> None:
@@ -885,8 +895,8 @@ class MainWindow(MainWindowUI):
         self.start_date_edit.dateChanged.connect(self.on_start_date_edit_changed)
         self.end_date_edit.dateChanged.connect(self.on_end_date_edit_changed)
         # Date slider
-        self.start_date_slider.sliderMoved.connect(self.on_start_date_slider_moved)
-        self.end_date_slider.sliderMoved.connect(self.on_end_date_slider_moved)
+        self.start_date_slider.valueChanged.connect(self.on_start_date_slider_moved)
+        self.end_date_slider.valueChanged.connect(self.on_end_date_slider_moved)
 
     def update_plot(self) -> None:
         """
@@ -996,6 +1006,7 @@ class MainWindow(MainWindowUI):
             self.initialization_helper_label.setText(
                     'Please click the button below \nto reinitialize our data!')
             self.settings_menu.setDisabled(False)
+            self.plot_canvas.plotted = True
 
     @pyqtSlot()
     def on_init_button_clicked(self) -> None:
