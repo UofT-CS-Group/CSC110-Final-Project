@@ -57,11 +57,7 @@ if __name__ == '__main__':
 
     # Obtaining screen size and setting window size
     screen = app.primaryScreen()
-    if platform.system() == 'Windows':
-        height = int(0.7 * screen.size().width())
-
-    else:
-        height = int(0.5 * screen.size().width())
+    height = int(0.8 * screen.size().height())
 
     width = int(1.618 * height)
 
