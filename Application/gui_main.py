@@ -21,8 +21,8 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 # Our modules
 import algorithms
 import data
-import resource_manager
 from gui_utils import *
+from resource_manager import *
 
 if platform.system() == 'Windows':
     # Ctype
@@ -530,10 +530,6 @@ class MainWindowUI(QMainWindow):
         self.setWindowTitle('Educational Crisis - A Closer Examination on the Correlations Between '
                             'Covid-19 and School Closures Around the Globe')
 
-        # Set window icon
-        icon = QIcon('resources/assets/icon.png')
-        self.setWindowIcon(icon)
-
         # Initialize status bar
         self.statusBar().showMessage('Waiting for initialization start...')
 
@@ -550,8 +546,7 @@ class MainWindowUI(QMainWindow):
         # Introduction Group
         self.about_group = StandardGroupBox('About', self)
         self.big_icon = StandardLabel(parent=self.about_group)
-        pixmap = QPixmap(
-                resource_manager.RESOURCES_DICT[resource_manager.ICON_RESOURCE_NAME].local_path) \
+        pixmap = QPixmap(RESOURCES_DICT[ICON_RESOURCE_NAME].local_path)\
             .scaled(120, 120, Qt.KeepAspectRatio)
         self.big_icon.setPixmap(pixmap)
         self.about_label = StandardLabel('By Alyssa, \nCharlotte, \nRay, and \nScott',
@@ -835,21 +830,26 @@ class MainWindow(MainWindowUI):
 
         for marker, info in LINE_MARKERS.items():
             description, icon_name = info
-            covid_action = QAction(description, covid_marker_menu)
-            covid_action.setIcon(QIcon(f'resources/assets/markers/{icon_name}'))
-            covid_action.setStatusTip(description)
-            covid_action.triggered.connect(make_function(self.plot_canvas.update_lines,
-                                                         self.plot_canvas.covid_axes,
-                                                         marker=marker))
-            covid_marker_menu.addAction(covid_action)
+            try:
+                icon = QIcon(RESOURCES_DICT[icon_name].local_path)
+                covid_action = QAction(description, covid_marker_menu)
+                covid_action.setIcon(icon)
+                covid_action.setStatusTip(description)
+                covid_action.triggered.connect(make_function(self.plot_canvas.update_lines,
+                                                             self.plot_canvas.covid_axes,
+                                                             marker=marker))
+                covid_marker_menu.addAction(covid_action)
 
-            closure_action = QAction(description, closure_marker_menu)
-            closure_action.setIcon(QIcon(f'resources/assets/markers/{icon_name}'))
-            closure_action.setStatusTip(description)
-            closure_action.triggered.connect(make_function(self.plot_canvas.update_lines,
-                                                           self.plot_canvas.closure_axes,
-                                                           marker=marker))
-            closure_marker_menu.addAction(closure_action)
+                closure_action = QAction(description, closure_marker_menu)
+                closure_action.setIcon(icon)
+                closure_action.setStatusTip(description)
+                closure_action.triggered.connect(make_function(self.plot_canvas.update_lines,
+                                                               self.plot_canvas.closure_axes,
+                                                               marker=marker))
+                closure_marker_menu.addAction(closure_action)
+            except KeyError:
+                # This is because none marker does not have icon.
+                pass
 
         # View Menu
         view_statusbar = QAction('Display Statusbar', self)

@@ -1,0 +1,292 @@
+{
+    "setting": {
+        "font_family": "Calibri",
+        "font_size": 14
+    },
+    "resource": {
+        "buffer_size": 65536,
+        "retry_count": 3,
+        "resources": [
+            {
+                "preferred_name": "covid",
+                "name": "time_series_covid19_confirmed_global.csv",
+                "local_path": "resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv",
+                "identifier": "6a7680ffa0200328bdd2823dd998c62e"
+            },
+            {
+                "preferred_name": "closure",
+                "name": "full_dataset_31_oct.csv",
+                "local_path": "resources/school_closures_datasets/full_dataset_31_oct.csv",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/school_closures_datasets/full_dataset_31_oct.csv",
+                "identifier": "9426167fdc1b664da627e74d84328c35"
+            },
+            {
+                "preferred_name": "icon",
+                "name": "icon.png",
+                "local_path": "resources/assets/icon.png",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/icon.png",
+                "identifier": "fe7c8b3bb7ee7dccea8372da9250e414"
+            },
+            {
+                "preferred_name": "m00.webp",
+                "name": "m00.webp",
+                "local_path": "resources/assets/markers/m00.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m00.webp",
+                "identifier": "2516b9b9478445f0aa2f343b693287d2"
+            },
+            {
+                "preferred_name": "m01.webp",
+                "name": "m01.webp",
+                "local_path": "resources/assets/markers/m01.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m01.webp",
+                "identifier": "08a671c63e0a486dd66490cd8031c096"
+            },
+            {
+                "preferred_name": "m02.webp",
+                "name": "m02.webp",
+                "local_path": "resources/assets/markers/m02.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m02.webp",
+                "identifier": "649d76bf9be016809e334c2f0a28051b"
+            },
+            {
+                "preferred_name": "m03.webp",
+                "name": "m03.webp",
+                "local_path": "resources/assets/markers/m03.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m03.webp",
+                "identifier": "28e5855bbef8d03befcf3e6680aa4fb2"
+            },
+            {
+                "preferred_name": "m04.webp",
+                "name": "m04.webp",
+                "local_path": "resources/assets/markers/m04.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m04.webp",
+                "identifier": "c4800af014e4781e87925a70e4fef478"
+            },
+            {
+                "preferred_name": "m05.webp",
+                "name": "m05.webp",
+                "local_path": "resources/assets/markers/m05.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m05.webp",
+                "identifier": "ca6f7c7784c3657b353d64f8e7e23324"
+            },
+            {
+                "preferred_name": "m06.webp",
+                "name": "m06.webp",
+                "local_path": "resources/assets/markers/m06.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m06.webp",
+                "identifier": "f1adecca8f29f1023a05385e7dcc674f"
+            },
+            {
+                "preferred_name": "m07.webp",
+                "name": "m07.webp",
+                "local_path": "resources/assets/markers/m07.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m07.webp",
+                "identifier": "27f512a1b41b405f6bf4d24c160a9a85"
+            },
+            {
+                "preferred_name": "m08.webp",
+                "name": "m08.webp",
+                "local_path": "resources/assets/markers/m08.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m08.webp",
+                "identifier": "41b09848a24c02bb0e42696fd923cbf3"
+            },
+            {
+                "preferred_name": "m09.webp",
+                "name": "m09.webp",
+                "local_path": "resources/assets/markers/m09.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m09.webp",
+                "identifier": "55c33bacbf033b5a28c3b88bc340a164"
+            },
+            {
+                "preferred_name": "m10.webp",
+                "name": "m10.webp",
+                "local_path": "resources/assets/markers/m10.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m10.webp",
+                "identifier": "8a2d1248f6b9650771e53df983f4922a"
+            },
+            {
+                "preferred_name": "m11.webp",
+                "name": "m11.webp",
+                "local_path": "resources/assets/markers/m11.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m11.webp",
+                "identifier": "3da43c3943e0fd35f2b5e60730ff10ee"
+            },
+            {
+                "preferred_name": "m12.webp",
+                "name": "m12.webp",
+                "local_path": "resources/assets/markers/m12.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m12.webp",
+                "identifier": "43b13e75eb87111eb8297752b4c8fd5d"
+            },
+            {
+                "preferred_name": "m13.webp",
+                "name": "m13.webp",
+                "local_path": "resources/assets/markers/m13.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m13.webp",
+                "identifier": "e63f8d4362a2f9fe375f7241ee590287"
+            },
+            {
+                "preferred_name": "m14.webp",
+                "name": "m14.webp",
+                "local_path": "resources/assets/markers/m14.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m14.webp",
+                "identifier": "0bafbee3bccc60b539d6cd36d5d291ea"
+            },
+            {
+                "preferred_name": "m15.webp",
+                "name": "m15.webp",
+                "local_path": "resources/assets/markers/m15.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m15.webp",
+                "identifier": "c917adeefca067f0dba6d037188af9cc"
+            },
+            {
+                "preferred_name": "m16.webp",
+                "name": "m16.webp",
+                "local_path": "resources/assets/markers/m16.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m16.webp",
+                "identifier": "4fc4ba80d1b36d0ffb5ed4b1fefa3ff0"
+            },
+            {
+                "preferred_name": "m17.webp",
+                "name": "m17.webp",
+                "local_path": "resources/assets/markers/m17.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m17.webp",
+                "identifier": "9030d1476cdcc6c2c4c1e61520b2a527"
+            },
+            {
+                "preferred_name": "m18.webp",
+                "name": "m18.webp",
+                "local_path": "resources/assets/markers/m18.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m18.webp",
+                "identifier": "fb136919c9f332b444086f0612f0bad6"
+            },
+            {
+                "preferred_name": "m19.webp",
+                "name": "m19.webp",
+                "local_path": "resources/assets/markers/m19.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m19.webp",
+                "identifier": "d643aa5dec07341a2d5c30897272d123"
+            },
+            {
+                "preferred_name": "m20.webp",
+                "name": "m20.webp",
+                "local_path": "resources/assets/markers/m20.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m20.webp",
+                "identifier": "365454729acc0a355cba59fba0e1e12b"
+            },
+            {
+                "preferred_name": "m21.webp",
+                "name": "m21.webp",
+                "local_path": "resources/assets/markers/m21.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m21.webp",
+                "identifier": "a873cfeee199064b3a851b1c971d02f7"
+            },
+            {
+                "preferred_name": "m22.webp",
+                "name": "m22.webp",
+                "local_path": "resources/assets/markers/m22.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m22.webp",
+                "identifier": "48fe997cd5f335d7f7d21df13cd811cb"
+            },
+            {
+                "preferred_name": "m23.webp",
+                "name": "m23.webp",
+                "local_path": "resources/assets/markers/m23.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m23.webp",
+                "identifier": "e6398c2cc007443ffb4642615b4ee42b"
+            },
+            {
+                "preferred_name": "m24.webp",
+                "name": "m24.webp",
+                "local_path": "resources/assets/markers/m24.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m24.webp",
+                "identifier": "ce059d192da59e4394327120e9165a51"
+            },
+            {
+                "preferred_name": "m25.webp",
+                "name": "m25.webp",
+                "local_path": "resources/assets/markers/m25.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m25.webp",
+                "identifier": "10d8dbc0551ad359abb756a3abc5de50"
+            },
+            {
+                "preferred_name": "m26.webp",
+                "name": "m26.webp",
+                "local_path": "resources/assets/markers/m26.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m26.webp",
+                "identifier": "6dd7de7405c6fcf2b82b83669017c6c0"
+            },
+            {
+                "preferred_name": "m27.webp",
+                "name": "m27.webp",
+                "local_path": "resources/assets/markers/m27.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m27.webp",
+                "identifier": "cbf1103fa8626e91afcb2032ea105c35"
+            },
+            {
+                "preferred_name": "m28.webp",
+                "name": "m28.webp",
+                "local_path": "resources/assets/markers/m28.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m28.webp",
+                "identifier": "89d9475114f803352767d0c91894c8b6"
+            },
+            {
+                "preferred_name": "m29.webp",
+                "name": "m29.webp",
+                "local_path": "resources/assets/markers/m29.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m29.webp",
+                "identifier": "3cf4679564ed8ed4b3690960685cb8f9"
+            },
+            {
+                "preferred_name": "m30.webp",
+                "name": "m30.webp",
+                "local_path": "resources/assets/markers/m30.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m30.webp",
+                "identifier": "278edd692efdd27c7ee5ffd731018e73"
+            },
+            {
+                "preferred_name": "m31.webp",
+                "name": "m31.webp",
+                "local_path": "resources/assets/markers/m31.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m31.webp",
+                "identifier": "2004bb108397a867958b4ca3eaf32f92"
+            },
+            {
+                "preferred_name": "m32.webp",
+                "name": "m32.webp",
+                "local_path": "resources/assets/markers/m32.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m32.webp",
+                "identifier": "aee8ea41f6f605fb69aeff7cdfc4c87d"
+            },
+            {
+                "preferred_name": "m33.webp",
+                "name": "m33.webp",
+                "local_path": "resources/assets/markers/m33.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m33.webp",
+                "identifier": "3f54840423cbbfa01b2e7d8160beee5a"
+            },
+            {
+                "preferred_name": "m34.webp",
+                "name": "m34.webp",
+                "local_path": "resources/assets/markers/m34.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m34.webp",
+                "identifier": "7d6d3496029fa7a87d69a36794193df4"
+            },
+            {
+                "preferred_name": "m35.webp",
+                "name": "m35.webp",
+                "local_path": "resources/assets/markers/m35.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m35.webp",
+                "identifier": "fa3439c417d310e28210d9bbc3450a15"
+            },
+            {
+                "preferred_name": "m36.webp",
+                "name": "m36.webp",
+                "local_path": "resources/assets/markers/m36.webp",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/assets/markers/m36.webp",
+                "identifier": "8cdda7e121352625ec963f37bcdd5427"
+            }
+        ]
+    }
+}

@@ -11,19 +11,36 @@ from PyQt5.QtGui import QIcon
 
 # Our modules
 import gui_main
-import settings
+from settings import *
 from resource_manager import *
 
 # =================================================================================================
 # Initialize logger
 # =================================================================================================
 logging.basicConfig(stream=sys.stdout,
-                    level=settings.LOG_LEVEL,
-                    format=settings.LOG_FORMAT)
+                    level=LOG_LEVEL,
+                    format=LOG_FORMAT)
 
 # =================================================================================================
 # Main Chunk
 # =================================================================================================
+
+
+def init_icons():
+    # If failed to download the icons, then let user know and continue running the program
+    logging.info('Initializing icons...')
+    if not init_resource(RESOURCES_DICT[ICON_RESOURCE_NAME]) or \
+            any(not init_resource(RESOURCES_DICT[name]) for name in MARKERS_ICON_RESOURCE_NAMES):
+
+        logging.critical('Failed to download icons!')
+        # Pls ignore the warning of the None, this is good.
+        QMessageBox.critical(None, 'Critical', 'Failed to download icons! \n'
+                                               'You will not see some of the icons of our program.',
+                             QMessageBox.Ok, QMessageBox.Ok)
+
+    else:
+        logging.info('Icon initialized!')
+
 
 # We need to retain a reference here to avoid garbage collection.
 # main_window will be initialized after the data are fully loaded
@@ -33,26 +50,23 @@ main_window: gui_main.MainWindow
 if __name__ == '__main__':
     logging.info('Starting application...')
 
+    logging.info('Loading config...')
+    config = Config('config.json')
+    logging.info('Config loaded!')
+
+    logging.info('Initializing settings...')
+    init_setting(config['setting'])
+    logging.info('Settings initialized!')
+
     logging.info('Registering resources...')
-    register_resources()
+    register_resources(config['resource'])
     logging.info('Resources registered!')
 
     # Create the QApplication instance.
     app = QApplication(sys.argv)
 
-    app.setWindowIcon(QIcon('resources/assets/icon.png'))
-
-    # If failed to download the icons, then let user know and continue running the program
-    logging.info('Initializing icons...')
-    if not init_resource(RESOURCES_DICT[ICON_RESOURCE_NAME]) or \
-            any(not init_resource(RESOURCES_DICT[name]) for name in MARKERS_ICON_RESOURCE_NAMES):
-        logging.critical('Failed to download icons!')
-        # Pls ignore the warning of the None, this is good.
-        QMessageBox.critical(None, 'Critical', 'Failed to download icons! \n'
-                                               'You will not see some of the icons of our program.',
-                             QMessageBox.Ok, QMessageBox.Ok)
-    else:
-        logging.info('Icon initialized!')
+    init_icons()
+    app.setWindowIcon(QIcon(RESOURCES_DICT[ICON_RESOURCE_NAME].local_path))
 
     main_window = gui_main.MainWindow()
     main_window.show()
