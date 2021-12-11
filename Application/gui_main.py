@@ -465,7 +465,7 @@ class MainWindowUI(QMainWindow):
     """
     # Window sizes
     width: int = 1200
-    height: int = int(1200 * 0.681)
+    height: int = int(1200 * 0.618)
 
     # Introduction Group (Decoration)
     about_group: StandardGroupBox
