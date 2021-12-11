@@ -20,7 +20,7 @@
 
     \section{Introduction}
 
-    COVID-19 profoundly impacted students’ learning environment and strategies. \textbf{Therefore, we are curious about how this global pandemic correlates with school closures all around the world as time passes, which is one of the main influencing factors that entirely changed our way of learning and living.} We will compare the levels of School Closure with the severity of COVID-19 of different countries in a specified time frame.
+    COVID-19 profoundly impacted students' learning environment and strategies. \textbf{Therefore, we are curious about how this global pandemic correlates with school closures all around the world as time passes, which is one of the main influencing factors that entirely changed our way of learning and living.} We will compare the levels of School Closure with the severity of COVID-19 of different countries in a specified time frame.
 
     As a group of students, COVID-19 changed our way of learning from face-to-face to online for quite a long time. In 2021, results from the National Survey of Public Education's Response to COVID-19 had shown that more than 46\%\footnote{National Survey of Public Education's Response to COVID-19 Infographic, https://www.air.org/sites/default/files/2021-07/infographic-results-national-covid-survey-june-2021\_1.pdf} of the students in the US across all grades are studying remotely. However, after COVID-19 eased a little bit, some of our schools reverted to the traditional in-person learning classes. A very prevalent issue amongst students is frequently switching between online and in-person learning. Under such circumstances, learning became increasingly hard as time passed.
 
@@ -34,19 +34,19 @@
 
     \section{Dataset Description}
 
-    We have identified two main datasets that will be relevant for our project’s implementation.
+    We have identified two main datasets that will be relevant for our project's implementation.
 
     These are:
 
     \begin{enumerate}
         \item
-        Global School Closures for COVID-19\footnote{Global School Closures COVID-19, https://data.humdata.org/dataset/global-school-closures-covid19} – Obtained from The Humanitarian Data Exchange, compiled by Saleh Ahmed Rony, sourced from UNESCO.
+        Global School Closures for COVID-19\footnote{Global School Closures COVID-19, https://data.humdata.org/dataset/global-school-closures-covid19} - Obtained from The Humanitarian Data Exchange, compiled by Saleh Ahmed Rony, sourced from UNESCO.
 
         \item
-        COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University\footnote{One of the most used COVID-19 Cases Database, github.com/CSSEGISandData/COVID-19} – Obtained from GitHub, compiled by JHU, sourced from WHO, ECDC, DXY, US CDC, etc.
+        COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University\footnote{One of the most used COVID-19 Cases Database, github.com/CSSEGISandData/COVID-19} - Obtained from GitHub, compiled by JHU, sourced from WHO, ECDC, DXY, US CDC, etc.
     \end{enumerate}
 
-    Both datasets will be stored in a Comma Separated Value file, which will allow us to read from them easily through Python’s csv library.
+    Both datasets will be stored in a Comma Separated Value file, which will allow us to read from them easily through Python's csv library.
 
     Furthermore, both datasets are very credible as they are sourced from multiple sites, including but not limited to WHO, ECDC, and US CDC. Furthermore, these datasets are also licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0), which allows us to utilize these data for our own needs.
 
@@ -99,25 +99,25 @@
 
     \section{Computational Overview}
 
-    We divide our project into 3 main parts: data pre-processing, Graphical User Interface (GUI) implementation, and interactive data manipulations (filtering, aggregation, searching, etc).
+    We divided our project into 3 main parts: data pre-processing, Graphical User Interface (GUI) implementation, and interactive data manipulations (filtering, aggregation, searching, etc).
 
     \subsection{Data Pre-Processing}
 
     \subsubsection{Resource Initialization}
 
-    In this part of the implementation, we have utilized \verb|requests|, \verb|os|, and \verb|hashlib| to download required resources (data sets, icons, etc) and verify their completeness.
+    In this part of the implementation, we utilized \verb|requests|, \verb|os|, and \verb|hashlib| to download required resources (data sets, icons, etc) and verify their completeness.
 
-    The \verb|requests| library allows our application to get the contents of certain URLs. We used this library in combination with \verb|os| to download and save those resources into the working directory, so our application can run with the specified data. Specifically, we used requests.get, which allows us to retrieve the information contained in the specified URL, and \verb|os.makedirs|, which allows us to create directories to store our files in. Also, we set up a public GitHub repository to hold all of our codes and resources, so our application can visit those permanent raw links and download all of the resources.
+    The \verb|requests| library allowed our application to get the contents of certain URLs. We used this library in combination with \verb|os| to download and save those resources into the working directory, so our application can run with the specified data. Specifically, we used requests.get, which allowed us to retrieve the information contained in the specified URL, and \verb|os.makedirs|, which allowed us to create directories to store our files in. Also, we set up a public GitHub repository to hold all of our codes and resources, so our application can visit those permanent raw links and download all of the resources.
 
     We also implemented a MD5 Hash function\footnote{Implementation referenced from StackOverFlow, https://stackoverflow.com/questions/3431825/generating-an-md5-checksum-of-a-file} to calculate the unique identifiers of our resources. For those newly downloaded resources, our application will compare their hash values with the predefined valid hash values to ensure that the files downloaded are what we expected.
 
-    To put all of these together, we implement a module \verb|resource_manager.py|, containing a \verb|Resource| class and a bunch of other helper functions and constants. An instance of the \verb|Resource| class represents a resource file of our application. Each resource instance contains a remote path, a unique identifier, and a local path so we can download and verify the files. Also, we build the whole resource manager in an extendable way: By maintaining a \verb|dict| that maps resource name to the \verb|Resource| instance, we could simply register, or add, a new resource to the \verb|dict| if needed. Then, our application will automatically handle all downloading and file manipulating tasks without any further modifications.
+    To put all of these together, we implemented a module called \verb|resource_manager|, containing a \verb|Resource| class, other helper functions, and some constants. An instance of the \verb|Resource| class represents a resource file of our application. Each resource instance contains a remote path, a unique identifier, and a local path so we can download and verify the files. Also, we built the whole resource manager in an extendable way: By maintaining a \verb|dict| that maps resource name to the \verb|Resource| instance, we could simply register, or add, a new resource to the \verb|dict| if needed. Then, our application will automatically handle all downloading and file manipulating tasks without any further modifications. TODO: Add config part
 
     \subsubsection{Algorithms}
 
-    To simplify our data manipulations, we abstract out few generic algorithms such as sorting, grouping, searching, etc. in a new module: \verb|algorithms.py|.
+    To simplify our data manipulations, we abstracted out few generic algorithms such as sorting, grouping, searching, etc. in a new module: \verb|algorithms|.
 
-    All of the algorithms in \verb|algorithms.py| are generic, meaning they could handle all data types with the help of some callable parameters. To be more specific, we used a generic type \verb|T| to represent any type of arguments passed into our algorithms. However, not all data types support the operations an algorithm needed (such as compare operation in sorting algorithm). Thus, our algorithms need another callable parameter to specify how the operations are performed on the passed data type. 
+    All of the algorithms in \verb|algorithms| are generic, meaning they can handle all data types with the help of some callable parameters. To be more specific, we used a generic type \verb|T| to represent any type of arguments passed into our algorithms. However, not all data types support the operations an algorithm needed (such as compare operation in sorting algorithm). Thus, we added another callable parameter to specify how the operations are performed on the passed data type \verb|T|.
 
     Additionally, we implemented multiple sorting algorithms for the purposes of showing the impact of algorithm running time complexity:
     
@@ -128,19 +128,19 @@
         \item Merge Sort: $\bigO(n\log(n))$
     \end{itemize}
 
-    Upon the initialization of the application, the user should choose a sorting algorithm for the whole application and then initialize the data. This is achieved by assigning a new sorting function reference (defined in \verb|algorithms.py|) to the project sorting function defined in \verb|settings.py|. That is, our project will always call the sorting function defined in \verb|settings.py| instead of the sorting functions in \verb|algorithms.py|.
+    Upon the initialization of the application, the user should choose a sorting algorithm for the whole application and then initialize the data. This is achieved by assigning a new sorting function reference (defined in \verb|algorithms|) to the project sorting function defined in \verb|settings|. That is, our project will always call the sorting function defined in \verb|settings| instead of the sorting functions in \verb|algorithms|.
 
     Also, we implemented some grouping and searching algorithms for data manipulations like grouping all data by a categorical variable or searching for a date in all the date values we have.
 
     \subsubsection{Data Initialization}
 
-    We read all the data into Python with help of the \verb|csv| library in the module \verb|data.py|.
+    We read all the data into Python in the module called \verb|data| with help of the \verb|csv| library 
 
     For the COVID-19 Dataset, we only used the columns with the headers "Country" and "Dates", as they provide the information for us to visualize.
 
     For the School Closure Dataset, we used all of the columns aside from the "Note" column, as it provides irrelevant and hard-to-process information.
 
-    Our program created the following data classes:
+    We created the following data classes:
 
     \begin{itemize}
         \item \verb|ClosureStatus| - An \verb|Enum| class that maps the different status of school closure to an int value
@@ -149,16 +149,16 @@
         \item \verb|Province| - A class that represents a province, inherited from \verb|Location|.
         \item \verb|BaseData| - A basic class that represents a piece of data.
         \item \verb|TimeBasedData| - A class that represents a time-based data, inherited from \verb|BaseData|.
-        \item \verb|CovidCaseData| - A class that represents an entry in COVID data, inherited from \verb|TimeBasedData|.
+        \item \verb|CovidCaseData| - A class that represents an entry in COVID-19 data, inherited from \verb|TimeBasedData|.
         \item \verb|SchoolClosureData| - A class that represents an entry in Closure Data, inherited from \verb|TimeBasedData|.
     \end{itemize}
 
-    Our program generates the following GLOBAL CONSTANTS:
+    We created the following GLOBAL CONSTANTS:
 
     \begin{itemize}
         \item \verb|ALL_COVID_CASES| - A list of all \verb|CovidCaseData| objects read from the data set, including country-wide and provincial data.
-        \item \verb|COUNTRIES_TO_COVID_CASES| - A dictionary mapping from a country name to all of its  respective \verb|CovidCaseData|.
-        \item \verb|GLOBAL_COVID_CASES| - A list of all \verb|CovidCaseData| that contains COVID19 cases summed across all countries on a certain date.
+        \item \verb|COUNTRIES_TO_COVID_CASES| - A dictionary mapping from a country name to all of its respective \verb|CovidCaseData|.
+        \item \verb|GLOBAL_COVID_CASES| - A list of all \verb|CovidCaseData| that contains COVID-19 cases summed across all countries on a certain date.
         \item \verb|ALL_SCHOOL_CLOSURES| - A list of all \verb|SchoolClosureData| that is read from the data set.
         \item \verb|COUNTRIES_TO_SCHOOL_CLOSURES| - A dictionary mapping from a country name to its respective \verb|SchoolClosureData|.
         \item \verb|GLOBAL_SCHOOL_CLOSURES| - A list of \verb|SchoolClosureData| with only dates and the status of the majority of the schools in that date.
@@ -166,15 +166,15 @@
         \item \verb|SORTED_COUNTRIES| - A list of sorted \verb|Country| objects by country name.
     \end{itemize}
 
-    Then, we converted the raw data read from the data set into the classes specified above, so we could easily utilize them in practice. Also, by filtering, grouping, and sorting the data we have loaded into Python, we obtain the GLOBAL CONSTANTS defined above that could be utilized by other modules (\verb|gui_main.py|, etc).
+    Then, we converted the raw data read from the data set into the classes specified above, so we could easily utilize them in practice. Also, by filtering, grouping, and sorting the data we have loaded into Python, we obtained those GLOBAL CONSTANTS defined above that could be utilized by other modules.
 
-    This brings us to the next part of our project, which is the GUI Implementation.
+    This brings us to the next part of our project, which is the Graphical User Interface implementation.
 
     \subsection{Graphical User Interface}
 
     We utilized \verb|PyQt5| to generate an interactive graphical user interface and \verb|Matplotlib| to plot graphs.
 
-    We have implemented the following functionalities:
+    We implemented the following functionalities:
 
     \begin{itemize}
         \item A fully functional Graphical User Interface with menu bar, multiple buttons, input date edits, sliders, etc.
@@ -187,32 +187,31 @@
 
     \subsubsection{Utilities}
 
-    We create a module \verb|gui_utils.py| that contains many helper functions, classes, and constants.
+    We created a module called \verb|gui_utils| that contains many helper functions, classes, and constants.
 
-    Basically, we inherit all PyQt widgets used to extend their functionalities:
+    In this module, we created the following classes that inherited from their PyQt Widget Parents and extended their capabilities to better suit our needs:
 
     \begin{itemize}
-        \item \verb|StandardLabel|: A standard text label.
-        \item \verb|StandardPushButton|: A standard button.
-        \item \verb|StandardComboBox|: A standard combo box.
-        \item \verb|StandardDateEdit|: A standard date editor.
-        \item \verb|StandardCheckbox|: A standard checkbox.
-        \item \verb|StandardRadioButton|: A standard radio button.
-        \item \verb|StandardProgress Bar|: A standard progress bar.
-        \item \verb|StandardGroupBox|: A standard group box.
-        \item \verb|StandardMenuBar|: A standard menu bar.
+        \item \verb|StandardLabel|: A standard text label for displaying strings and pixels.
+        \item \verb|StandardPushButton|: A standard button that can be pushed (clicked).
+        \item \verb|StandardComboBox|: A standard combo box that can help the user select an item from a list of items.
+        \item \verb|StandardDateEdit|: A standard date editor for displaying and editing dates (Not date and time).
+        \item \verb|StandardCheckbox|: A standard checkbox that can be checked or unchecked.
+        \item \verb|StandardRadioButton|: A standard radio button that can be checked or unchecked.
+        \item \verb|StandardProgress Bar|: A standard progress bar for displaying the progress.
+        \item \verb|StandardGroupBox|: A standard group box that can group many other widgets together.
         \item ...
     \end{itemize}
 
     \subsubsection{Main Window}
 
-    Our main window is defined in module \verb|gui_main.py|, which consists of a ``frontend'' and a ``backend''.
+    Our main window is defined in module \verb|gui_main|, which consists of a ``frontend'' and a ``backend''.
 
     The ``frontend'' is the \verb|MainWindowUI| class that is responsible for creating widgets, initializing widgets' attributes, and managing the layout of all widgets. Also, it represents the ``true'' window itself and defines all the attributes of the window.
 
     The ``backend'' is the combination of multiple classes including \verb|PlotCanvas| and \verb|MainWindow|. Technically, all the codes besides the ``frontend'' part are responsible for running our ``backend''.
 
-    The \verb|PlotCanvas| class represents our plots and is responsible for handling all user's inputs to the plot such as mouse moving or dragging. We implemented the full zooming and panning functionalities by ourselves because we did not like how \verb|matplotlib| handle them. Also, we constructed a cross-hair that is always centered on the data that are the closet to the cursor position.
+    The \verb|PlotCanvas| class represents our plots and is responsible for handling all user's inputs to the plot such as mouse moving or dragging. We implemented the full zooming and panning functionalities by ourselves because we did not like how \verb|Matplotlib| implemented them. Also, we constructed a cross-hair that is always centered on the data entry that is closest to the cursor position.
 
     All the user's inputs on the main window, such as clicking a button, selecting a country, or sliding a slider are handled by the \verb|MainWindow| class. We utilized \verb|PyQt5| signals and slots mechanism to achieve most of the functionalities. For example, when a button is clicked, then the button sends a signal to a callback function to perform some actions. The callback functions are the slots, and the signals are the information passed into the callback functions.
 
@@ -234,11 +233,11 @@
 
     \section{Instructions}
 
-    Before everything start, please make sure you have a stable connection with the Internet, specifically, GitHub.
+    Before everything start, please make sure you have a stable Internet connection.
 
     \begin{enumerate}
         \item [1]
-            Download the zipped file we provided on MarkUs. The zipped file should contain ``''\verb|algorithms.py|, \verb|data.py|, \verb|gui_main.py|, \verb|gui_utils.py|, \verb|main.py|, \verb|resource_manager.py|, \verb|settings.py|, and \verb|requirements.txt|.''
+            Download the zipped file we provided on MarkUs. The zipped file should contain ``\verb|algorithms.py|, \verb|data.py|, \verb|gui_main.py|, \verb|gui_utils.py|, \verb|main.py|, \verb|resource_manager.py|, \verb|settings.py|, and \verb|requirements.txt|.''
 
         \item [2]
             Unzip the file in an empty directory (It is better to make sure the path to the directory only contains English letters).
@@ -251,7 +250,7 @@
             Either use PyCharm or a terminal to run "main.py" and you should be able to see a window popup.
 
         \item [5]
-            Select a "Sorting algorithm" and click the initialize button. After few seconds, our application should be ready.
+            Select a "Sorting algorithm" and click the initialize button. After a few seconds, our application should be ready.
 
         \item [6]
             You should be able to set the start and end dates for the plot, pan and zoom on the plot, select countries and plot the result again, and utilize the menu bar for more customizable configurations.
@@ -284,7 +283,7 @@
         \item Added features to download dataset and write in working directories.
         \item Added features to hash a file in MD5 to ensure its completeness.
         \item Removed some unused references and added new ones.
-        \item Removed the US Covid Dataset as it is unnecessary for our analysis purposes.
+        \item Removed the US COVID-19 Dataset as it is unnecessary for our analysis purposes.
     \end{itemize}
 
     \section{Discussion}
@@ -310,7 +309,7 @@
 
     \begin{itemize}
         \item Our application crashes all day, all night, 24 * 7, non-stop. Making us want to drop out of CSC110. But nevertheless, we still overcame the difficulties and produced a "Functioning" application.
-        \item One of the most impressive challenges is the implementation of progress bar. 
+        \item One of the biggest challenges we faced is the implementation of the progress bar.
         
         If we want to display a progress bar monitoring the progress of something like initialization, we need three tasks to be performed simultaneously, or asynchronously:
         \begin{enumerate}
@@ -319,15 +318,15 @@
             \item Continuously monitor the current progress and send the progress to the GUI to display.
         \end{enumerate}
 
-        Therefore, we need 2 more threads, in addition to the main GUI thread, to make the progress bar work as intended. But here comes the problems, we don't know anything about threading and specifically, threading with \verb|PyQt5|. 
+        Therefore, we need 2 more threads, in addition to the main GUI thread, to make the progress bar work as intended. But here comes the problems, we had no prior knowledge in multithreading and specifically, multithreading with \verb|PyQt5|. 
 
-        Then, we searched on the Internet, read the full documentation of \verb|PyQt5| which is in C++, study others' examples, and experiment tons of times. 
+        Then, we searched on the Internet, read the full documentation of \verb|PyQt5| which is in C++, study others' examples, and experimented endless times.
         
         We firstly used \verb|threading| module to run the progress bar on another window on another thread, but after many crashes without error message, we found that \verb|PyQt5| doesn't like the Python native \verb|threading| module. After running \verb|QApplication|, any operations from \verb|threading| module will block the main thread, which is totally not what we expected.
 
-        Then, we switched to \verb|QThread| which is preferred by \verb|PyQt5|. However, another problem raised that as we know, \verb|PyQt5| is thread-safe which means that it doesn't allow any modifications from another \verb|QThread|, so we could not simply run initialization on another \verb|QThread| and directly report the progress to the \verb|PyQt5|.
+        Then, we switched to \verb|QThread| which is preferred by \verb|PyQt5|. However, another problem arose that as we know, \verb|PyQt5| is thread-safe which means that it doesn't allow any modifications from another \verb|QThread|. Thus, we could not simply run initialization on another \verb|QThread| and directly report the progress to the \verb|PyQt5|.
 
-        When we nearly gave up implementing the progress bar, the angels came. We remembered the \verb|PyQt5| had the signals and slots mechanism (we explained earlier), and we could actually create a new signal in our monitor thread and send this signal to the main gui thread every time the progress updated. In this way, we utilized the built-in mechanism of \verb|PyQt5| and prevented any thread-unsafe operations. 
+        The struggle with the implementation of the progress bar continued on for days. However, on the verge of giving up, we remembered that \verb|PyQt5| had signals and slots mechanism (explained earlier), and we could actually create a new signal in our monitor thread and send this signal to the main GUI thread every time the progress updated. This way, we utilized the built-in mechanism of \verb|PyQt5| and prevented any thread-unsafe operations.
 
         Retrospectively, because we learned many valuable knowledge from this challenge and now we know how to tackle it, the progress bar is not very difficult. However, although the progress bar itself is trivial, the processes involved in overcoming the challenge are pivotal to us. 
 
@@ -337,18 +336,18 @@
         
         In our plot, we implemented a cross-hair that centered on the closet point in the line from the cursor. We successfully implemented it with binary search and many data transformations and calculations. However, the frame rate per second (FPS) was very low when moving the cross-hair.
 
-        To investigate the root of the problem, we analyzed the running time of our algorithms but it turned out that the running time was good ($\bigO(n)$). 
+        To investigate the root of the problem, we analyzed the running time of our algorithms, but it turned out that the running time was fairly decent ($\bigO(n)$).
         
-        Then, we used \verb|time| module and divided the codes into many piece of codes to calculate the real times each piece took. Finally, we found that the root of the evil is actually the \verb|matplotlib#Canvas.draw()| function call. But here comes the issues, we cannot modify the code from \verb|matplotlib| to make it faster.
+        Then, we used \verb|time| module and divided the codes into segments to calculate the real times each piece took. Finally, we found that the root cause of this issue is actually from the \verb|Matplotlib#Canvas.draw()| function call. But another issue arose along with this discovery: we cannot modify the code from \verb|matplotlib| to make it faster.
         
         After many researches, we found out that we could solve this issue with a relatively advanced method: blit. Since we already had many experiences from the previous challenge, by reading through the documentation, experimenting with many small examples, and updating the whole implementation of \verb|PlotCanvas|, we successfully implement blit to fix the issue.
         
         We firstly draw the figure, excluding the cross-hair, and save the figure background to cache it. Then, every time the cursor moves, we only draw the cross-hair and restore the figure from cache. In this way, the previous cross-hair disappears because the figure background does not contain the cross-hair - we draw the figure before the cross-hair, and we don't need to redraw the background frequently.
 
-        This largely improve the FPS and now the cross-hair is very smooth.
+        This largely improved the frame rate and now the cross-hair is rendered very smoothly.
     \end{itemize}
 
-    \subsection{The Future}
+    \subsection{Next Steps}
 
     \begin{itemize}
         \item We will be carrying the skills we developed in this project into other projects in the future. We have now acquired the ability to download, process, and hash data. These abilities would be necessary to create many more applications in the future.
@@ -361,11 +360,11 @@
 
     \section{References}
 
-    “Coronavirus.” World Health Organization, WHO, 10 Jan. 2020, www.who.int/health-topics/coronavirus\#tab=tab\_1.
+    ``Coronavirus.'' World Health Organization, WHO, 10 Jan. 2020, www.who.int/health-topics/coronavirus\#tab=tab\_1.
 
-    “CSV File Reading and Writing — Python 3.10.0 Documentation.” Python Documentation, docs.python.org/3/library/csv.html. Accessed 30 Oct. 2021.
+    ``CSV File Reading and Writing - Python 3.10.0 Documentation.'' Python Documentation, docs.python.org/3/library/csv.html. Accessed 30 Oct. 2021.
 
-    Johns Hopkins University. “GitHub - CSSEGISandData/COVID-19: Novel Coronavirus (COVID-19) Cases, Provided by JHU CSSE.” GitHub, CSSEGISandData, github.com/CSSEGISandData/COVID-19. Accessed 30 Oct. 2021.
+    Johns Hopkins University. ``GitHub - CSSEGISandData/COVID-19: Novel Coronavirus (COVID-19) Cases, Provided by JHU CSSE.'' GitHub, CSSEGISandData, github.com/CSSEGISandData/COVID-19. Accessed 30 Oct. 2021.
 
     Kaggle | Global School Closures for COVID-19. Saleh Ahmed Rony, www.kaggle.com/salehahmedrony/global-school-closures-covid19. Accessed 30 Oct. 2021.
 
