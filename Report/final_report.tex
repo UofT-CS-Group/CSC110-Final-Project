@@ -70,7 +70,7 @@
 
     The headers extend up until November 1, 2021 for the dataset that we will be using in our application.
 
-    Starting from column 5 and onwards (for the Global COVID-19 Dataset) contains the amount of cumulative cases for the specified country in the date shown in the header row.
+    Starting from column 5 and onwards (for the COVID-19 Dataset) contains the amount of cumulative cases for the specified country in the date shown in the header row.
 
     The School Closure Dataset has the following structure:
     \begin{center}
@@ -115,11 +115,11 @@
 
     \subsubsection{Algorithms}
 
-    To simplify our data manipulations, we abstracted out few generic algorithms such as sorting, grouping, searching, etc. in a new module: \verb|algorithms|.
+    To simplify our data manipulations, we abstracted out few generic algorithms such as sorting, grouping, searching, etc., in a module named \verb|algorithms|.
 
     All of the algorithms in \verb|algorithms| are generic, meaning they can handle all data types with the help of some callable parameters. To be more specific, we used a generic type \verb|T| to represent any type of arguments passed into our algorithms. However, not all data types support the operations an algorithm needed (such as compare operation in sorting algorithm). Thus, we added another callable parameter to specify how the operations are performed on the passed data type \verb|T|.
 
-    Additionally, we implemented multiple sorting algorithms for the purposes of showing the impact of algorithm running time complexity:
+    Additionally, we implemented multiple sorting algorithms for the purposes of showing the impact of algorithm running time complexity, these are:
     
     \begin{itemize}
         \item Bubble Sort: $\bigO(n^2)$
@@ -136,11 +136,11 @@
 
     We read all the data into Python in the module called \verb|data| with help of the \verb|csv| library 
 
-    For the COVID-19 Dataset, we only used the columns with the headers "Country" and "Dates", as they provide the information for us to visualize.
+    For the COVID-19 Dataset, we only used the columns with the headers ``Country" and ``Dates", as they provide the information for us to visualize.
 
-    For the School Closure Dataset, we used all of the columns aside from the "Note" column, as it provides irrelevant and hard-to-process information.
+    For the School Closure Dataset, we used all of the columns aside from the ``Note" column, as it provides irrelevant and hard-to-process information.
 
-    We created the following data classes:
+    We created the following classes:
 
     \begin{itemize}
         \item \verb|ClosureStatus| - An \verb|Enum| class that maps the different status of school closure to an int value
@@ -172,7 +172,7 @@
 
     \subsection{Graphical User Interface}
 
-    We utilized \verb|PyQt5| to generate an interactive graphical user interface and \verb|Matplotlib| to plot graphs.
+    We utilized \verb|PyQt5| to generate an interactive Graphical User Interface and \verb|Matplotlib| to plot graphs.
 
     We implemented the following functionalities, such as but not limited to:
 
@@ -207,7 +207,7 @@
 
     Our main window is defined in module \verb|gui_main|, which consists of a ``frontend'' and a ``backend''.
 
-    The ``frontend'' is the \verb|MainWindowUI| class that is responsible for creating widgets, initializing widgets' attributes, and managing the layout of all widgets. Also, it represents the ``true'' window itself and defines all the attributes of the window.
+    The ``frontend'' is the \verb|MainWindowUI| class that is responsible for creating widgets, initializing widgets' attributes, and managing the layout of all widgets. Also, it represents the actual window itself and defines all the attributes of the window.
 
     The ``backend'' is the combination of multiple classes including \verb|PlotCanvas| and \verb|MainWindow|. Technically, all the codes besides the ``frontend'' part are responsible for running our ``backend''.
 
@@ -215,7 +215,7 @@
 
     All the user's inputs on the main window, such as clicking a button, selecting a country, or sliding a slider are handled by the \verb|MainWindow| class. We utilized \verb|PyQt5| signals and slots mechanism to achieve most of the functionalities. For example, when a button is clicked, then the button sends a signal to a callback function to perform some actions. The callback functions are the slots, and the signals are the information passed into the callback functions.
 
-    The interaction logics of our GUI is that our visualization (plot) will update as the user update the filters (a country or a data range).
+    The interaction logics of our GUI is that our visualization (plot) will update as the user update the filters (a country or a date range).
 
     \subsection{Misc}
 
@@ -233,7 +233,7 @@
 
     \section{Instructions}
 
-    Before everything start, please make sure you have a stable Internet connection.
+    Before everything, please make sure you have a stable Internet connection.
 
     \begin{enumerate}
         \item [1]
@@ -242,12 +242,12 @@
         \item [2]
             Unzip the file in an empty directory (It is better to make sure the path to the directory only contains English letters).
         \item [3]
-            Boot up PyCharm and open "requirements.txt" in the directory you just unzipped the files in. Click "Install requirements" to automatically download all the libraries needed.
+            Boot up PyCharm and open ``requirements.txt" in the directory you just unzipped the files in. Click "Install requirements" to automatically download all the libraries needed.
 
             Alternatively, you could open the terminal in the directory and run ``pip install -r requirements.txt.''
 
         \item [4]
-            Either use PyCharm or a terminal to run "main.py" and you should be able to see a window popup.
+            Either use PyCharm or a terminal to run ``main.py" and you should be able to see a window popup.
 
         \item [5]
             Select a "Sorting algorithm" and click the initialize button. After a few seconds, our application should be ready.
@@ -265,7 +265,7 @@
     \begin{itemize}
         \item We only tested our application in Windows 10/11 platform with Python 3.10.1. Although we were trying our best to make it compatible with others, we could not guarantee the behaviors under other operating systems.
         \item It can run on a M1 Mac with an extensive setup. (You need to run Terminal on Rosetta and install the x86\_64 version of all libraries used through pip)
-        \item We are unsure of the performance of our application in an Intel Mac.
+        \item It can run on an Intel Mac just like on Windows
         \item We haven't tested our application on any Linux distributions.
     \end{itemize}
 
@@ -294,7 +294,7 @@
 
     Furthermore, we can also utilize this application to generate plots about data around the world that can be shared to raise awareness, which could allow educational sectors to be more prepared for future events similar to the COVID-19 Pandemic.
 
-    We can also identify some of the "Outliers" from the general trend for some countries. These may exist because their country officials decided for schools to continue operating amidst the severe conditions posed.
+    We can also identify some of the ``Outliers" from the general trend for some countries. These may exist because their country officials decided for schools to continue operating amidst the severe conditions posed.
 
     \subsection{Limitations}
 
@@ -366,7 +366,7 @@
 
     Johns Hopkins University. ``GitHub - CSSEGISandData/COVID-19: Novel Coronavirus (COVID-19) Cases, Provided by JHU CSSE.'' GitHub, CSSEGISandData, github.com/CSSEGISandData/COVID-19. Accessed 30 Oct. 2021.
 
-    Kaggle | Global School Closures for COVID-19. Saleh Ahmed Rony, www.kaggle.com/salehahmedrony/global-school-closures-covid19. Accessed 30 Oct. 2021.
+    Humanitarian data exchange | Global School Closures for COVID-19. Saleh Ahmed Rony, https://data.humdata.org/dataset/global-school-closures-covid19. Accessed 30 Oct. 2021.
 
     https://stackoverflow.com/questions/3431825/generating-an-md5-checksum-of-a-file
 
