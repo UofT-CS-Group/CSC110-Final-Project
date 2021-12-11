@@ -3,7 +3,8 @@ This module contains some GUI utilities like classes and helper methods for our 
 """
 # Python built-ins
 import datetime
-from typing import Callable, Iterable, Optional
+import typing
+from typing import Callable, Iterable, List, Optional, Union
 
 # PyQt5
 from PyQt5.QtCore import *
@@ -109,6 +110,32 @@ def make_function(target: Callable, *args, **kwargs) -> Callable:
 # =================================================================================================
 # Utility Classes
 # =================================================================================================
+
+
+class EnhancedVBoxLayout(QVBoxLayout):
+
+    horizontal_layouts: List[QHBoxLayout]
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super().__init__(parent)
+        self.horizontal_layouts = []
+
+    def add_row(self, stretch: int = 0) -> QHBoxLayout:
+        layout = QHBoxLayout()
+        self.horizontal_layouts.append(layout)
+        self.addLayout(layout, stretch)
+        return layout
+
+    def add_widget(self, widget: QWidget, row: int, stretch: int = 0,
+                   alignment: Union[Qt.Alignment, Qt.AlignmentFlag] = Qt.Alignment()) -> None:
+        length = len(self.horizontal_layouts)
+
+        if row > length:
+            raise IndexError('Invalid row value!')
+        elif row == length:
+            self.add_row()
+
+        self.horizontal_layouts[row].addWidget(widget, stretch, alignment)
 
 
 class StandardLabel(QLabel):
