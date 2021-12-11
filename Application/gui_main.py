@@ -464,8 +464,8 @@ class MainWindowUI(QMainWindow):
             - It's only responsible for displaying the progress of our data loading process.
     """
     # Window sizes
-    width: int = 1135
-    height: int = 700
+    width: int = 1200
+    height: int = int(1200 * 0.681)
 
     # Introduction Group (Decoration)
     about_group: StandardGroupBox
@@ -528,8 +528,10 @@ class MainWindowUI(QMainWindow):
         # Set the window width as the 0.6 of the available geometry.
         desktop = QDesktopWidget()
         desktop_geometry = desktop.availableGeometry(desktop.primaryScreen())
-        self.width = int(desktop_geometry.width() * 0.6)
-        self.height = int(self.width * 0.618)
+        new_width = int(desktop_geometry.width() * 0.6)
+        if new_width > self.width:
+            self.width = int(new_width)
+            self.height = int(self.width * 0.618)
 
         self.resize(self.width, self.height)
         self.setFixedSize(self.size())
@@ -650,7 +652,7 @@ class MainWindowUI(QMainWindow):
         # The main layout of the main window
         main_layout = QVBoxLayout(widget)
 
-        controller_layout = QHBoxLayout(widget)
+        controller_layout = QHBoxLayout()
 
         # Controller Layout Group
         main_layout.addLayout(controller_layout, 382)
@@ -682,7 +684,7 @@ class MainWindowUI(QMainWindow):
 
         index: int = 0
         for row in range(2, 5):
-            shortcut_layout = QHBoxLayout(self.location_group)
+            shortcut_layout = QHBoxLayout()
             location_group_layout.addLayout(shortcut_layout, row, 0, 1, 2)
             for column in range(2):
                 shortcut_layout.addWidget(self.country_shortcut_buttons[index], 2)
@@ -692,15 +694,16 @@ class MainWindowUI(QMainWindow):
 
         # Date Group
         controller_layout.addWidget(self.date_group)
-        date_group_layout = QGridLayout(self.date_group)
-        date_group_layout.addWidget(self.start_date_label, 0, 0)
-        date_group_layout.addWidget(self.start_date_edit, 1, 0)
-        date_group_layout.addWidget(self.start_date_slider, 1, 1)
-        date_group_layout.addWidget(self.end_date_label, 2, 0)
-        date_group_layout.addWidget(self.end_date_edit, 3, 0)
-        date_group_layout.addWidget(self.end_date_slider, 3, 1)
-        date_group_layout.addWidget(self.date_reset_button, 4, 0, 2, 1)
-        date_group_layout.addWidget(self.date_confirm_button, 4, 1, 2, 1)
+        date_group_layout = EnhancedVBoxLayout(self.date_group)
+        date_group_layout.add_widget(self.start_date_label, 0, alignment=Qt.AlignLeft)
+        date_group_layout.add_widget(self.start_date_edit, 1, stretch=1000 - 618)
+        date_group_layout.add_widget(self.start_date_slider, 1, stretch=618)
+        date_group_layout.add_widget(self.end_date_label, 2, alignment=Qt.AlignLeft)
+        date_group_layout.add_widget(self.end_date_edit, 3, stretch=1000 - 618)
+        date_group_layout.add_widget(self.end_date_slider, 3, stretch=618)
+        date_group_layout.insertSpacerItem(4, QSpacerItem(100, 30))
+        date_group_layout.add_widget(self.date_confirm_button, 4, stretch=618)
+        date_group_layout.add_widget(self.date_reset_button, 4, stretch=1000 - 618)
 
         plot_layout = QVBoxLayout()
         main_layout.addLayout(plot_layout, 618)

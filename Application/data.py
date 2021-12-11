@@ -218,12 +218,12 @@ GLOBAL_SCHOOL_CLOSURES: List[SchoolClosureData] = []
 COUNTRIES: Set[Country] = set()
 SORTED_COUNTRIES: List[Country] = []
 KEY_COUNTRIES: List[Country] = [
-    Country('China'),
-    Country('US'),
     Country('Canada'),
+    Country('China'),
+    Country('France'),
     Country('Russia'),
     Country('United Kingdom'),
-    Country('France'),
+    Country('US'),
 ]
 
 # All provinces from our datasets.
