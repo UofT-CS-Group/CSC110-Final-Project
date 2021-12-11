@@ -90,8 +90,20 @@ def set_font(widget: QWidget,
         - By default, it will set the font of the given widget to the font settings specified in
         settings.py
     """
+    # Getting available fonts
+    font_base = QFontDatabase()
+    fonts = font_base.families()
+
     font: QFont = widget.font()
-    font.setFamily(font_family)
+
+    # There's only two possibilities, either the user is in Windows, which uses Calibri
+    if font_family in fonts:
+        font.setFamily(font_family)
+
+    # Or the user is in Mac, which uses Helvetica
+    else:
+        font.setFamily(settings.ALT_FONT_FAMILY)
+
     font.setPointSize(font_size)
     widget.setFont(font)
 
