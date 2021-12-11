@@ -525,12 +525,18 @@ class MainWindowUI(QMainWindow):
 
     def init_window(self) -> None:
         """Init the main window UI"""
+        # Set the window width as the 0.6 of the available geometry.
+        desktop = QDesktopWidget()
+        desktop_geometry = desktop.availableGeometry(desktop.primaryScreen())
+        self.width = int(desktop_geometry.width() * 0.6)
+        self.height = int(self.width * 0.618)
+
         self.resize(self.width, self.height)
         self.setFixedSize(self.size())
 
         # Center the window
         frame_geometry = self.frameGeometry()
-        center_point = QDesktopWidget().availableGeometry().center()
+        center_point = desktop_geometry.center()
         frame_geometry.moveCenter(center_point)
         self.move(frame_geometry.topLeft())
 
@@ -673,11 +679,15 @@ class MainWindowUI(QMainWindow):
         location_group_layout.addWidget(self.country_selection_label, 1, 0)
         location_group_layout.addWidget(self.country_selection_combo_box, 1, 1)
         location_group_layout.addWidget(self.global_radio_button, 1, 2)
+
         index: int = 0
         for row in range(2, 5):
+            shortcut_layout = QHBoxLayout(self.location_group)
+            location_group_layout.addLayout(shortcut_layout, row, 0, 1, 2)
             for column in range(2):
-                location_group_layout.addWidget(self.country_shortcut_buttons[index], row, column)
+                shortcut_layout.addWidget(self.country_shortcut_buttons[index], 2)
                 index += 1
+
         location_group_layout.addWidget(self.location_reset_button, 4, 2)
 
         # Date Group
