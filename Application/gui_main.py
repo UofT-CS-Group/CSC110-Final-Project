@@ -893,8 +893,8 @@ class MainWindow(MainWindowUI):
         self.start_date_edit.dateChanged.connect(self.on_start_date_edit_changed)
         self.end_date_edit.dateChanged.connect(self.on_end_date_edit_changed)
         # Date slider
-        self.start_date_slider.valueChanged.connect(self.on_start_date_slider_moved)
-        self.end_date_slider.valueChanged.connect(self.on_end_date_slider_moved)
+        self.start_date_slider.sliderMoved.connect(self.on_start_date_slider_moved)
+        self.end_date_slider.sliderMoved.connect(self.on_end_date_slider_moved)
 
     def update_plot(self) -> None:
         """
