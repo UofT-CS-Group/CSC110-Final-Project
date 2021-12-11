@@ -3,7 +3,6 @@ This module contains some GUI utilities like classes and helper methods for our 
 """
 # Python built-ins
 import datetime
-import typing
 from typing import Callable, Iterable, List, Optional, Union
 
 # PyQt5
@@ -127,15 +126,20 @@ def make_function(target: Callable, *args, **kwargs) -> Callable:
 class EnhancedVBoxLayout(QVBoxLayout):
     """
     An enhanced QVBoxLayout, and it maintains a list of QHLayouts as the rows of the QVBoxLayout.
+
+    Instance Attributes:
+        - horizontal_layouts: A list of QHBoxLayouts that contains widgets.
     """
 
     horizontal_layouts: List[QHBoxLayout]
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
+        """Initialize the Enhanced (Modified) VBoxLayout class"""
         super().__init__(parent)
         self.horizontal_layouts = []
 
     def add_row(self, stretch: int = 0) -> QHBoxLayout:
+        """Adds a row in the VBoxLayout with the HBoxLayout"""
         layout = QHBoxLayout()
         self.horizontal_layouts.append(layout)
         self.addLayout(layout, stretch)
@@ -143,6 +147,7 @@ class EnhancedVBoxLayout(QVBoxLayout):
 
     def add_widget(self, widget: QWidget, row: int, stretch: int = 0,
                    alignment: Union[Qt.Alignment, Qt.AlignmentFlag] = Qt.Alignment()) -> None:
+        """Adds a widget in the specified row"""
         length = len(self.horizontal_layouts)
 
         if row > length:
@@ -160,7 +165,8 @@ class StandardLabel(QLabel):
     When needed, we could add more attributes and methods.
     """
 
-    def __init__(self, text: str = 'Standard Label', parent: Optional[QWidget] = None):
+    def __init__(self, text: str = 'Standard Label', parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard Label"""
         super(StandardLabel, self).__init__(text, parent)
         set_font(self)
 
@@ -172,7 +178,8 @@ class StandardPushButton(QPushButton):
     When needed, we could add more attributes and methods.
     """
 
-    def __init__(self, text: str = 'Push Button', parent: Optional[QWidget] = None):
+    def __init__(self, text: str = 'Push Button', parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard Button"""
         super(StandardPushButton, self).__init__(text, parent)
         set_font(self)
 
@@ -184,17 +191,21 @@ class StandardComboBox(QComboBox):
     When needed, we could add more attributes and methods.
     """
 
-    def __init__(self, parent: Optional[QWidget] = None, items: Optional[Iterable[str]] = None):
+    def __init__(self, parent: Optional[QWidget] = None,
+                 items: Optional[Iterable[str]] = None) -> None:
+        """Initialize a Standard Combo Box"""
         super(StandardComboBox, self).__init__(parent)
         set_font(self)
         if items is not None:
             self.addItems(items)
 
-    def clear_and_disable(self):
+    def clear_and_disable(self) -> None:
+        """Clears the combo box and disables the user to choose anything from it"""
         self.clear()
         self.setEnabled(False)
 
-    def enable_and_add_items(self, items: Optional[Iterable[str]] = None):
+    def enable_and_add_items(self, items: Optional[Iterable[str]] = None) -> None:
+        """Enables the combo box and adds items in it"""
         self.setEnabled(True)
         if items is not None:
             self.addItems(items)
@@ -208,10 +219,12 @@ class StandardDateEdit(QDateEdit):
     """
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard Date Edit"""
         super(StandardDateEdit, self).__init__(parent)
         set_font(self)
 
-    def set_extremum_date(self, minimum: datetime.date, maximum: datetime.date):
+    def set_extremum_date(self, minimum: datetime.date, maximum: datetime.date) -> None:
+        """Sets the maximum and minimum dates of this date edit"""
         self.setMinimumDate(minimum)
         self.setMaximumDate(maximum)
 
@@ -224,6 +237,7 @@ class StandardCheckbox(QCheckBox):
     """
 
     def __init__(self, text: str = 'Check Box', parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard Checkbox"""
         super(StandardCheckbox, self).__init__(text, parent)
         set_font(self)
 
@@ -235,7 +249,8 @@ class StandardRadioButton(QRadioButton):
     When needed, we could add more attributes and methods.
     """
 
-    def __init__(self, text: str = 'Radio Button', parent: Optional[QWidget] = None):
+    def __init__(self, text: str = 'Radio Button', parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard Radio Button"""
         super(StandardRadioButton, self).__init__(text, parent)
         set_font(self)
 
@@ -247,7 +262,8 @@ class StandardProgressBar(QProgressBar):
     When needed, we could add more attributes and methods.
     """
 
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard Progress Bar"""
         super(StandardProgressBar, self).__init__(parent)
         set_font(self)
 
@@ -259,7 +275,8 @@ class StandardGroupBox(QGroupBox):
     When needed, we could add more attributes and methods.
     """
 
-    def __init__(self, title: str = 'Group Box', parent: Optional[QWidget] = None):
+    def __init__(self, title: str = 'Group Box', parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard Group Box"""
         super(StandardGroupBox, self).__init__(title, parent)
         set_font(self)
 
@@ -275,7 +292,8 @@ class StandardSlider(QSlider):
     """
 
     def __init__(self, orientation: Qt.Orientation = Qt.Horizontal,
-                 parent: Optional[QWidget] = None):
+                 parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard Slider"""
         super(StandardSlider, self).__init__(orientation, parent)
         set_font(self)
 
@@ -287,7 +305,8 @@ class StandardTabWidget(QTabWidget):
     When needed, we could add more attributes and methods.
     """
 
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard Tab Widget"""
         super(StandardTabWidget, self).__init__(parent)
         set_font(self)
 
@@ -300,6 +319,7 @@ class StandardLineEdit(QLineEdit):
     """
 
     def __init__(self, contents: str = '', parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard Line Edit"""
         super().__init__(contents, parent)
         set_font(self)
 
@@ -312,6 +332,7 @@ class StandardMenuBar(QMenuBar):
     """
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard Menu Bar"""
         super(StandardMenuBar, self).__init__(parent)
         set_font(self, font_size=12)
 
@@ -324,6 +345,7 @@ class StandardColorDialog(QColorDialog):
     """
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard Color Dialogue Prompt"""
         super(StandardColorDialog, self).__init__(parent)
         set_font(self, font_size=12)
 
@@ -336,6 +358,7 @@ class StandardInputDialog(QInputDialog):
     """
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard Input Dialogue Prompt"""
         super(StandardInputDialog, self).__init__(parent)
         set_font(self, font_size=12)
 
@@ -348,5 +371,6 @@ class StandardFileDialog(QFileDialog):
     """
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
+        """Initialize a Standard File Dialogue Prompt"""
         super(StandardFileDialog, self).__init__(parent)
         set_font(self, font_size=12)

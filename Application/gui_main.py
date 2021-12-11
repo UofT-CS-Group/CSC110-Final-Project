@@ -4,6 +4,7 @@ This module contains the main window and its elements of our project.
 If you are seeing many warnings, that's normal and that's not our fault.
 """
 # Python built-ins
+import logging
 import math
 import platform
 import time
@@ -50,13 +51,16 @@ class PlotToolbar(NavigationToolbar):
     window: Any
 
     def __init__(self, canvas, parent, coordinates=True) -> None:
+        """
+        Initialize the Plot toolbar class
+        """
         super().__init__(canvas, parent, coordinates)
         self.window = parent
         set_font(self)
 
     def _init_toolbar(self) -> None:
         """
-        Just leave it as blank.
+        Intentionally left as blank.
         """
         pass
 
@@ -64,8 +68,8 @@ class PlotToolbar(NavigationToolbar):
         """
         Override the super home function.
 
-        This function is executed when user clicks the home button on this toolbar.
-        If user clicked it, then we replot our plots to its original states.
+        This function is called when user clicks the home button on this toolbar.
+        Upon trigger, then we re-plot our plots to its original states, with original scales.
         """
         if self.canvas.plotted:
             self.window.update_plot()
@@ -91,8 +95,14 @@ class PlotCanvas(FigureCanvas):
         - covid_data_marker and closure_data_marker: The line marker of covid_axes and closure_axes.
         - covid_x_data and closure_x_data: The current data of the x-axis.
         - covid_y_data and closure_y_data: The current data of the y-axis.
-        - covid_horizontal_cross_hair and ...: The cross-hairs.
-        - covid_prev_x and ...: The previous cursor positions (in pixel, not real data).
+        - covid_horizontal_cross_hair: The horizontal axis of the covid cross-hair.
+        - covid_vertical_cross_hair: The vertical axis of the covid cross-hair.
+        - closure_horizontal_cross_hair: The horizontal axis of the closure cross-hair.
+        - closure_vertical_cross_hair: The vertical axis of the closure cross-hair.
+        - covid_prev_x: The previous cursor positions (x-axis on covid plot).
+        - covid_prev_y: The previous cursor positions (y-axis on covid plot).
+        - closure_prev_x: The previous cursor positions (x-axis on covid plot).
+        - closure_prev_y: The previous cursor positions (y-axis on covid plot).
     """
     figure: pyplot.Figure
     covid_axes: pyplot.Axes
@@ -132,7 +142,7 @@ class PlotCanvas(FigureCanvas):
     def __init__(self) -> None:
         """
         Initialize a PlotCanvas instance.
-        It will create figures and axes, connect events, and other necessary works.
+        It will create figures and axes, connect events, and other necessary tasks.
         """
         self.figure = pyplot.Figure(tight_layout=True, linewidth=1)
         super(PlotCanvas, self).__init__(self.figure)
@@ -191,7 +201,7 @@ class PlotCanvas(FigureCanvas):
         self.closure_axes.set_title('School Closure Status')
         self.closure_axes.set_xlabel('Dates')
 
-    def update_background(self):
+    def update_background(self) -> None:
         """
         Update self.background.
         Note:
@@ -203,7 +213,7 @@ class PlotCanvas(FigureCanvas):
     def update_lines(self, axes: matplotlib.axes.Axes,
                      color: Optional[str] = None,
                      style: Optional[str] = None,
-                     marker: Optional[str] = None):
+                     marker: Optional[str] = None) -> None:
         """
         Update the color, style, and marker of lines in the given axes.
         """
@@ -414,9 +424,9 @@ class PlotCanvas(FigureCanvas):
         self.draw()
         self.update_background()
 
-    def on_mouse_button_press(self, event: matplotlib.backend_bases.MouseEvent):
+    def on_mouse_button_press(self, event: matplotlib.backend_bases.MouseEvent) -> None:
         """
-        If the left button is pressed, we start pan the plot as the mouse move.
+        If the left button is pressed, we start to pan the plot as the mouse moves.
         This function serve as the start of the pan operation.
         """
         if event.button == matplotlib.backend_bases.MouseButton.LEFT:
@@ -431,9 +441,9 @@ class PlotCanvas(FigureCanvas):
                 self.closure_prev_x = event.x
                 self.closure_prev_y = event.y
 
-    def on_mouse_button_release(self, event: matplotlib.backend_bases.MouseEvent):
+    def on_mouse_button_release(self, event: matplotlib.backend_bases.MouseEvent) -> None:
         """
-        If the left button is released, we end the pan.
+        If the left button is released, we end the panning action.
         """
         if event.button == matplotlib.backend_bases.MouseButton.LEFT:
             self.covid_prev_x = 0
@@ -455,11 +465,37 @@ class MainWindowUI(QMainWindow):
         - about_group: The group of widgets decorating and signing our project.
             - big_icon: A big icon in the top left corner of our window, designed by Charlotte.
             - about_label: A label contains our names.
-        - initialization_group: A group of widgets who are responsible for initializing our data.
-        - location_group: A group of widgets who are responsible for selecting location.
-        - date_group: A group of widgets who are responsible for selecting date range.
-        - plot_navigation_tool_bar: The matplotlib plot toolbar.
+        - initialization_group: A group of widgets which are responsible for initializing our data.
+            - algorithms_selection_label: A label that tells the user to select an algorithm.
+            - algorithms_selection_combo_box: A combo box to select algorithms to initialize.
+            - initialization_helper_label: A label that tells the user to click "initialize".
+            - initialization_button: A button that initializes our data.
+            - github_label: A label that shows our GitHub link.
+        - location_group: A group of widgets which are responsible for selecting location.
+            - country_search_label: A label that displays the word "Search".
+            - country_search_bar: A line edit prompt for users to search for countries to plot with.
+            - country_selection_label: A label that displays the word "Country".
+            - country_selection_combo_box: A combo box to select a country.
+            - global_helper_label: A label that displays the word "Global View".
+            - global_radio_button: A radio button that toggles between national and global plots.
+            - country_shortcut_buttons: Several buttons that are used to select major countries.
+            - location_reset_button: A button to reset the country selected.
+        - date_group: A group of widgets which are responsible for selecting date range.
+            - start_date_label: A label that displays "Start Date:".
+            - end_date_label: A label that displays "End Date:".
+            - start_date_edit: A date edit that changes the plot start date.
+            - end_date_edit: A date edit that changes the plot end date.
+            - start_date_slider: A slider to choose the plot start date conveniently.
+            - end_date_slider: A slider to choose the plot end date conveniently.
+            - date_reset_button: A button to reset the dates selected.
+            - date_confirm_button: A button to confirm and plot the dates selected.
+        - plot_navigation_tool_bar: The matplotlib plot toolbar, edited to only contain home button.
         - plot_canvas: Our customized matplotlib canvas, holding our figures.
+        - menu_bar: A menu bar that contains numerous functionalities.
+            - file_menu: A menu to perform operations such as saving the plot.
+            - edit_menu: A menu to perform operations such as renaming the window.
+            - settings_menu: A menu to perform customization operations to the plot.
+            - view_menu: A menu to select different viewing options.
         - progress_bar: A progress bar displayed at the right corner of the status bar.
             - It's only responsible for displaying the progress of our data loading process.
     """
@@ -518,13 +554,13 @@ class MainWindowUI(QMainWindow):
 
     def __init__(self, *args, **kwargs) -> None:
         """
-        Init the whole UI.
+        Initialize the whole UI.
         """
         super(MainWindowUI, self).__init__(*args, **kwargs)
         self.init_window()
 
     def init_window(self) -> None:
-        """Init the main window UI"""
+        """Initialize the main window UI"""
         # Set the window width as the 0.6 of the available geometry.
         desktop = QDesktopWidget()
         desktop_geometry = desktop.availableGeometry(desktop.primaryScreen())
@@ -561,7 +597,7 @@ class MainWindowUI(QMainWindow):
 
     def init_widgets(self) -> None:
         """
-        Init all widgets and their attributes.
+        Initialize all widgets and their attributes.
         """
         # Introduction Group
         self.about_group = StandardGroupBox('About', self)
@@ -646,7 +682,7 @@ class MainWindowUI(QMainWindow):
 
     def init_layout(self) -> None:
         """
-        Init the layout for all widgets.
+        Initialize the layout for all widgets.
         """
         widget = QWidget(self)
         # The main layout of the main window
@@ -720,25 +756,29 @@ class DataThread(QThread):
     """
 
     def __init__(self, parent: QObject) -> None:
+        """Initializes the data initialization thread"""
         super(DataThread, self).__init__(parent)
 
-    def run(self):
+    def run(self) -> None:
+        """Runs the data initialization thread"""
         data.init_data()
 
 
 class ProgressUpdateThread(QThread):
     """
     A QThread subclass that monitors the progress of data initialization (when applicable) and
-    emits the progress and progress description to the main thread (main window).
+    sends the progress and progress description to the main thread (main window).
 
-    We used PyQt signal and slot mechanism to achieve that.
+    We used PyQt signal and slot mechanism to achieve the mentioned functionality.
     """
     on_updated: pyqtSignal = pyqtSignal(int, str)
 
     def __init__(self, parent: QObject) -> None:
+        """Initializes the progress update thread"""
         super(ProgressUpdateThread, self).__init__(parent)
 
     def run(self) -> None:
+        """Runs the progress update thread"""
         while True:
             progress, description = data.get_progress()
             self.on_updated.emit(math.floor(progress * 100), description)
@@ -756,7 +796,7 @@ class MainWindow(MainWindowUI):
 
     Instance Attributes:
         - progress_bar_update_thread: The thread for monitoring the progress of data init.
-        - is_user_change_date: True if the user is editing the date.
+        - is_user_operation: True if the user is editing the date.
             - The reason we used it here is that sometimes we need to change the date
               programmatically, but we don't want the slot to be signaled when we change the date
               programmatically.
@@ -766,6 +806,7 @@ class MainWindow(MainWindowUI):
     is_user_operation: bool = True
 
     def __init__(self, *args, **kwargs) -> None:
+        """Initializes the main window class"""
         super(MainWindow, self).__init__(*args, **kwargs)
 
         # Please ignore the warning here.
@@ -882,7 +923,7 @@ class MainWindow(MainWindowUI):
 
     def init_signals(self) -> None:
         """
-        Init the signals.
+        Initialize the signals.
         """
         # Progress bar update
         self.progress_bar_update_thread.on_updated.connect(self.update_progress_bar)
@@ -912,10 +953,6 @@ class MainWindow(MainWindowUI):
     def update_plot(self) -> None:
         """
         Update the plot according to current location and date range.
-
-        Note:
-            - Due to matplotlib, this function is actually not very efficient, so pls use it only
-              when necessary.
         """
         filtered_covid_cases: List[data.CovidCaseData]
         filtered_school_closures: List[data.SchoolClosureData]
@@ -983,6 +1020,8 @@ class MainWindow(MainWindowUI):
     def set_default_date(self) -> None:
         """
         Set the date group to its default state.
+        The minimum date is the first date in our data set
+        The maximum date is the last date in our data set
 
         Note:
             - This function should only be called after data are initialized.
@@ -1002,8 +1041,10 @@ class MainWindow(MainWindowUI):
         progress bar.
         """
         if 'Failed to' in description:
-            # TODO Add instructions
-            QMessageBox.critical(self, 'Critical', f'{description} \n Please ...',
+            QMessageBox.critical(self, 'Critical error', f'{description} \n'
+                                                         f'Please check Section 4.2 - Remedy '
+                                                         f'in our Final Report for'
+                                                         f'additional instructions. ',
                                  QMessageBox.Ok, QMessageBox.Ok)
             QApplication.quit()
 
@@ -1125,8 +1166,7 @@ class MainWindow(MainWindowUI):
         """
         When the user changes the start date edit, then we first validate the date and then update
         other widgets.
-        If the date is not valid (start > end), then we will intimidate the user by popping a
-        warning messagebox.
+        If the date is not valid (start > end), then a warning messagebox will appear.
         """
         max_qdate = self.end_date_edit.date()
         max_date = max_qdate.toPyDate()
@@ -1143,8 +1183,7 @@ class MainWindow(MainWindowUI):
         """
         When the user changes the end date edit, then we first validate the date and then update
         other widgets.
-        If the date is not valid (start > end), then we will intimidate the user by popping a
-        warning messagebox.
+        If the date is not valid (start > end), then a warning messagebox will appear.
         """
         min_qdate = self.start_date_edit.date()
         min_date = min_qdate.toPyDate()
@@ -1222,7 +1261,7 @@ class MainWindow(MainWindowUI):
 
     @pyqtSlot()
     def rename_main_window(self) -> None:
-        """Rename the main window depends on what users typed in."""
+        """Rename the main window depending on what users typed in."""
         rename_dialog = StandardInputDialog(self)
         rename_dialog.setWindowTitle('Rename the Main Window')
         rename_dialog.setLabelText('Please enter the new window title: ')
