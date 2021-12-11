@@ -1,8 +1,12 @@
 """
 The module contains functions and classes for downloading and checking resources.
 """
+# Future features
+from __future__ import annotations
+
 # Python built-ins
 import hashlib
+import json
 import logging
 import os
 from typing import Dict, Optional
@@ -14,9 +18,10 @@ import requests
 # Constants
 # =================================================================================================
 
-COVID19_RESOURCE_NAME = 'time_series_covid19_confirmed_global.csv'
-SCHOOL_CLOSURE_RESOURCE_NAME = 'full_dataset_31_oct.csv'
-ICON_RESOURCE_NAME = 'icon.png'
+# These are all preferred names.
+COVID19_RESOURCE_NAME = 'covid'
+SCHOOL_CLOSURE_RESOURCE_NAME = 'closure'
+ICON_RESOURCE_NAME = 'icon'
 MARKERS_ICON_RESOURCE_NAMES = ['m00.webp', 'm01.webp', 'm02.webp', 'm03.webp', 'm04.webp',
                                'm05.webp', 'm06.webp', 'm07.webp', 'm08.webp', 'm09.webp',
                                'm10.webp', 'm11.webp', 'm12.webp', 'm13.webp', 'm14.webp',
@@ -25,30 +30,10 @@ MARKERS_ICON_RESOURCE_NAMES = ['m00.webp', 'm01.webp', 'm02.webp', 'm03.webp', '
                                'm25.webp', 'm26.webp', 'm27.webp', 'm28.webp', 'm29.webp',
                                'm30.webp', 'm31.webp', 'm32.webp', 'm33.webp', 'm34.webp',
                                'm35.webp', 'm36.webp']
-MARKERS_ICON_RESOURCE_MD5S = \
-    ['2516b9b9478445f0aa2f343b693287d2', '08a671c63e0a486dd66490cd8031c096',
-     '649d76bf9be016809e334c2f0a28051b', '28e5855bbef8d03befcf3e6680aa4fb2',
-     'c4800af014e4781e87925a70e4fef478', 'ca6f7c7784c3657b353d64f8e7e23324',
-     'f1adecca8f29f1023a05385e7dcc674f', '27f512a1b41b405f6bf4d24c160a9a85',
-     '41b09848a24c02bb0e42696fd923cbf3', '55c33bacbf033b5a28c3b88bc340a164',
-     '8a2d1248f6b9650771e53df983f4922a', '3da43c3943e0fd35f2b5e60730ff10ee',
-     '43b13e75eb87111eb8297752b4c8fd5d', 'e63f8d4362a2f9fe375f7241ee590287',
-     '0bafbee3bccc60b539d6cd36d5d291ea', 'c917adeefca067f0dba6d037188af9cc',
-     '4fc4ba80d1b36d0ffb5ed4b1fefa3ff0', '9030d1476cdcc6c2c4c1e61520b2a527',
-     'fb136919c9f332b444086f0612f0bad6', 'd643aa5dec07341a2d5c30897272d123',
-     '365454729acc0a355cba59fba0e1e12b', 'a873cfeee199064b3a851b1c971d02f7',
-     '48fe997cd5f335d7f7d21df13cd811cb', 'e6398c2cc007443ffb4642615b4ee42b',
-     'ce059d192da59e4394327120e9165a51', '10d8dbc0551ad359abb756a3abc5de50',
-     '6dd7de7405c6fcf2b82b83669017c6c0', 'cbf1103fa8626e91afcb2032ea105c35',
-     '89d9475114f803352767d0c91894c8b6', '3cf4679564ed8ed4b3690960685cb8f9',
-     '278edd692efdd27c7ee5ffd731018e73', '2004bb108397a867958b4ca3eaf32f92',
-     'aee8ea41f6f605fb69aeff7cdfc4c87d', '3f54840423cbbfa01b2e7d8160beee5a',
-     '7d6d3496029fa7a87d69a36794193df4', 'fa3439c417d310e28210d9bbc3450a15',
-     '8cdda7e121352625ec963f37bcdd5427']
 
-# MD5 Checksum Settings
+# MD5 Checksum Settings, it will be updated by the config file
 BUFFER_SIZE = 65536
-# Number of attempts to re-download file if failed
+# Number of attempts to re-download file if failed, it will be updated by the config file
 RETRY_COUNT = 3
 
 
@@ -56,12 +41,34 @@ RETRY_COUNT = 3
 # Classes
 # =================================================================================================
 
+class Config(object):
+    """
+    A class represents a read-only json config.
+
+    >>> config = Config('config.json')
+    >>> config['setting']
+    A dict.
+    """
+
+    file_path: str
+    config_dict: Dict
+
+    def __init__(self, file_path: str) -> None:
+        self.file_path = file_path
+        with open(self.file_path, "rb") as file:
+            self.config_dict = json.loads(file.read())
+
+    def __getitem__(self, item):
+        return self.config_dict[item]
+
+
 class Resource(object):
     """
     This class represents a resource that have both local and remote path.
 
     Instance Attributes:
-        - name: The name of the resource. Usually, it is the local file name.
+        - name: The local file name of the resource with extension.
+        - preferred_name: The preferred name of this resource.
         - local_dir_path: The path of the local directory that contains this resource.
         - local_path: The path of this resource.
         - remote_path: The remote direct url of this resource.
@@ -73,6 +80,7 @@ class Resource(object):
               False.
     """
     name: str
+    preferred_name: str
     local_dir_path: str
     local_path: str
     remote_path: str
@@ -81,7 +89,7 @@ class Resource(object):
     is_init: bool = False
 
     def __init__(self, name: str, local_path: str, remote_path: str,
-                 identifier_expected: str) -> None:
+                 identifier_expected: str, preferred_name: str = None) -> None:
         """Initialize a Resource object with the specified parameters"""
         self.name = name
         self.local_path = local_path
@@ -89,6 +97,7 @@ class Resource(object):
         self.identifier_expected = identifier_expected
         self.identifier_actual = None
         self.local_dir_path = self.local_path[:-len(self.name) - 1]
+        self.preferred_name = preferred_name if preferred_name is not None else self.name
 
     def is_complete(self) -> bool:
         """
@@ -139,6 +148,24 @@ class Resource(object):
         except requests.exceptions.ConnectionError or requests.exceptions.ConnectTimeout:
             logging.error(f'Failed to connect to {self.remote_path}!')
             return False
+
+    def to_dict(self) -> Dict:
+        return {
+            'preferred_name': self.preferred_name,
+            'name'          : self.name,
+            'local_path'    : self.local_path,
+            'remote_path'   : self.remote_path,
+            'identifier'    : self.identifier_expected
+        }
+
+    @classmethod
+    def from_dict(cls, source: Dict) -> Resource:
+        return cls(source['name'],
+                   source['local_path'],
+                   source['remote_path'],
+                   source['identifier'],
+                   source['preferred_name']
+                   )
 
     def __eq__(self, other) -> bool:
         """A method used to compare if the current Resource is the same as the other"""
@@ -197,13 +224,13 @@ def init_resource(resource: Resource) -> bool:
     """
     Return True if the given resource is successfully initialized.
     """
-    # Although we may fail to download the resource, it is still "initialized."
-    resource.is_init = True
     if resource.is_init:
         return True
     if resource.is_complete():
         return True
     else:
+        # Although we may fail to download the resource, it is still "initialized."
+        resource.is_init = True
         for i in range(RETRY_COUNT):
             resource.download()
             resource.generate_identifier()
@@ -213,43 +240,18 @@ def init_resource(resource: Resource) -> bool:
     return False
 
 
-def register_resources() -> None:
+def register_resources(resource_config: Dict) -> None:
     """
     Register all resources needed.
     """
-    covid19_url = 'https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/' \
-                  'Application/resources/covid_cases_datasets/' \
-                  'time_series_covid19_confirmed_global.csv'
-    closure_url = 'https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/' \
-                  'Application/resources/school_closures_datasets/full_dataset_31_oct.csv'
-    icon_url = 'https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/' \
-               'Application/resources/assets/icon.png'
+    global BUFFER_SIZE
+    BUFFER_SIZE = resource_config['buffer_size']
+    global RETRY_COUNT
+    RETRY_COUNT = resource_config['retry_count']
 
-    RESOURCES_DICT[COVID19_RESOURCE_NAME] = \
-        Resource(COVID19_RESOURCE_NAME,
-                 'resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv',
-                 covid19_url,
-                 '6a7680ffa0200328bdd2823dd998c62e')
-    RESOURCES_DICT[SCHOOL_CLOSURE_RESOURCE_NAME] = \
-        Resource(SCHOOL_CLOSURE_RESOURCE_NAME,
-                 'resources/school_closures_datasets/full_dataset_31_oct.csv',
-                 closure_url,
-                 '9426167fdc1b664da627e74d84328c35')
-
-    # The icon resources below are not required, so if they failed to initialize,
-    # the program doesn't stop
-    RESOURCES_DICT[ICON_RESOURCE_NAME] = \
-        Resource(ICON_RESOURCE_NAME,
-                 'resources/assets/icon.png',
-                 icon_url,
-                 'fe7c8b3bb7ee7dccea8372da9250e414')
-
-    for i, name in enumerate(MARKERS_ICON_RESOURCE_NAMES):
-        RESOURCES_DICT[name] = \
-            Resource(name, f'resources/assets/markers/{name}',
-                     f'https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/'
-                     f'Application/resources/assets/markers/{name}',
-                     MARKERS_ICON_RESOURCE_MD5S[i])
+    resources = resource_config['resources']
+    for raw_resource in resources:
+        RESOURCES_DICT[raw_resource['preferred_name']] = Resource.from_dict(raw_resource)
 
 
 def md5_hash(local_path: str) -> str:
