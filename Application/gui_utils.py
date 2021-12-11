@@ -113,6 +113,9 @@ def make_function(target: Callable, *args, **kwargs) -> Callable:
 
 
 class EnhancedVBoxLayout(QVBoxLayout):
+    """
+    An enhanced QVBoxLayout, and it maintains a list of QHLayouts as the rows of the QVBoxLayout.
+    """
 
     horizontal_layouts: List[QHBoxLayout]
 
