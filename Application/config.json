@@ -1,6 +1,7 @@
 {
     "setting": {
         "font_family": "Calibri",
+        "alternative_font_family": "Helvetica",
         "font_size": 14
     },
     "resource": {

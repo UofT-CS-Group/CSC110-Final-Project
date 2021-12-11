@@ -42,5 +42,7 @@ def init_setting(setting_config: Dict) -> None:
     """
     global FONT_FAMILY
     FONT_FAMILY = setting_config['font_family']
+    global ALT_FONT_FAMILY
+    ALT_FONT_FAMILY = setting_config['alternative_font_family']
     global FONT_SIZE
     FONT_SIZE = setting_config['font_size']
