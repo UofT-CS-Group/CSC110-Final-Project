@@ -2,7 +2,6 @@
 The main entry of our program.
 """
 # Python built-ins
-import logging
 import sys
 
 # PyQt5
