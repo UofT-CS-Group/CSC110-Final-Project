@@ -799,6 +799,7 @@ class MainWindow(MainWindowUI):
     progress_bar_update_thread: ProgressUpdateThread
 
     is_user_operation: bool = True
+    is_slider_moving: bool = False
 
     def __init__(self, *args, **kwargs) -> None:
         """Initializes the main window class"""
@@ -948,7 +949,11 @@ class MainWindow(MainWindowUI):
         self.end_date_edit.dateChanged.connect(self.on_end_date_edit_changed)
         # Date slider
         self.start_date_slider.sliderMoved.connect(self.on_start_date_slider_moved)
+        self.start_date_slider.sliderReleased.connect(self.on_slider_released)
+        self.start_date_slider.valueChanged.connect(self.on_start_date_slider_value_changed)
         self.end_date_slider.sliderMoved.connect(self.on_end_date_slider_moved)
+        self.end_date_slider.sliderReleased.connect(self.on_slider_released)
+        self.end_date_slider.valueChanged.connect(self.on_end_date_slider_value_changed)
 
     def update_plot(self) -> None:
         """
@@ -1195,10 +1200,7 @@ class MainWindow(MainWindowUI):
         else:
             self.on_date_edit_changed(new_date, self.end_date_slider)
 
-    def on_slider_moved(self, percentage: float, date_edit: StandardDateEdit) -> None:
-        """
-        When the user moves the slider, we update the date_edit to display the correct date.
-        """
+    def on_slider_value_changed(self, percentage: float, date_edit: StandardDateEdit) -> None:
         min_date = self.start_date_edit.minimumDate().toPyDate()
         max_date = self.end_date_edit.maximumDate().toPyDate()
         delta = max_date - min_date
@@ -1207,6 +1209,13 @@ class MainWindow(MainWindowUI):
         date_edit.setDate(min_date + delta)
         self.is_user_operation = True
 
+    def on_slider_moved(self, percentage: float, date_edit: StandardDateEdit) -> None:
+        """
+        When the user moves the slider, we update the date_edit to display the correct date.
+        """
+        self.is_slider_moving = True
+        self.on_slider_value_changed(percentage, date_edit)
+
     @pyqtSlot(int)
     def on_start_date_slider_moved(self, new_value: int) -> None:
         """
@@ -1214,7 +1223,7 @@ class MainWindow(MainWindowUI):
         update other widgets.
         """
         if new_value > self.end_date_slider.value():
-            self.start_date_slider.setValue(new_value - 1)
+            self.start_date_slider.setValue(self.end_date_slider.value())
             return
         percentage = new_value / self.start_date_slider.maximum()
         self.on_slider_moved(percentage, self.start_date_edit)
@@ -1226,10 +1235,34 @@ class MainWindow(MainWindowUI):
         update other widgets.
         """
         if new_value < self.start_date_slider.value():
-            self.end_date_slider.setValue(new_value + 1)
+            self.end_date_slider.setValue(self.start_date_slider.value())
             return
         percentage = new_value / self.end_date_slider.maximum()
         self.on_slider_moved(percentage, self.end_date_edit)
+
+    @pyqtSlot()
+    def on_slider_released(self):
+        self.is_slider_moving = False
+
+    @pyqtSlot(int)
+    def on_start_date_slider_value_changed(self, new_value: int):
+        if self.is_slider_moving:
+            return
+        if new_value > self.end_date_slider.value():
+            self.start_date_slider.setValue(self.end_date_slider.value())
+            return
+        percentage = new_value / self.start_date_slider.maximum()
+        self.on_slider_value_changed(percentage, self.start_date_edit)
+
+    @pyqtSlot(int)
+    def on_end_date_slider_value_changed(self, new_value: int):
+        if self.is_slider_moving:
+            return
+        if new_value < self.start_date_slider.value():
+            self.end_date_slider.setValue(self.start_date_slider.value())
+            return
+        percentage = new_value / self.end_date_slider.maximum()
+        self.on_slider_value_changed(percentage, self.end_date_edit)
 
     @pyqtSlot()
     def save_plot(self) -> None:
