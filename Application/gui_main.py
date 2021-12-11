@@ -1164,7 +1164,9 @@ class MainWindow(MainWindowUI):
         max_date = self.end_date_edit.maximumDate().toPyDate()
         delta1 = new_date - min_date
         delta2 = max_date - min_date
+        self.is_slider_moving = True
         date_slider.setValue(math.ceil((delta1 / delta2) * 100))
+        self.is_slider_moving = False
 
     @pyqtSlot(QDate)
     def on_start_date_edit_changed(self, new_date: QDate) -> None:
