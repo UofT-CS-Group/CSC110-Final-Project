@@ -43,15 +43,19 @@ class Location(object):
     name: str
 
     def __init__(self, name: str) -> None:
+        """Initialize a Location class"""
         self.name = name
 
     def __eq__(self, other: object) -> bool:
+        """A method used to compare if a Location is the same as the other"""
         return isinstance(other, self.__class__) and self.name == other.name
 
     def __str__(self) -> str:
+        """A method used to set the str outputted when we called str on a Location class"""
         return self.name
 
     def __hash__(self) -> int:
+        """A method to set how we will hash the Location object"""
         return self.name.__hash__()
 
 
@@ -67,12 +71,15 @@ class Country(Location):
     """
 
     def __init__(self, name: str) -> None:
+        """Initialize a Country object"""
         super().__init__(name)
 
     def __eq__(self, other) -> bool:
+        """A method used to compare if a Country is the same as the other"""
         return super().__eq__(other)
 
     def __hash__(self) -> int:
+        """A method to set how we will hash the Country object"""
         return super().__hash__()
 
 
@@ -88,13 +95,16 @@ class Province(Location):
     country: Country
 
     def __init__(self, name: str, country: Country) -> None:
+        """Initialize a Province object"""
         super().__init__(name)
         self.country = country
 
     def __eq__(self, other) -> bool:
+        """A method used to compare if a Province is the same as the other"""
         return super().__eq__(other) and self.country == other.country
 
     def __hash__(self) -> int:
+        """A method to set how we will hash the Province object"""
         return super().__hash__()
 
 
@@ -104,6 +114,7 @@ class BaseData(object):
     """
 
     def __init__(self) -> None:
+        """Initialize a BaseData object"""
         super().__init__()
 
 
@@ -118,10 +129,12 @@ class TimeBasedData(BaseData):
     date: datetime.date
 
     def __init__(self, date: datetime.date) -> None:
+        """Initialize a TimeBasedData object"""
         super().__init__()
         self.date = date
 
     def __eq__(self, other) -> bool:
+        """A method used to compare if a TimeBasedData is the same as the other"""
         return isinstance(other, self.__class__) and self.date == other.date
 
 
@@ -144,18 +157,21 @@ class CovidCaseData(TimeBasedData):
 
     def __init__(self, date: datetime.date, cases: int,
                  country: Country = None, province: Province = None) -> None:
+        """Initialize a CovidCaseData object"""
         super().__init__(date)
         self.country = country
         self.cases = cases
         self.province = province
 
     def __eq__(self, other) -> bool:
+        """A method used to compare if a CovidCaseData object is the same as the other"""
         return super().__eq__(other) and \
                self.province == other.province and \
                self.country == other.country and \
                self.cases == other.cases
 
     def __str__(self) -> str:
+        """A method used to set the str outputted when we called str on a CovidCaseData class"""
         return f'{self.cases} cases in {self.province} {self.country} ' \
                f'at {str(self.date)}'
 
@@ -172,17 +188,20 @@ class SchoolClosureData(TimeBasedData):
     country: Country
     status: ClosureStatus
 
-    def __init__(self, date: datetime.date, status: ClosureStatus, country: Country = None):
+    def __init__(self, date: datetime.date, status: ClosureStatus, country: Country = None) -> None:
+        """Initialize a SchoolClosureData object"""
         super().__init__(date)
         self.country = country
         self.status = status
 
     def __eq__(self, other) -> bool:
+        """A method used to compare if a SchoolClosureData object is the same as the other"""
         return super().__eq__(other) and \
                self.country == other.country and \
                self.status == other.status
 
     def __str__(self) -> str:
+        """A method used to set the str outputted when we called str on a SchoolClosureData class"""
         return f'Schools {self.status} in {self.country} at {self.date}'
 
 

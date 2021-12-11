@@ -90,6 +90,7 @@ class Resource(object):
 
     def __init__(self, name: str, local_path: str, remote_path: str,
                  identifier_expected: str, preferred_name: str = None) -> None:
+        """Initialize a Resource object with the specified parameters"""
         self.name = name
         self.local_path = local_path
         self.remote_path = remote_path
@@ -167,18 +168,22 @@ class Resource(object):
                    )
 
     def __eq__(self, other) -> bool:
+        """A method used to compare if the current Resource is the same as the other"""
         return isinstance(other, self.__class__) and self.name == other.name
 
     def __hash__(self) -> int:
+        """A method to set how we will hash the Resource object"""
         return self.name.__hash__()
 
     def __str__(self) -> str:
+        """A method used to set the str outputted when we called str on a Resource class"""
         return self.name
 
 
 class FailedToDownloadResourceException(Exception):
-
+    """An exception raised when we failed to download the specified resource"""
     def __str__(self) -> str:
+        """A method used to set the str outputted when this exception is raised"""
         return f'Failed to download {self.args[0]}!'
 
 
