@@ -799,6 +799,8 @@ class MainWindow(MainWindowUI):
     is_user_operation: bool = True
     is_slider_moving: bool = False
 
+    last_country_name_searched: str = ''
+
     def __init__(self, *args, **kwargs) -> None:
         """Initializes the main window class"""
         super().__init__(*args, **kwargs)
@@ -1089,7 +1091,7 @@ class MainWindow(MainWindowUI):
 
         if self.global_radio_button.isChecked():
             self.global_radio_button.toggle()
-        country_name = 'Canada'
+        country_name = self.last_country_name_searched
         if new_text == '':
             return
         new_text = new_text.lower()
@@ -1107,6 +1109,7 @@ class MainWindow(MainWindowUI):
                     country_name = country
                     break
 
+        self.last_country_name_searched = country_name
         self.country_selection_combo_box.setCurrentText(country_name)
 
     @pyqtSlot(bool)
