@@ -32,7 +32,7 @@ class ClosureStatus(Enum):
     ACADEMIC_BREAK = 0
 
 
-class Location():
+class Location:
     """
     A class that represents a physical location in the world.
 
@@ -108,7 +108,7 @@ class Province(Location):
         return super().__hash__()
 
 
-class BaseData():
+class BaseData:
     """
     A class that represents the most basic data.
     """
