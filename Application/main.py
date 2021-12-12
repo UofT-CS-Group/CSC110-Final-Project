@@ -30,15 +30,15 @@ def init_icons() -> None:
     """Initializes icon for the application"""
     # If failed to download the icons, then let user know and continue running the program
     logging.info('Initializing icons...')
-    if not init_resource(RESOURCES_DICT[ICON_RESOURCE_NAME]) or \
-            any([not init_resource(RESOURCES_DICT[name]) for name in MARKERS_ICON_RESOURCE_NAMES]):
-
+    main_icon_initialized = init_resource(RESOURCES_DICT[ICON_RESOURCE_NAME])
+    other_icons_initialized = any([not init_resource(RESOURCES_DICT[name])
+                                   for name in MARKERS_ICON_RESOURCE_NAMES])
+    if not main_icon_initialized or other_icons_initialized:
         logging.critical('Failed to download icons!')
         # Pls ignore the warning of the None, this is good.
         QMessageBox.critical(None, 'Critical', 'Failed to download icons! \n'
                                                'You will not see some of the icons of our program.',
                              QMessageBox.Ok, QMessageBox.Ok)
-
     else:
         logging.info('Icon initialized!')
 
