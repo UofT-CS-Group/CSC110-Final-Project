@@ -224,7 +224,7 @@ def init_resources() -> None:
         is_complete = init_resource(resource)
         if not is_complete:
             logging.error('Failed to completely download resource %s'
-                          '%u times! Aborting...' % resource.name, RETRY_COUNT)
+                          '%u times! Aborting...' % (resource.name, RETRY_COUNT))
             raise FailedToDownloadResourceException(resource_name)
 
     logging.info('Successfully initialized all resources!')
@@ -242,11 +242,11 @@ def init_resource(resource: Resource) -> bool:
         # Although we may fail to download the resource, it is still "initialized."
         resource.is_init = True
         for i in range(RETRY_COUNT):
-            resource.download()
-            resource.generate_identifier()
-            if resource.is_complete():
-                return True
-            logging.error('Failed to download %s %u times! Retrying...' % resource.name, i + 1)
+            if resource.download():
+                resource.generate_identifier()
+                if resource.is_complete():
+                    return True
+            logging.error('Failed to download %s %u times! Retrying...' % (resource.name, i + 1))
     return False
 
 
