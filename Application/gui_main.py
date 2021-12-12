@@ -449,6 +449,17 @@ class PlotCanvas(FigureCanvas):
             self.closure_prev_x = 0
             self.closure_prev_y = 0
 
+    def reset(self) -> None:
+        """Resets the plots to the default style"""
+        self.covid_line_color = '#ff557f'
+        self.closure_line_color = '#55ff7f'
+
+        self.covid_line_style = 'solid'
+        self.closure_line_style = 'solid'
+
+        self.covid_data_marker = '.'
+        self.closure_data_marker = '.'
+
 
 class MainWindowUI(QMainWindow):
     """
@@ -1058,11 +1069,12 @@ class MainWindow(MainWindowUI):
             self.init_content()
             self.set_enabled_functional_widgets(True)
             self.progress_bar.setVisible(False)
+            self.plot_canvas.reset()
             self.update_plot()
+            self.plot_canvas.plotted = True
             self.initialization_helper_label.setText(
                     'Please click the button below \nto reinitialize our data!')
             self.settings_menu.setDisabled(False)
-            self.plot_canvas.plotted = True
 
     @pyqtSlot()
     def on_init_button_clicked(self) -> None:
