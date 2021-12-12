@@ -9,14 +9,14 @@
         "retry_count": 3,
         "resources": [
             {
-                "preferred_name": "covid",
+                "preferred_name": "COVID-19 Dataset",
                 "name": "time_series_covid19_confirmed_global.csv",
                 "local_path": "resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv",
                 "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv",
                 "identifier": "6a7680ffa0200328bdd2823dd998c62e"
             },
             {
-                "preferred_name": "closure",
+                "preferred_name": "School Closure Dataset",
                 "name": "full_dataset_31_oct.csv",
                 "local_path": "resources/school_closures_datasets/full_dataset_31_oct.csv",
                 "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/school_closures_datasets/full_dataset_31_oct.csv",

@@ -31,7 +31,7 @@ def init_icons() -> None:
     # If failed to download the icons, then let user know and continue running the program
     logging.info('Initializing icons...')
     if not init_resource(RESOURCES_DICT[ICON_RESOURCE_NAME]) or \
-            any(not init_resource(RESOURCES_DICT[name]) for name in MARKERS_ICON_RESOURCE_NAMES):
+            any([not init_resource(RESOURCES_DICT[name]) for name in MARKERS_ICON_RESOURCE_NAMES]):
 
         logging.critical('Failed to download icons!')
         # Pls ignore the warning of the None, this is good.

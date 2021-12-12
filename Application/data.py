@@ -407,6 +407,10 @@ def reset_data() -> None:
     """
     Reset all constants to their default status.
     """
+    # In case that the user delete our data sets when the programming is running
+    RESOURCES_DICT[COVID19_RESOURCE_NAME].reset()
+    RESOURCES_DICT[SCHOOL_CLOSURE_RESOURCE_NAME].reset()
+
     ALL_COVID_CASES.clear()
     COUNTRIES_TO_ALL_COVID_CASES.clear()
     COUNTRIES_TO_COVID_CASES.clear()

@@ -19,8 +19,8 @@ import requests
 # =================================================================================================
 
 # These are all preferred names.
-COVID19_RESOURCE_NAME = 'covid'
-SCHOOL_CLOSURE_RESOURCE_NAME = 'closure'
+COVID19_RESOURCE_NAME = 'COVID-19 Dataset'
+SCHOOL_CLOSURE_RESOURCE_NAME = 'School Closure Dataset'
 ICON_RESOURCE_NAME = 'icon'
 MARKERS_ICON_RESOURCE_NAMES = ['m00.webp', 'm01.webp', 'm02.webp', 'm03.webp', 'm04.webp',
                                'm05.webp', 'm06.webp', 'm07.webp', 'm08.webp', 'm09.webp',
@@ -101,6 +101,13 @@ class Resource:
         self.identifier_actual = None
         self.local_dir_path = self.local_path[:-len(self.name) - 1]
         self.preferred_name = preferred_name if preferred_name is not None else self.name
+
+    def reset(self):
+        """
+        Reset this resource to its raw state (Before initialization).
+        """
+        self.is_init = False
+        self.identifier_actual = None
 
     def is_complete(self) -> bool:
         """
@@ -236,11 +243,11 @@ def init_resource(resource: Resource) -> bool:
     """
     if resource.is_init:
         return True
+    # Although we may fail to download the resource, it is still "initialized."
+    resource.is_init = True
     if resource.is_complete():
         return True
     else:
-        # Although we may fail to download the resource, it is still "initialized."
-        resource.is_init = True
         for i in range(RETRY_COUNT):
             if resource.download():
                 resource.generate_identifier()
