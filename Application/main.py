@@ -68,6 +68,7 @@ if __name__ == '__main__':
 
     init_icons()
     app.setWindowIcon(QIcon(RESOURCES_DICT[ICON_RESOURCE_NAME].local_path))
+    app.setApplicationName('CSC110 Final Project')
 
     main_window = gui_main.MainWindow()
 
