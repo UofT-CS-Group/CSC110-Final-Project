@@ -47,3 +47,22 @@ def init_setting(setting_config: Dict) -> None:
     ALT_FONT_FAMILY = setting_config['alternative_font_family']
     global FONT_SIZE
     FONT_SIZE = setting_config['font_size']
+
+
+if __name__ == '__main__':
+    import doctest
+
+    doctest.testmod()
+
+    import python_ta.contracts
+
+    python_ta.contracts.check_all_contracts()
+
+    import python_ta
+
+    python_ta.check_all(config={
+        'extra-imports'  : ['logging', 'typing', 'algorithms'],
+        'allowed-io'     : [],
+        'max-line-length': 100,
+        'disable'        : ['R1705', 'C0200', 'E9989', 'E9997']
+    })

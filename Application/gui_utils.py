@@ -112,7 +112,8 @@ def make_function(target: Callable, *args, **kwargs) -> Callable:
     Return a wrapper function without any parameters that calls the target with args and kwargs.
     The returned function could avoid Python late binding features.
     """
-    def function():
+
+    def function() -> None:
         target(*args, **kwargs)
 
     return function
@@ -167,7 +168,7 @@ class StandardLabel(QLabel):
 
     def __init__(self, text: str = 'Standard Label', parent: Optional[QWidget] = None) -> None:
         """Initialize a Standard Label"""
-        super(StandardLabel, self).__init__(text, parent)
+        super().__init__(text, parent)
         set_font(self)
 
 
@@ -180,7 +181,7 @@ class StandardPushButton(QPushButton):
 
     def __init__(self, text: str = 'Push Button', parent: Optional[QWidget] = None) -> None:
         """Initialize a Standard Button"""
-        super(StandardPushButton, self).__init__(text, parent)
+        super().__init__(text, parent)
         set_font(self)
 
 
@@ -194,7 +195,7 @@ class StandardComboBox(QComboBox):
     def __init__(self, parent: Optional[QWidget] = None,
                  items: Optional[Iterable[str]] = None) -> None:
         """Initialize a Standard Combo Box"""
-        super(StandardComboBox, self).__init__(parent)
+        super().__init__(parent)
         set_font(self)
         if items is not None:
             self.addItems(items)
@@ -220,7 +221,7 @@ class StandardDateEdit(QDateEdit):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         """Initialize a Standard Date Edit"""
-        super(StandardDateEdit, self).__init__(parent)
+        super().__init__(parent)
         set_font(self)
 
     def set_extremum_date(self, minimum: datetime.date, maximum: datetime.date) -> None:
@@ -238,7 +239,7 @@ class StandardCheckbox(QCheckBox):
 
     def __init__(self, text: str = 'Check Box', parent: Optional[QWidget] = None) -> None:
         """Initialize a Standard Checkbox"""
-        super(StandardCheckbox, self).__init__(text, parent)
+        super().__init__(text, parent)
         set_font(self)
 
 
@@ -251,7 +252,7 @@ class StandardRadioButton(QRadioButton):
 
     def __init__(self, text: str = 'Radio Button', parent: Optional[QWidget] = None) -> None:
         """Initialize a Standard Radio Button"""
-        super(StandardRadioButton, self).__init__(text, parent)
+        super().__init__(text, parent)
         set_font(self)
 
 
@@ -264,7 +265,7 @@ class StandardProgressBar(QProgressBar):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         """Initialize a Standard Progress Bar"""
-        super(StandardProgressBar, self).__init__(parent)
+        super().__init__(parent)
         set_font(self)
 
 
@@ -277,7 +278,7 @@ class StandardGroupBox(QGroupBox):
 
     def __init__(self, title: str = 'Group Box', parent: Optional[QWidget] = None) -> None:
         """Initialize a Standard Group Box"""
-        super(StandardGroupBox, self).__init__(title, parent)
+        super().__init__(title, parent)
         set_font(self)
 
 
@@ -294,7 +295,7 @@ class StandardSlider(QSlider):
     def __init__(self, orientation: Qt.Orientation = Qt.Horizontal,
                  parent: Optional[QWidget] = None) -> None:
         """Initialize a Standard Slider"""
-        super(StandardSlider, self).__init__(orientation, parent)
+        super().__init__(orientation, parent)
         set_font(self)
 
 
@@ -307,7 +308,7 @@ class StandardTabWidget(QTabWidget):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         """Initialize a Standard Tab Widget"""
-        super(StandardTabWidget, self).__init__(parent)
+        super().__init__(parent)
         set_font(self)
 
 
@@ -333,7 +334,7 @@ class StandardMenuBar(QMenuBar):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         """Initialize a Standard Menu Bar"""
-        super(StandardMenuBar, self).__init__(parent)
+        super().__init__(parent)
         set_font(self, font_size=12)
 
 
@@ -346,7 +347,7 @@ class StandardColorDialog(QColorDialog):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         """Initialize a Standard Color Dialogue Prompt"""
-        super(StandardColorDialog, self).__init__(parent)
+        super().__init__(parent)
         set_font(self, font_size=12)
 
 
@@ -359,7 +360,7 @@ class StandardInputDialog(QInputDialog):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         """Initialize a Standard Input Dialogue Prompt"""
-        super(StandardInputDialog, self).__init__(parent)
+        super().__init__(parent)
         set_font(self, font_size=12)
 
 
@@ -372,5 +373,25 @@ class StandardFileDialog(QFileDialog):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         """Initialize a Standard File Dialogue Prompt"""
-        super(StandardFileDialog, self).__init__(parent)
+        super().__init__(parent)
         set_font(self, font_size=12)
+
+
+if __name__ == '__main__':
+    # doctest this module will generate an error, and doctest is meaningless for this module.
+    # import doctest
+    # doctest.testmod()
+
+    # python_ta.contracts.check_all_contracts will also generate an error
+    # import python_ta.contracts
+    # python_ta.contracts.check_all_contracts()
+
+    import python_ta
+
+    python_ta.check_all(config={
+        'extra-imports'  : ['datetime', 'typing', 'PyQt5.QtCore', 'PyQt5.QtGui',
+                            'PyQt5.QtWidgets', 'settings'],
+        'allowed-io'     : [],
+        'max-line-length': 100,
+        'disable'        : ['R1705', 'C0200', 'E0602', 'E9989', 'W0401']
+    })

@@ -6,7 +6,7 @@ import csv
 import datetime
 import math
 from enum import Enum
-from typing import List, Set
+from typing import Any, List, Set
 
 # Our modules
 import algorithms
@@ -20,8 +20,8 @@ from resource_manager import *
 
 
 class ClosureStatus(Enum):
-    """ A enum class that represents the closure status of schools.
-    
+    """ An enum class that represents the closure status of schools.
+
     Note:
         - This class cannot be instantiated.
     """
@@ -32,7 +32,7 @@ class ClosureStatus(Enum):
     ACADEMIC_BREAK = 0
 
 
-class Location(object):
+class Location():
     """
     A class that represents a physical location in the world.
 
@@ -46,7 +46,7 @@ class Location(object):
         """Initialize a Location class"""
         self.name = name
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """A method used to compare if a Location is the same as the other"""
         return isinstance(other, self.__class__) and self.name == other.name
 
@@ -62,7 +62,7 @@ class Location(object):
 class Country(Location):
     """
     A class that represents a country in the world.
-    
+
     Instance Attributes:
         - name: A string that represents the name of this country.
 
@@ -74,7 +74,7 @@ class Country(Location):
         """Initialize a Country object"""
         super().__init__(name)
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """A method used to compare if a Country is the same as the other"""
         return super().__eq__(other)
 
@@ -99,7 +99,7 @@ class Province(Location):
         super().__init__(name)
         self.country = country
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """A method used to compare if a Province is the same as the other"""
         return super().__eq__(other) and self.country == other.country
 
@@ -108,7 +108,7 @@ class Province(Location):
         return super().__hash__()
 
 
-class BaseData(object):
+class BaseData():
     """
     A class that represents the most basic data.
     """
@@ -133,7 +133,7 @@ class TimeBasedData(BaseData):
         super().__init__()
         self.date = date
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """A method used to compare if a TimeBasedData is the same as the other"""
         return isinstance(other, self.__class__) and self.date == other.date
 
@@ -141,7 +141,7 @@ class TimeBasedData(BaseData):
 class CovidCaseData(TimeBasedData):
     """
     A class that represents a location's covid cases data at a time.
-    
+
     Instance Attributes:
         - province: The province. None if not applicable.
         - country: The country. None if not applicable (For global data).
@@ -163,7 +163,7 @@ class CovidCaseData(TimeBasedData):
         self.cases = cases
         self.province = province
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """A method used to compare if a CovidCaseData object is the same as the other"""
         return super().__eq__(other) and \
                self.province == other.province and \
@@ -179,7 +179,7 @@ class CovidCaseData(TimeBasedData):
 class SchoolClosureData(TimeBasedData):
     """
     A class that stores the closure state of schools in a country at a time.
-    
+
     Instance Attributes:
         - country: The country. Should not be None for our project.
         - status: The closure status specified by enum class ClosureStatus.
@@ -194,7 +194,7 @@ class SchoolClosureData(TimeBasedData):
         self.country = country
         self.status = status
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """A method used to compare if a SchoolClosureData object is the same as the other"""
         return super().__eq__(other) and \
                self.country == other.country and \
@@ -333,6 +333,7 @@ TOTAL_PROGRESS = TOTAL_NUMBER_DATA + \
                  math.ceil(TOTAL_NUMBER_DATA * 0.01)
 
 # The current progress and its description
+# These are not constants
 progress = 0
 progress_description = ''
 
@@ -365,9 +366,9 @@ def init_data() -> None:
 
     progress_description = 'Manipulating data...'
     # Init locations
-    SORTED_COUNTRIES.extend(settings.sort([c for c in COUNTRIES],
+    SORTED_COUNTRIES.extend(settings.sort(list(COUNTRIES),
                                           compare=lambda c1, c2: 1 if c1.name > c2.name else -1))
-    SORTED_PROVINCES.extend(settings.sort([p for p in PROVINCES],
+    SORTED_PROVINCES.extend(settings.sort(list(p for p in PROVINCES),
                                           compare=lambda p1, p2: 1 if p1.name > p2.name else -1))
 
     global COUNTRIES_TO_PROVINCES
@@ -448,8 +449,8 @@ def init_global_school_closures() -> None:
         if current_date == closure.date:
             num_of_status[closure.status] += 1
         else:
-            keys = [k for k in num_of_status]
-            values = [num_of_status[k] for k in keys]
+            keys = list(num_of_status.keys())
+            values = list(num_of_status.values())
             index = values.index(max(values))
             GLOBAL_SCHOOL_CLOSURES.append(SchoolClosureData(current_date, keys[index]))
             current_date = closure.date
@@ -461,7 +462,7 @@ def calculate_country_total_covid_cases(country: Country) -> List[CovidCaseData]
     """
     Return a List containing the total covid cases of the given country.
     The covid cases of the given country were previously separated by provinces.
-    
+
     Preconditions:
         - country in COUNTRIES_TO_ALL_COVID_CASES
         - country in COUNTRIES_TO_PROVINCES
@@ -555,8 +556,7 @@ def read_closure_data(filename: str) -> None:
             if not is_in_ascii(country_name) or country_name in CLOSURE_COUNTRIES_DELETE:
                 continue
 
-            if country_name in CLOSURE_COUNTRY_NAMES_FIX:
-                country_name = CLOSURE_COUNTRY_NAMES_FIX[country_name]
+            country_name = CLOSURE_COUNTRY_NAMES_FIX.get(country_name, country_name)
 
             day, month, year = row[0].split('/')
             ALL_SCHOOL_CLOSURES.append(SchoolClosureData(date=datetime.date(year=int(year),
@@ -579,3 +579,23 @@ def is_in_ascii(s: str) -> bool:
     """
 
     return all(ord(char) < 128 for char in s)
+
+
+if __name__ == '__main__':
+    import doctest
+
+    doctest.testmod()
+
+    import python_ta.contracts
+
+    python_ta.contracts.check_all_contracts()
+
+    import python_ta
+
+    python_ta.check_all(config={
+        'extra-imports'  : ['csv', 'datetime', 'math', 'enum', 'typing', 'algorithms', 'settings',
+                            'resource_manager', 'time'],
+        'allowed-io'     : ['init_data', 'read_covid_data_global', 'read_closure_data'],
+        'max-line-length': 100,
+        'disable'        : ['R1705', 'C0200', 'E9989', 'R1702', 'E9997', 'W0401', 'E9959', 'C0415']
+    })

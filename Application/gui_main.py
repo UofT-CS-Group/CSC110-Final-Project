@@ -4,7 +4,6 @@ This module contains the main window and its elements of our project.
 If you are seeing many warnings, that's normal and that's not our fault.
 """
 # Python built-ins
-import logging
 import math
 import platform
 import time
@@ -29,9 +28,9 @@ if platform.system() == 'Windows':
     # Ctype
     import ctypes
 
-    app_id = 'CSC110.covid_school_plot'  # Random identifier
+    APP_ID = 'CSC110.covid_school_plot'  # Random identifier
     # Letting Windows display the Icon in the taskbar as well
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(APP_ID)
 
 matplotlib.style.use('fast')
 
@@ -47,10 +46,10 @@ class PlotToolbar(NavigationToolbar):
         - window: A MainWindow instance that is the parent window of this toolbar.
     """
 
-    toolitems = [t for t in NavigationToolbar.toolitems if t[0] in {'Home'}]
+    toolitems: List = [t for t in NavigationToolbar.toolitems if t[0] in {'Home'}]
     window: Any
 
-    def __init__(self, canvas, parent, coordinates=True) -> None:
+    def __init__(self, canvas: FigureCanvas, parent: QWidget, coordinates: bool = True) -> None:
         """
         Initialize the Plot toolbar class
         """
@@ -62,7 +61,6 @@ class PlotToolbar(NavigationToolbar):
         """
         Intentionally left as blank.
         """
-        pass
 
     def home(self, *args) -> None:
         """
@@ -145,7 +143,7 @@ class PlotCanvas(FigureCanvas):
         It will create figures and axes, connect events, and other necessary tasks.
         """
         self.figure = pyplot.Figure(tight_layout=True, linewidth=1)
-        super(PlotCanvas, self).__init__(self.figure)
+        super().__init__(self.figure)
 
         self.covid_axes, self.closure_axes = self.figure.subplots(1, 2)
         self.mpl_connect('motion_notify_event', self.on_mouse_move)
@@ -556,7 +554,7 @@ class MainWindowUI(QMainWindow):
         """
         Initialize the whole UI.
         """
-        super(MainWindowUI, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.init_window()
 
     def init_window(self) -> None:
@@ -598,7 +596,7 @@ class MainWindowUI(QMainWindow):
         # Introduction Group
         self.about_group = StandardGroupBox('About', self)
         self.big_icon = StandardLabel(parent=self.about_group)
-        pixmap = QPixmap(RESOURCES_DICT[ICON_RESOURCE_NAME].local_path)\
+        pixmap = QPixmap(RESOURCES_DICT[ICON_RESOURCE_NAME].local_path) \
             .scaled(120, 120, Qt.KeepAspectRatio)
         self.big_icon.setPixmap(pixmap)
         self.about_label = StandardLabel('By Alyssa, \nCharlotte, \nRay, and \nScott',
@@ -752,7 +750,7 @@ class DataThread(QThread):
 
     def __init__(self, parent: QObject) -> None:
         """Initializes the data initialization thread"""
-        super(DataThread, self).__init__(parent)
+        super().__init__(parent)
 
     def run(self) -> None:
         """Runs the data initialization thread"""
@@ -770,7 +768,7 @@ class ProgressUpdateThread(QThread):
 
     def __init__(self, parent: QObject) -> None:
         """Initializes the progress update thread"""
-        super(ProgressUpdateThread, self).__init__(parent)
+        super().__init__(parent)
 
     def run(self) -> None:
         """Runs the progress update thread"""
@@ -803,7 +801,7 @@ class MainWindow(MainWindowUI):
 
     def __init__(self, *args, **kwargs) -> None:
         """Initializes the main window class"""
-        super(MainWindow, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Please ignore the warning here.
         self.progress_bar_update_thread = ProgressUpdateThread(self)
@@ -1203,6 +1201,9 @@ class MainWindow(MainWindowUI):
             self.on_date_edit_changed(new_date, self.end_date_slider)
 
     def on_slider_value_changed(self, percentage: float, date_edit: StandardDateEdit) -> None:
+        """
+        This function is responsible for handling the slider value changed event.
+        """
         min_date = self.start_date_edit.minimumDate().toPyDate()
         max_date = self.end_date_edit.maximumDate().toPyDate()
         delta = max_date - min_date
@@ -1243,11 +1244,18 @@ class MainWindow(MainWindowUI):
         self.on_slider_moved(percentage, self.end_date_edit)
 
     @pyqtSlot()
-    def on_slider_released(self):
+    def on_slider_released(self) -> None:
+        """
+        When the slider is released, then it is not moving.
+        """
         self.is_slider_moving = False
 
     @pyqtSlot(int)
-    def on_start_date_slider_value_changed(self, new_value: int):
+    def on_start_date_slider_value_changed(self, new_value: int) -> None:
+        """
+        When the user clicks the start date slider, then we firstly prevent invalid changes and
+        update other widgets.
+        """
         if self.is_slider_moving:
             return
         if new_value > self.end_date_slider.value():
@@ -1257,7 +1265,11 @@ class MainWindow(MainWindowUI):
         self.on_slider_value_changed(percentage, self.start_date_edit)
 
     @pyqtSlot(int)
-    def on_end_date_slider_value_changed(self, new_value: int):
+    def on_end_date_slider_value_changed(self, new_value: int) -> None:
+        """
+        When the user clicks the end date slider, then we firstly prevent invalid changes and
+        update other widgets.
+        """
         if self.is_slider_moving:
             return
         if new_value < self.start_date_slider.value():
@@ -1315,3 +1327,27 @@ class MainWindow(MainWindowUI):
             self.statusBar().setVisible(True)
         else:
             self.statusBar().setVisible(False)
+
+
+if __name__ == '__main__':
+    # doctest this module will generate an error, and doctest is meaningless for this module.
+    # import doctest
+    # doctest.testmod()
+
+    # python_ta.contracts.check_all_contracts will also generate an error
+    # import python_ta.contracts
+    # python_ta.contracts.check_all_contracts()
+
+    import python_ta
+
+    # Many checks are not very meaningful for our purposes.
+    python_ta.check_all(config={
+        'extra-imports'  : ['math', 'platform', 'time', 'typing', 'matplotlib', 'matplotlib.axes',
+                            'matplotlib.backend_bases', 'matplotlib.lines', 'matplotlib.style',
+                            'matplotlib.backends.backend_qt5agg',
+                            'matplotlib.backends.backend_qt5agg', 'algorithms', 'data',
+                            'gui_utils', 'resource_manager', 'ctypes'],
+        'allowed-io'     : [],
+        'max-line-length': 100,
+        'disable'        : ['R1705', 'C0200', 'E0602', 'E9989', 'C0302', 'W0401', 'E9997', 'R0902']
+    })
