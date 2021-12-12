@@ -1047,7 +1047,7 @@ class MainWindow(MainWindowUI):
         if 'Failed to' in description:
             QMessageBox.critical(self, 'Critical error', f'{description} \n'
                                                          f'Please check Section 4.2 - Remedy '
-                                                         f'in our Final Report for'
+                                                         f'in our Final Report for '
                                                          f'additional instructions. ',
                                  QMessageBox.Ok, QMessageBox.Ok)
             QApplication.quit()
