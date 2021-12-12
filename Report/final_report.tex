@@ -3,6 +3,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[margin=0.75in]{geometry}
 \usepackage{parskip}
+\usepackage[colorlinks,linkcolor=blue]{hyperref}
 \setlength\parindent{0pt}
 
 \newcommand{\bigO}{\mathcal{O}}
@@ -105,13 +106,15 @@
 
     \subsubsection{Resource Initialization}
 
-    In this part of the implementation, we utilized \verb|requests|, \verb|os|, and \verb|hashlib| to download required resources (data sets, icons, etc) and verify their completeness.
+    In this part of the implementation, we utilized \verb|requests|, \verb|os|, \verb|hashlib|, and \verb|json| to download required resources (data sets, icons, etc) and verify their completeness.
 
     The \verb|requests| library allowed our application to get the contents of certain URLs. We used this library in combination with \verb|os| to download and save those resources into the working directory, so our application can run with the specified data. Specifically, we used requests.get, which allowed us to retrieve the information contained in the specified URL, and \verb|os.makedirs|, which allowed us to create directories to store our files in. Also, we set up a public GitHub repository to hold all of our codes and resources, so our application can visit those permanent raw links and download all of the resources.
 
     We also implemented a MD5 Hash function\footnote{Implementation referenced from StackOverFlow, https://stackoverflow.com/questions/3431825/generating-an-md5-checksum-of-a-file} to calculate the unique identifiers of our resources. For those newly downloaded resources, our application will compare their hash values with the predefined valid hash values to ensure that the files downloaded are what we expected.
 
-    To put all of these together, we implemented a module called \verb|resource_manager|, containing a \verb|Resource| class, other helper functions, and some constants. An instance of the \verb|Resource| class represents a resource file of our application. Each resource instance contains a remote path, a unique identifier, and a local path so we can download and verify the files. Also, we built the whole resource manager in an extendable way: By maintaining a \verb|dict| that maps resource name to the \verb|Resource| instance, we could simply register, or add, a new resource to the \verb|dict| if needed. Then, our application will automatically handle all downloading and file manipulating tasks without any further modifications. TODO: Add config part
+    To put all of these together, we implemented a module called \verb|resource_manager|, containing a \verb|Resource| class, other helper functions, and some constants. An instance of the \verb|Resource| class represents a resource file of our application. Each resource instance contains a local path, a remote path, and a unique identifier, so we can download and verify the files. Those predefined resource information (local path, remote url, identifier, etc.) are stored in a config file in JSON format. To better manage it, we created a \verb|Config| wrapper class that wrapped a dictionary containing the actual config values. 
+
+    Also, we built the whole resource manager in an extendable way: By maintaining a \verb|dict| that maps resource name (the preferred name and it could be independent from the file name) to the \verb|Resource| instance, we could simply add a new resource to the config file if needed. Then, our application will automatically handle all downloading and verifying tasks without further code modifications.
 
     \subsubsection{Algorithms}
 
@@ -143,27 +146,27 @@
     We created the following classes:
 
     \begin{itemize}
-        \item \verb|ClosureStatus| - An \verb|Enum| class that maps the different status of school closure to an int value
-        \item \verb|Location| - A class that represents a location.
-        \item \verb|Country| - A class that represents a country, inherited from \verb|Location|.
-        \item \verb|Province| - A class that represents a province, inherited from \verb|Location|.
-        \item \verb|BaseData| - A basic class that represents a piece of data.
-        \item \verb|TimeBasedData| - A class that represents a time-based data, inherited from \verb|BaseData|.
-        \item \verb|CovidCaseData| - A class that represents an entry in COVID-19 data, inherited from \verb|TimeBasedData|.
-        \item \verb|SchoolClosureData| - A class that represents an entry in Closure Data, inherited from \verb|TimeBasedData|.
+        \item \verb|ClosureStatus|: An \verb|Enum| class that maps the different status of school closure to an int value.
+        \item \verb|Location|: A class that represents a location.
+        \item \verb|Country|: A class that represents a country, inherited from \verb|Location|.
+        \item \verb|Province|: A class that represents a province, inherited from \verb|Location|.
+        \item \verb|BaseData|: A basic class that represents a piece of data.
+        \item \verb|TimeBasedData|: A class that represents a time-based data, inherited from \verb|BaseData|.
+        \item \verb|CovidCaseData|: A class that represents an entry in COVID-19 data, inherited from \verb|TimeBasedData|.
+        \item \verb|SchoolClosureData|: A class that represents an entry in Closure Data, inherited from \verb|TimeBasedData|.
     \end{itemize}
 
     We created the following GLOBAL CONSTANTS:
 
     \begin{itemize}
-        \item \verb|ALL_COVID_CASES| - A list of all \verb|CovidCaseData| objects read from the data set, including country-wide and provincial data.
-        \item \verb|COUNTRIES_TO_COVID_CASES| - A dictionary mapping from a country name to all of its respective \verb|CovidCaseData|.
-        \item \verb|GLOBAL_COVID_CASES| - A list of all \verb|CovidCaseData| that contains COVID-19 cases summed across all countries on a certain date.
-        \item \verb|ALL_SCHOOL_CLOSURES| - A list of all \verb|SchoolClosureData| that is read from the data set.
+        \item \verb|ALL_COVID_CASES|: A list of all \verb|CovidCaseData| objects read from the data set, including country-wide and provincial data.
+        \item \verb|COUNTRIES_TO_COVID_CASES|: A dictionary mapping from a country name to all of its respective \verb|CovidCaseData|.
+        \item \verb|GLOBAL_COVID_CASES|: A list of all \verb|CovidCaseData| that contains COVID-19 cases summed across all countries on a certain date.
+        \item \verb|ALL_SCHOOL_CLOSURES|: A list of all \verb|SchoolClosureData| that is read from the data set.
         \item \verb|COUNTRIES_TO_SCHOOL_CLOSURES| - A dictionary mapping from a country name to its respective \verb|SchoolClosureData|.
-        \item \verb|GLOBAL_SCHOOL_CLOSURES| - A list of \verb|SchoolClosureData| with only dates and the status of the majority of the schools in that date.
-        \item \verb|COUNTRIES| - A set of \verb|Country| objects that are read from the data set.
-        \item \verb|SORTED_COUNTRIES| - A list of sorted \verb|Country| objects by country name.
+        \item \verb|GLOBAL_SCHOOL_CLOSURES|: A list of \verb|SchoolClosureData| with only dates and the status of the majority of the schools in that date.
+        \item \verb|COUNTRIES|: A set of \verb|Country| objects that are read from the data set.
+        \item \verb|SORTED_COUNTRIES|: A list of sorted \verb|Country| objects by country name.
     \end{itemize}
 
     Then, we converted the raw data read from the data set into the classes specified above, so we could easily utilize them in practice. Also, by filtering, grouping, and sorting the data we have loaded into Python, we obtained those GLOBAL CONSTANTS defined above that could be utilized by other modules.
@@ -233,29 +236,40 @@
 
     \section{Instructions}
 
-    Before everything, please make sure you have a stable Internet connection.
+    Please make sure you have a \emph{stable Internet connection} before testing our application.
 
     \begin{enumerate}
-        \item [1]
-            Download the zipped file we provided on MarkUs. The zipped file should contain ``\verb|algorithms.py|, \verb|data.py|, \verb|gui_main.py|, \verb|gui_utils.py|, \verb|main.py|, \verb|resource_manager.py|, \verb|settings.py|, and \verb|requirements.txt|.''
+        \item [1.]
+            Download the zipped file we provided on MarkUs. The zipped file should contain 
+            \begin{enumerate}
+                \item [1.] \verb|algorithms.py|
+                \item [2.] \verb|data.py|
+                \item [3.] \verb|gui_main.py|
+                \item [4.] \verb|gui_utils.py|
+                \item [5.] \verb|main.py|
+                \item [6.] \verb|resource_manager.py|
+                \item [7.] \verb|settings.py|
+                \item [8.] \verb|config.json|
+                \item [9.] \verb|requirements.txt|
+            \end{enumerate}
 
-        \item [2]
-            Unzip the file in an empty directory (It is better to make sure the path to the directory only contains English letters).
-        \item [3]
-            Boot up PyCharm and open ``requirements.txt'' in the directory you just unzipped the files in. Click ``Install requirements'' to automatically download all the libraries needed.
+        \item [2.]
+            Unzip the zipped file in an \emph{empty directory} (It is better to make sure the path to the directory only contains English letters).
+        \item [3.]
+            Open the terminal in the directory with our files and run ``pip install -r requirements.txt''.
 
-            Alternatively, you could open the terminal in the directory and run ``pip install -r requirements.txt.''
+            Alternatively, you could Boot up PyCharm and open ``requirements.txt'' in the directory you just unzipped the files in. Click ``Install requirements'' to automatically download all the libraries needed.
 
-        \item [4]
+        \item [4.]
             Either use PyCharm or a terminal to run ``main.py'' and you should be able to see a window popup.
 
-        \item [5]
-            Select a ``Sorting algorithm'' and click the initialize button. After a few seconds, our application should be ready.
+        \item [5.]
+            Select a ``Sorting algorithm'' and click the ``Initialize'' button. After a few seconds, our application should be ready.
 
-        \item [6]
-            You should be able to set the start and end dates for the plot, pan and zoom on the plot, select countries and plot the result again, and utilize the menu bar for more customizable configurations.
+        \item [6.]
+            Now, you should be able to set the start and end dates for the plot, pan and zoom on the plot, select countries and plot the result again, and utilize the menu bar for more customizable configurations.
 
-        \item [7]
+        \item [7.]
             Feel free to explore the application from this point onwards!
 
     \end{enumerate}
@@ -263,17 +277,18 @@
     \subsection{Notes}
 
     \begin{itemize}
-        \item We only tested our application in Windows 10/11 platform with Python 3.10.1. Although we were trying our best to make it compatible with others, we could not guarantee the behaviors under other operating systems.
-        \item It can run on a M1 Mac with an extensive setup. (You need to run Terminal on Rosetta and install the x86\_64 version of all libraries used through pip)
-        \item It can run on an Intel Mac just like on Windows
+        \item We only fully tested our application in Windows 10/11 platform with Python 3.10.1. Although we were trying our best to make it compatible with others, we could not guarantee the behaviors under other operating systems.
+        \item It should be able to run on a M1 Mac with an extensive setup. (You need to run Terminal on Rosetta and install the x86\_64 version of all libraries used through pip)
+        \item It should be able to run on an Intel Mac.
         \item We haven't tested our application on any Linux distributions.
+        \item We haven't tested our application on any other platforms.
     \end{itemize}
 
     \subsection{Remedy}
 
-    If our application failed to download all \textbf{required} resources, please download this compressed file and unzip it in the same directory as the \verb|main.py|. Make sure that the \verb|resources| folder is in the same directory as the \verb|main.py|. TODO: Add the link before we submit.
+    If our application failed to download all \textbf{required} resources, please download \href{https://github.com/UofT-CS-Group/CSC110-Final-Project/blob/main/Report/remedy.zip}{this compressed file} and unzip it in the same directory as the \verb|main.py|. Make sure that the \verb|resources| folder is in the same directory as the \verb|main.py|.
 
-    Or you could clone our repository and everything will be right in the correct place. TODO: Add github.
+    Or you could clone \href{https://github.com/UofT-CS-Group/CSC110-Final-Project}{our repository} and everything will be right in the correct place.
 
     \section{Changes from the Proposal}
 
