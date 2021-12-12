@@ -55,11 +55,13 @@ class Config:
     config_dict: Dict
 
     def __init__(self, file_path: str) -> None:
+        """Initialize a Config class object"""
         self.file_path = file_path
         with open(self.file_path, "rb") as file:
             self.config_dict = json.loads(file.read())
 
     def __getitem__(self, item: str) -> Any:
+        """A method used to index into the class using Config[item]"""
         return self.config_dict[item]
 
 

@@ -26,7 +26,8 @@ logging.basicConfig(stream=sys.stdout,
 # =================================================================================================
 
 
-def init_icons():
+def init_icons() -> None:
+    """Initializes icon for the application"""
     # If failed to download the icons, then let user know and continue running the program
     logging.info('Initializing icons...')
     if not init_resource(RESOURCES_DICT[ICON_RESOURCE_NAME]) or \
