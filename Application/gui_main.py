@@ -1098,16 +1098,26 @@ class MainWindow(MainWindowUI):
         When the texts in the search bar are edited by the user, then we update the current country
         respectively.
         """
+        match_country = {}
+
         if self.global_radio_button.isChecked():
             self.global_radio_button.toggle()
         country_name = 'Canada'
         if new_text == '':
             return
         new_text = new_text.lower()
+        len_text = len(new_text)
         for country in data.SORTED_COUNTRIES:
             if new_text in country.name.lower():
                 country_name = country.name
+                match_country[country.name] = len_text / len(country_name)
+
+        max_prop = max(match_country.values())
+        for country in match_country:
+            if match_country[country] == max_prop:
+                country_name = country
                 break
+
         self.country_selection_combo_box.setCurrentText(country_name)
 
     @pyqtSlot(bool)
