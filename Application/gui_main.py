@@ -1112,11 +1112,13 @@ class MainWindow(MainWindowUI):
                 country_name = country.name
                 match_country[country.name] = len_text / len(country_name)
 
-        max_prop = max(match_country.values())
-        for country in match_country:
-            if match_country[country] == max_prop:
-                country_name = country
-                break
+        if len(match_country) != 0:
+            max_prop = max(match_country.values())
+
+            for country in match_country:
+                if match_country[country] == max_prop:
+                    country_name = country
+                    break
 
         self.country_selection_combo_box.setCurrentText(country_name)
 
