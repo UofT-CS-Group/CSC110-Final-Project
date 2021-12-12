@@ -224,7 +224,7 @@ def init_resources() -> None:
         is_complete = init_resource(resource)
         if not is_complete:
             logging.error('Failed to completely download resource %s'
-                          '%u times! Aborting...' % (resource.name, RETRY_COUNT))
+                          ' %u times! Aborting...' % (resource.name, RETRY_COUNT))
             raise FailedToDownloadResourceException(resource_name)
 
     logging.info('Successfully initialized all resources!')
