@@ -13,7 +13,7 @@ T = TypeVar('T')
 def bubble_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool = False) -> List[T]:
     """
     Sorts the List lst in-place based on compare function using bubble sort algorithm.
-    
+
     If the reverse parameter is True, then this function should sort lst in descending order.
 
     Time Complexity: O(n^2)
@@ -25,11 +25,13 @@ def bubble_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool = Fa
 
     >>> l = [1, 3, 6, 2, 4, 5]
     >>> bubble_sort(l, lambda x, y: -1 if x < y else 0 if x == y else 1)
+    [1, 2, 3, 4, 5, 6]
     >>> l
     [1, 2, 3, 4, 5, 6]
 
     >>> l = [1, 3, 6, 5, 4, 2]
     >>> bubble_sort(l, lambda x, y: -1 if x < y else 0 if x == y else 1, True)
+    [6, 5, 4, 3, 2, 1]
     >>> l
     [6, 5, 4, 3, 2, 1]
     """
@@ -50,7 +52,7 @@ def bubble_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool = Fa
 def selection_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool = False) -> List[T]:
     """
     Sorts the List lst in-place based on compare function using selection sort algorithm.
-    
+
     If the reverse parameter is True, then this function should sort lst in descending order.
 
     Time Complexity: O(n^2)
@@ -62,11 +64,13 @@ def selection_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool =
 
     >>> l = [1, 3, 6, 2, 4, 5]
     >>> selection_sort(l, lambda x, y: -1 if x < y else 0 if x == y else 1)
+    [1, 2, 3, 4, 5, 6]
     >>> l
     [1, 2, 3, 4, 5, 6]
 
     >>> l = [1, 3, 6, 5, 4, 2]
     >>> selection_sort(l, lambda x, y: -1 if x < y else 0 if x == y else 1, True)
+    [6, 5, 4, 3, 2, 1]
     >>> l
     [6, 5, 4, 3, 2, 1]
     """
@@ -95,7 +99,7 @@ def insertion_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool =
     If the reverse parameter is True, then this function should sort lst in descending order.
 
     Time Complexity: O(n^2)
-    
+
     Note:
         - This function mutate the lst object.
         - The compare parameter is a function who takes two objects and return 1 if the first
@@ -103,11 +107,13 @@ def insertion_sort(lst: List[T], compare: Callable[[T, T], int], reverse: bool =
 
     >>> l = [1, 3, 6, 2, 4, 5]
     >>> insertion_sort(l, lambda x, y: -1 if x < y else 0 if x == y else 1)
+    [1, 2, 3, 4, 5, 6]
     >>> l
     [1, 2, 3, 4, 5, 6]
 
     >>> l = [1, 3, 6, 5, 4, 2]
     >>> insertion_sort(l, lambda x, y: -1 if x < y else 0 if x == y else 1, True)
+    [6, 5, 4, 3, 2, 1]
     >>> l
     [6, 5, 4, 3, 2, 1]
     """
@@ -261,7 +267,7 @@ def binary_search(sorted_lst: List[T], target: T) -> int:
     """
     Search target from the sorted_lst using binary search.
     Time Complexity: O(log(n))
-    
+
     Note:
         - This function does not use the compare function to compare between objects.
     """
@@ -285,3 +291,21 @@ SORTING_ALGORITHMS: Dict = {
     'Insertion Sort': insertion_sort,
     'Merge Sort'    : merge_sort
 }
+
+if __name__ == '__main__':
+    import doctest
+
+    doctest.testmod()
+
+    import python_ta.contracts
+
+    python_ta.contracts.check_all_contracts()
+
+    import python_ta
+
+    python_ta.check_all(config={
+        'extra-imports'  : ['typing'],
+        'allowed-io'     : [],
+        'max-line-length': 100,
+        'disable'        : ['R1705', 'C0200', 'E9989', 'R1702', 'E9997']
+    })

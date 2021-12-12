@@ -9,7 +9,7 @@ import hashlib
 import json
 import logging
 import os
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 # Requests library
 import requests
@@ -41,13 +41,14 @@ RETRY_COUNT = 3
 # Classes
 # =================================================================================================
 
-class Config(object):
+class Config:
     """
     A class represents a read-only json config.
 
     >>> config = Config('config.json')
-    >>> config['setting']
-    A dict.
+    >>> config['setting'] == \
+    {'font_family': 'Calibri', 'alternative_font_family': 'Helvetica', 'font_size': 14}
+    True
     """
 
     file_path: str
@@ -58,11 +59,11 @@ class Config(object):
         with open(self.file_path, "rb") as file:
             self.config_dict = json.loads(file.read())
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str) -> Any:
         return self.config_dict[item]
 
 
-class Resource(object):
+class Resource:
     """
     This class represents a resource that have both local and remote path.
 
@@ -107,7 +108,7 @@ class Resource(object):
             try:
                 self.generate_identifier()
             except FileNotFoundError:
-                logging.error(f'File {self.local_path} not found!')
+                logging.error('File %s not found!' % self.local_path)
                 return False
         return self.identifier_expected == self.identifier_actual
 
@@ -136,7 +137,7 @@ class Resource(object):
         Note:
             - This function will create any directories missing.
         """
-        logging.info(f'Downloading {self.name}!')
+        logging.info('Downloading %s!' % self.name)
         try:
             remote_resource = requests.get(self.remote_path)
             os.makedirs(self.local_dir_path, exist_ok=True)
@@ -145,11 +146,14 @@ class Resource(object):
                 local_resource.write(remote_resource.content)
                 return True
 
-        except requests.exceptions.ConnectionError or requests.exceptions.ConnectTimeout:
-            logging.error(f'Failed to connect to {self.remote_path}!')
+        except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout):
+            logging.error('Failed to connect to %s!' % self.remote_path)
             return False
 
     def to_dict(self) -> Dict:
+        """
+        Convert self to a Dict.
+        """
         return {
             'preferred_name': self.preferred_name,
             'name'          : self.name,
@@ -160,6 +164,9 @@ class Resource(object):
 
     @classmethod
     def from_dict(cls, source: Dict) -> Resource:
+        """
+        Convert a Dict instance to a Resource instance.
+        """
         return cls(source['name'],
                    source['local_path'],
                    source['remote_path'],
@@ -167,7 +174,7 @@ class Resource(object):
                    source['preferred_name']
                    )
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """A method used to compare if the current Resource is the same as the other"""
         return isinstance(other, self.__class__) and self.name == other.name
 
@@ -182,6 +189,7 @@ class Resource(object):
 
 class FailedToDownloadResourceException(Exception):
     """An exception raised when we failed to download the specified resource"""
+
     def __str__(self) -> str:
         """A method used to set the str outputted when this exception is raised"""
         return f'Failed to download {self.args[0]}!'
@@ -213,8 +221,8 @@ def init_resources() -> None:
             continue
         is_complete = init_resource(resource)
         if not is_complete:
-            logging.error(f'Failed to completely download resource {resource.name} '
-                          f'{RETRY_COUNT} times! Aborting...')
+            logging.error('Failed to completely download resource %s'
+                          '%u times! Aborting...' % resource.name, RETRY_COUNT)
             raise FailedToDownloadResourceException(resource_name)
 
     logging.info('Successfully initialized all resources!')
@@ -236,7 +244,7 @@ def init_resource(resource: Resource) -> bool:
             resource.generate_identifier()
             if resource.is_complete():
                 return True
-            logging.error(f'Failed to download {resource.name} {i + 1} times! Retrying...')
+            logging.error('Failed to download %s %u times! Retrying...' % resource.name, i + 1)
     return False
 
 
@@ -268,3 +276,22 @@ def md5_hash(local_path: str) -> str:
             data = file.read(BUFFER_SIZE)
 
     return md5.hexdigest()
+
+
+if __name__ == '__main__':
+    import doctest
+
+    doctest.testmod()
+
+    import python_ta.contracts
+
+    python_ta.contracts.check_all_contracts()
+
+    import python_ta
+
+    python_ta.check_all(config={
+        'extra-imports'  : ['__future__', 'hashlib', 'json', 'logging', 'os', 'typing', 'requests'],
+        'allowed-io'     : ['__init__', 'md5_hash', 'download', 'generate_identifier'],
+        'max-line-length': 100,
+        'disable'        : ['R1705', 'C0200', 'E9989', 'E9997']
+    })
