@@ -892,9 +892,7 @@ class MainWindow(MainWindowUI):
         for marker, info in LINE_MARKERS.items():
             description, icon_name = info
             try:
-                icon = QIcon(RESOURCES_DICT[icon_name].local_path)
                 covid_action = QAction(description, covid_marker_menu)
-                covid_action.setIcon(icon)
                 covid_action.setStatusTip(description)
                 covid_action.triggered.connect(make_function(self.plot_canvas.update_lines,
                                                              self.plot_canvas.covid_axes,
@@ -902,12 +900,15 @@ class MainWindow(MainWindowUI):
                 covid_marker_menu.addAction(covid_action)
 
                 closure_action = QAction(description, closure_marker_menu)
-                closure_action.setIcon(icon)
                 closure_action.setStatusTip(description)
                 closure_action.triggered.connect(make_function(self.plot_canvas.update_lines,
                                                                self.plot_canvas.closure_axes,
                                                                marker=marker))
                 closure_marker_menu.addAction(closure_action)
+
+                icon = QIcon(RESOURCES_DICT[icon_name].local_path)
+                covid_action.setIcon(icon)
+                closure_action.setIcon(icon)
             except KeyError:
                 # This is because none marker does not have icon.
                 pass
