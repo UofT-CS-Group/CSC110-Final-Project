@@ -13,14 +13,14 @@
                 "name": "time_series_covid19_confirmed_global.csv",
                 "local_path": "resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv",
                 "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/covid_cases_datasets/time_series_covid19_confirmed_global.csv",
-                "identifier": "6a7680ffa0200328bdd2823dd998c62e"
+                "identifier": "b517594dac2b00c95ad8cf0058d1c42c"
             },
             {
                 "preferred_name": "School Closure Dataset",
-                "name": "full_dataset_31_oct.csv",
-                "local_path": "resources/school_closures_datasets/full_dataset_31_oct.csv",
-                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/school_closures_datasets/full_dataset_31_oct.csv",
-                "identifier": "9426167fdc1b664da627e74d84328c35"
+                "name": "full-dataset-30-nov.csv",
+                "local_path": "resources/school_closures_datasets/full-dataset-30-nov.csv",
+                "remote_path": "https://raw.githubusercontent.com/UofT-CS-Group/CSC110-Final-Project/main/Application/resources/school_closures_datasets/full-dataset-30-nov.csv",
+                "identifier": "ab088c972e4d8b5eb1d01d140c06dab6"
             },
             {
                 "preferred_name": "icon",
