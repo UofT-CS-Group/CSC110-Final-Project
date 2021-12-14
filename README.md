@@ -38,3 +38,5 @@ We aim to create a data visualizing application with GUI to capture correlations
 Created by: Alyssa, Charlotte, Ray, and Scott
 
 [Licensed under GPL 3.0.](https://github.com/UofT-CS-Group/CSC110-Final-Project/blob/main/LICENSE)
+
+At the end!
