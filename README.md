@@ -8,7 +8,7 @@ We aim to create a data visualizing application with GUI to capture correlations
 
 # Instruction
 
-- Please refer to Section 4 of our [report](https://github.com/UofT-CS-Group/CSC110-Final-Project/blob/main/Report/final_report.pdf).
+- Please refer to Section 4 of our [report](https://github.com/UofT-CS-Group/CSC110-Final-Project/blob/main/Report/project_report.pdf).
 ![Visualization](https://user-images.githubusercontent.com/35100768/145755738-3b07c31f-6d20-4de4-80bf-c2f06e94aedf.gif)
 
 # Program Executing Order

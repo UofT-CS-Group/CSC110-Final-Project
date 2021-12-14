@@ -14,6 +14,7 @@ import matplotlib.axes
 import matplotlib.backend_bases
 import matplotlib.lines
 import matplotlib.style
+from PyQt5 import QtGui
 from matplotlib import pyplot
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -110,8 +111,8 @@ class PlotCanvas(FigureCanvas):
     curr_x: Optional[datetime.date]
     curr_y: Optional[int]
 
-    covid_line_color: str = '#ff557f'
-    closure_line_color: str = '#55ff7f'
+    covid_line_color: str = '#385587'
+    closure_line_color: str = '#FFBF37'
 
     covid_line_style: str = 'solid'
     closure_line_style: str = 'solid'
@@ -451,8 +452,8 @@ class PlotCanvas(FigureCanvas):
 
     def reset(self) -> None:
         """Resets the plots to the default style"""
-        self.covid_line_color = '#ff557f'
-        self.closure_line_color = '#55ff7f'
+        self.covid_line_color = '#385587'
+        self.closure_line_color = '#FFBF37'
 
         self.covid_line_style = 'solid'
         self.closure_line_style = 'solid'
@@ -579,7 +580,7 @@ class MainWindowUI(QMainWindow):
             self.height = int(self.width * 0.618)
 
         self.resize(self.width, self.height)
-        self.setFixedSize(self.size())
+        # self.setFixedSize(self.size())
 
         # Center the window
         frame_geometry = self.frameGeometry()
@@ -1355,6 +1356,11 @@ class MainWindow(MainWindowUI):
             self.statusBar().setVisible(True)
         else:
             self.statusBar().setVisible(False)
+
+    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(a0)
+        self.plot_canvas.draw()
+        self.plot_canvas.update_background()
 
 
 if __name__ == '__main__':
